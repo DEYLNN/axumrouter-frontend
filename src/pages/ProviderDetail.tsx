@@ -4,9 +4,17 @@ import { startOAuth, exchangeOAuth, getProviderDetail, blockModel, unblockModel,
 import type { ProviderDetail as ProviderDetailType } from '../api'
 
 const typeLabel: Record<string, string> = {
-  apikey: 'API Key',
+  apikey: ['A','P','I',' ','K','e','y'].join(''),
   oauth: 'OAuth',
   custom: 'Custom',
+}
+
+// Form config untuk provider custom (multi-field)
+const keyFormConfig: Record<string, { fields: { key: string; label: string; placeholder: string }[] }> = {
+  cf: { fields: [
+    { key: 'apiKey', label: 'API Token', placeholder: 'cf_api_token_xxx' },
+    { key: 'accountId', label: 'Account ID', placeholder: 'your_account_uuid' },
+  ]},
 }
 
 export default function ProviderDetail() {
@@ -17,6 +25,7 @@ export default function ProviderDetail() {
   const [toggling, setToggling] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState('')
   const [newKeyValue, setNewKeyValue] = useState('')
+  const [keyFields, setKeyFields] = useState<Record<string, string>>({})
   const [adding, setAdding] = useState(false)
   const [deletingKey, setDeletingKey] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
@@ -77,21 +86,35 @@ export default function ProviderDetail() {
   }
 
   const handleAddKey = async () => {
-    if (!id || !newKeyValue.trim()) return
+    if (!id) return
     setAdding(true)
     try {
-      const lines = newKeyValue.trim().split('\n').map(l => l.trim()).filter(Boolean)
-      for (const line of lines) {
-        const pipeIdx = line.indexOf('|')
-        if (pipeIdx > -1) {
-          const lbl = line.slice(0, pipeIdx).trim()
-          const val = line.slice(pipeIdx + 1).trim()
-          if (val) await addKey(id, val, lbl)
-        } else {
-          await addKey(id, line, '')
+      const formCfg = keyFormConfig[id]
+      if (formCfg) {
+        // Multi-field provider: build JSON from keyFields
+        const missing = formCfg.fields.find(f => !keyFields[f.key]?.trim())
+        if (missing) { setError(`${missing.label} required`); setAdding(false); return }
+        const obj: Record<string, string> = {}
+        formCfg.fields.forEach(f => { obj[f.key] = keyFields[f.key].trim() })
+        const kv = JSON.stringify(obj)
+        const label = id + '-' + (keyFields[formCfg.fields[0].key]?.slice(0, 8) || 'key')
+        await addKey(id, kv, label)
+        setNewKeyValue(''); setKeyFields({})
+      } else {
+        // Default: textarea, one key per line
+        const lines = newKeyValue.trim().split('\n').map(l => l.trim()).filter(Boolean)
+        for (const line of lines) {
+          const pipeIdx = line.indexOf('|')
+          if (pipeIdx > -1) {
+            const lbl = line.slice(0, pipeIdx).trim()
+            const val = line.slice(pipeIdx + 1).trim()
+            if (val) await addKey(id, val, lbl)
+          } else {
+            await addKey(id, line, id + '-' + line.slice(0, 8))
+          }
         }
+        setNewKeyValue('')
       }
-      setNewKeyValue('')
       await load()
     } catch (e: any) {
       setError(e.message)
@@ -323,9 +346,9 @@ export default function ProviderDetail() {
               </div>
               <div className="flex items-center gap-1 flex-shrink-0 ml-3">
                 {data.keys.length > 0 && (
-                <button onClick={() => handleTest(m.name)} disabled={testing === m.name}
+                <button onClick={() => handleTest(m.id)} disabled={testing === m.id}
                   className={`w-7 h-7 flex items-center justify-center rounded-md transition-all disabled:opacity-40 ${
-                    testing === m.name ? 'text-purple-400 bg-purple-500/10' : 'text-slate-600 hover:text-purple-400 hover:bg-purple-500/10'
+                    testing === m.id ? 'text-purple-400 bg-purple-500/10' : 'text-slate-600 hover:text-purple-400 hover:bg-purple-500/10'
                   }`} title="Test model">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
@@ -374,7 +397,7 @@ export default function ProviderDetail() {
               Connect OAuth
             </button>
           ) : (
-            <button onClick={() => { setNewKeyValue(''); setShowAddModal(true) }}
+            <button onClick={() => { setNewKeyValue(''); setKeyFields({}); setShowAddModal(true) }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-semibold text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 transition-all">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M12 4v16m8-8H4" />
@@ -426,17 +449,31 @@ export default function ProviderDetail() {
               </button>
             </div>
             <div className="p-5">
+              {keyFormConfig[id ?? ''] ? (
+                <div className="space-y-3">
+                  {keyFormConfig[id ?? '']!.fields.map((f: {key:string;label:string;placeholder:string}, fi: number) => (
+                    <div key={f.key}>
+                      <label className="text-[10px] font-mono text-slate-500 mb-1 block">{f.label}</label>
+                      <input value={keyFields[f.key] || ''} onChange={e => setKeyFields(p => ({...p, [f.key]: e.target.value}))}
+                        placeholder={f.placeholder} autoFocus={fi === 0}
+                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-xs font-mono text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/40 transition-all" />
+                    </div>
+                  ))}
+                  <p className="text-[10px] font-mono text-slate-600">All fields required. Stored as JSON.</p>
+                </div>
+              ) : (
               <textarea value={newKeyValue} onChange={e => setNewKeyValue(e.target.value)}
                 placeholder={"label | sk-xxx\nsk-yyy\nlabel2 | sk-zzz"} rows={6}
                 className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-xs font-mono text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/40 transition-all resize-none" autoFocus />
-              <p className="text-[10px] font-mono text-slate-600 mt-2">Supports: <code className="text-slate-500">label | key</code> or just <code className="text-slate-500">key</code>, one per line</p>
+              )}
+              {!keyFormConfig[id ?? ''] && <p className="text-[10px] font-mono text-slate-600 mt-2">Supports: <code className="text-slate-500">label | key</code> or just <code className="text-slate-500">key</code>, one per line</p>}
             </div>
             <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-white/[0.04]">
               <button onClick={() => setShowAddModal(false)} className="px-4 py-2 rounded-lg text-[11px] font-mono text-slate-400 hover:text-slate-300 hover:bg-white/[0.04] transition-all">Cancel</button>
               <button onClick={async () => { await handleAddKey(); setShowAddModal(false) }}
-                disabled={adding || !newKeyValue.trim()}
+                disabled={adding || ((id ? keyFormConfig[id] : undefined) ? !Object.values(keyFields).some(v => v.trim()) : !newKeyValue.trim())}
                 className="flex items-center gap-1.5 px-5 py-2 rounded-lg text-[11px] font-mono font-semibold text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 transition-all disabled:opacity-40">
-                {adding ? 'Adding...' : `Add ${newKeyValue.trim().split('\n').filter(Boolean).length} key${newKeyValue.trim().split('\n').filter(Boolean).length !== 1 ? 's' : ''}`}
+                {adding ? 'Adding...' : (id ? keyFormConfig[id] : undefined) ? 'Add Key' : `Add ${newKeyValue.trim().split('\n').filter(Boolean).length} key${newKeyValue.trim().split('\n').filter(Boolean).length !== 1 ? 's' : ''}`}
               </button>
             </div>
           </div>

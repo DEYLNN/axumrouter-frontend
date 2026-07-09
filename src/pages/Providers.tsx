@@ -24,7 +24,14 @@ export default function Providers() {
   )
 
   const grouped = groups
-    .map(g => ({ ...g, items: filtered.filter(p => p.type === g.key) }))
+    .map(g => ({ ...g, items: filtered
+      .filter(p => p.type === g.key)
+      .sort((a, b) => {
+        // Have key first, then no key (per category)
+        if ((a.total_keys > 0) !== (b.total_keys > 0)) return a.total_keys > 0 ? -1 : 1
+        return 0 // preserve API response order ≈ newest first
+      })
+    }))
     .filter(g => g.items.length > 0)
 
   return (
