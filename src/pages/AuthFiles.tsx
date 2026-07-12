@@ -5,6 +5,7 @@ interface AuthFile {
   provider_id: string
   label: string
   key_type: string
+  key_value: string
   key_preview: string
   email: string
   plan: string
@@ -88,12 +89,12 @@ export default function AuthFiles() {
     const needle = query.toLowerCase().trim()
     return files
       .filter(f => providerFilter === 'all' || f.provider_id === providerFilter)
-      .filter(f => !onlyProblem || (f.key_type === 'OAuth' && (!f.has_access || !f.is_active)))
+      .filter(f => !onlyProblem || (f.key_type?.toLowerCase() === 'oauth' && (!f.has_access || !f.is_active)))
       .filter(f => !onlyDisabled || !f.is_active)
       .filter(f => !needle || [f.provider_id, f.label, f.email, f.key_type].some(v => v?.toLowerCase().includes(needle)))
   }, [files, query, providerFilter, onlyProblem, onlyDisabled])
 
-  const problemCount = useMemo(() => files.filter(f => f.key_type === 'OAuth' && (!f.has_access || !f.is_active)).length, [files])
+  const problemCount = useMemo(() => files.filter(f => f.key_type?.toLowerCase() === 'oauth' && (!f.has_access || !f.is_active)).length, [files])
   const disabledCount = useMemo(() => files.filter(f => !f.is_active).length, [files])
   const visibleIds = useMemo(() => filtered.map(f => f.id), [filtered])
   const selectedVisible = useMemo(() => visibleIds.filter(id => selectedIds.has(id)).length, [visibleIds, selectedIds])
@@ -118,7 +119,24 @@ export default function AuthFiles() {
       await navigator.clipboard.writeText(val)
       setCopiedKey(key)
       setTimeout(() => setCopiedKey(c => c === key ? null : c), 1500)
-    } catch { setCopiedKey(`${key}:err`); setTimeout(() => setCopiedKey(c => c === `${key}:err` ? null : c), 1800) }
+    } catch {
+      // Fallback for HTTP (non-HTTPS)
+      try {
+        const ta = document.createElement('textarea')
+        ta.value = val
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+        setCopiedKey(key)
+        setTimeout(() => setCopiedKey(c => c === key ? null : c), 1500)
+      } catch {
+        setCopiedKey(`${key}:err`)
+        setTimeout(() => setCopiedKey(c => c === `${key}:err` ? null : c), 1800)
+      }
+    }
   }
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,7 +146,7 @@ export default function AuthFiles() {
     try {
       const parsed = await Promise.all(files.map(f => f.text().then(t => JSON.parse(t))))
       const items = parsed.flatMap(p => Array.isArray(p) ? p : Array.isArray(p.files) ? p.files : [p])
-      const res = await fetch('/admin/api/auth-files/import', {
+      const res = await fetch('/admin/auth-files/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(items),
@@ -150,7 +168,7 @@ export default function AuthFiles() {
     let deleted = 0, failed = 0
     for (const id of ids) {
       try {
-        const res = await fetch(`/admin/api/auth-files/delete`, {
+        const res = await fetch(`/admin/auth-files/delete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ids: [id] }),
@@ -167,35 +185,29 @@ export default function AuthFiles() {
   // Build secrets per file for display
   const getSecrets = (f: AuthFile) => {
     const secs: { field: string; preview: string; value: string }[] = []
-    if (f.key_type === 'OAuth') {
-      if (f.has_access) secs.push({ field: 'access_token', preview: '••••••••', value: '[stored in db]' })
-      if (f.has_refresh) secs.push({ field: 'refresh_token', preview: '••••••••', value: '[stored in db]' })
+    let parsed: any = null
+    try { parsed = JSON.parse(f.key_value) } catch { parsed = null }
+    if (f.key_type?.toLowerCase() === 'oauth') {
+      if (f.has_access) secs.push({
+        field: 'access_token',
+        preview: '••••••••',
+        value: parsed?.access_token || '[stored in db]'
+      })
+      if (f.has_refresh) secs.push({
+        field: 'refresh_token',
+        preview: '••••••••',
+        value: parsed?.refresh_token || '[stored in db]'
+      })
     } else {
-      secs.push({ field: 'api_key', preview: f.key_preview, value: f.key_preview })
+      const rawKey = parsed?.apiKey || parsed?.apiToken || parsed?.key || f.key_value
+      secs.push({ field: 'api_key', preview: f.key_preview, value: rawKey })
     }
     return secs
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Static grid bg */}
-      <div className="fixed inset-0 pointer-events-none z-0"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(6,182,212,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(6,182,212,0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-        }}
-      />
-
-      {/* Ambient glow orbs */}
-      <div className="fixed top-1/4 -left-20 w-80 h-80 rounded-full pointer-events-none z-0"
-        style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%)' }} />
-      <div className="fixed bottom-1/4 -right-20 w-96 h-96 rounded-full pointer-events-none z-0"
-        style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.06) 0%, transparent 70%)' }} />
-
-      <div className="relative z-10 px-2 md:px-4 py-6 space-y-5">
+    <div className="relative">
+      <div className="px-2 md:px-4 py-6 space-y-5">
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="text-left">
@@ -343,7 +355,7 @@ export default function AuthFiles() {
             const sel = selectedIds.has(f.id)
             const exp = parseExpiry(f.expires_at)
             const secrets = getSecrets(f)
-            const isOAuth = f.key_type === 'OAuth'
+            const isOAuth = f.key_type?.toLowerCase() === 'oauth'
             const problem = isOAuth && (!f.has_access || !f.is_active) ? (!f.has_access ? 'no_access' : 'disabled') : null
             const accentColor = meta.color || '#6366F1'
 
@@ -465,7 +477,7 @@ export default function AuthFiles() {
                   <button onClick={async () => {
                     if (!confirm(`Delete ${f.label || f.id}?`)) return
                     try {
-                      await fetch('/admin/api/auth-files/delete', {
+                      await fetch('/admin/auth-files/delete', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ ids: [f.id] }),
                       })
