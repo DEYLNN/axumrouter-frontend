@@ -213,20 +213,54 @@ export default function Endpoint() {
             </div>
             <div className="p-4 space-y-2">
               {/* RTK */}
-              <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-black/40 border border-white/[0.04] opacity-50">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M8 5V3h8v2" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-semibold text-slate-300">RTK</span>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-slate-500/15 text-slate-500 border border-slate-500/20">SOON</span>
+              <div className="px-4 py-3 rounded-xl bg-black/40 border border-white/[0.06] hover:border-cyan-500/30 transition-all"
+                style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)' }}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
+                      settings.rtk_enabled === 'true'
+                        ? 'bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-cyan-500/20'
+                        : 'bg-slate-800/60 border-white/[0.04]'
+                    }`}
+                      style={settings.rtk_enabled === 'true' ? { boxShadow: '0 0 10px rgba(6,182,212,0.15)' } : {}}>
+                      <svg className={`w-4 h-4 ${settings.rtk_enabled === 'true' ? 'text-cyan-400' : 'text-slate-500'}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M8 5V3h8v2" />
+                      </svg>
                     </div>
-                    <p className="text-[10px] font-mono text-slate-600 mt-0.5 truncate max-w-[220px] sm:max-w-sm">Compress tool output — fewer input tokens</p>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-semibold text-slate-200">RTK</span>
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-md border ${
+                          settings.rtk_enabled === 'true'
+                            ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25'
+                            : 'bg-slate-500/15 text-slate-500 border-slate-500/20'
+                        }`}>
+                          {settings.rtk_enabled === 'true' ? 'ON' : 'OFF'}
+                        </span>
+                      </div>
+                      <p className="text-[10px] font-mono text-slate-600 mt-0.5 truncate max-w-[220px] sm:max-w-sm">Compress tool output — fewer input tokens</p>
+                    </div>
                   </div>
+                </div>
+                <div className="flex gap-1.5">
+                  {['false', 'true'].map(val => {
+                    const active = settings.rtk_enabled === val
+                    const label = val === 'true' ? 'ON' : 'OFF'
+                    return (
+                      <button
+                        key={val}
+                        onClick={() => handleToggle('rtk_enabled', val)}
+                        className={`flex-1 py-1.5 rounded-lg text-[10px] font-mono font-bold tracking-wide transition-all ${
+                          active
+                            ? 'bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 text-cyan-300 border border-cyan-500/40'
+                            : 'bg-slate-800/40 text-slate-500 border border-slate-700/40 hover:border-cyan-500/30 hover:text-slate-300'
+                        }`}
+                        style={active ? { boxShadow: '0 0 12px rgba(6,182,212,0.2)' } : {}}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
