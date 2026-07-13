@@ -20,3 +20,7 @@ async function fetcher<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export { API_BASE, fetcher }
+
+/** Raw fetch with API_BASE prefix — use instead of bare fetch() for API calls */
+export const apiFetch = (url: string, init?: RequestInit) =>
+  fetch(`${API_BASE}${url}`, init)

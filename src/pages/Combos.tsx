@@ -42,8 +42,8 @@ export default function Combos() {
   const [modelSearch, setModelSearch] = useState('')
 
   const load = () => {
-    fetch('/admin/api/combos').then(r => r.json()).then(setCombos).catch(console.error)
-    fetch('/admin/api/providers').then(r => r.json()).then(setProviders).catch(console.error)
+    apiFetch('/admin/api/combos').then(r => r.json()).then(setCombos).catch(console.error)
+    apiFetch('/admin/api/providers').then(r => r.json()).then(setProviders).catch(console.error)
   }
 
   useEffect(load, [])
@@ -61,7 +61,7 @@ export default function Combos() {
           role: i === 0 ? 'PRIMARY' : 'fallback',
         }
       })
-      const res = await fetch('/admin/api/combos', {
+      const res = await apiFetch('/admin/api/combos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newName.trim(), description: newDesc.trim(), tiers }),
@@ -79,18 +79,18 @@ export default function Combos() {
   }
 
   const deleteCombo = async (id: string) => {
-    await fetch(`/admin/api/combos/${id}`, { method: 'DELETE' })
+    await apiFetch(`/admin/api/combos/${id}`, { method: 'DELETE' })
     load()
   }
 
   const toggleCombo = async (id: string) => {
-    await fetch(`/admin/api/combos/${id}/toggle`, { method: 'POST' })
+    await apiFetch(`/admin/api/combos/${id}/toggle`, { method: 'POST' })
     load()
   }
 
   const openPicker = async () => {
     try {
-      const r = await fetch('/admin/api/models/all')
+      const r = await apiFetch('/admin/api/models/all')
       const data = await r.json()
       setAllModels(data)
     } catch (e) {
@@ -98,7 +98,7 @@ export default function Combos() {
       const m: AllModels = {}
       for (const p of providers) {
         try {
-          const r = await fetch(`/admin/api/providers/${p.id}`)
+          const r = await apiFetch(`/admin/api/providers/${p.id}`)
           const d = await r.json()
           m[p.id] = (d.models || []).map((md: any) => ({ id: md.id, enabled: true, owned_by: p.id }))
         } catch (_) {}

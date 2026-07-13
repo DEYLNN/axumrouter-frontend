@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { startOAuth, exchangeOAuth } from '../api'
+import { apiFetch } from '../api'
 
 interface UseOAuthFlowReturn {
   showModal: boolean
@@ -51,7 +52,7 @@ export function useOAuthFlow(providerId: string, onSuccess: () => void): UseOAut
               fingerprint_hash: data.fingerprint_hash || null,
               expires_at: data.expires_at || null,
             })
-        const res = await fetch(`/admin/oauth/${id}/poll`, {
+        const res = await apiFetch(`/admin/oauth/${id}/poll`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
         })
         if (!res.ok) { setTimeout(tick, interval); return }
@@ -81,7 +82,7 @@ export function useOAuthFlow(providerId: string, onSuccess: () => void): UseOAut
     try {
       if (providerId === 'fb' || providerId === 'np') {
         setIsDeviceCode(true)
-        const res = await fetch(`/admin/oauth/${providerId}/start`)
+        const res = await apiFetch(`/admin/oauth/${providerId}/start`)
         if (!res.ok) throw new Error('OAuth start failed: ' + res.status)
         const data = await res.json()
         setOauthUrl(data.verification_uri_complete || data.login_url || '')

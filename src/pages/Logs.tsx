@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getLogs, getProviders } from '../api'
+import { apiFetch } from '../api'
 import type { LogEntry, ProviderMeta } from '../api'
 
 function timeAgo(dateStr: string): string {
@@ -48,7 +49,7 @@ export default function Logs() {
     if (!confirm('Delete ALL logs? This cannot be undone.')) return
     setClearing(true)
     try {
-      await fetch('/admin/api/logs/clear', { method: 'POST' })
+      await apiFetch('/admin/api/logs/clear', { method: 'POST' })
       setPage(1)
       await load(1)
     } catch (e: any) {

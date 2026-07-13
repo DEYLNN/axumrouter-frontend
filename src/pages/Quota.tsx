@@ -62,8 +62,8 @@ export default function Quota() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/admin/api/usage/keys').then(r => r.json()),
-      fetch('/admin/api/providers').then(r => r.json()),
+      apiFetch('/admin/api/usage/keys').then(r => r.json()),
+      apiFetch('/admin/api/providers').then(r => r.json()),
     ]).then(([keyData, provData]) => {
       setKeys(keyData)
       const pm: Record<string, ProviderMeta> = {}
@@ -76,7 +76,7 @@ export default function Quota() {
 
   const fetchQuota = async (keyId: string) => {
     try {
-      const res = await fetch(`/admin/api/usage/quota/${keyId}`)
+      const res = await apiFetch(`/admin/api/usage/quota/${keyId}`)
       const data = await res.json()
       setQuotaMap(prev => ({ ...prev, [keyId]: data }))
     } catch (e) {
@@ -87,7 +87,7 @@ export default function Quota() {
   const handleRefresh = async (keyId: string) => {
     setRefreshing(prev => ({ ...prev, [keyId]: true }))
     try {
-      const res = await fetch(`/admin/api/usage/refresh/${keyId}`, { method: 'POST' })
+      const res = await apiFetch(`/admin/api/usage/refresh/${keyId}`, { method: 'POST' })
       const data = await res.json()
       if (data.ok) fetchQuota(keyId)
       else console.error('Refresh failed:', data.error)
