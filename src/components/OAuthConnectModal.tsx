@@ -112,7 +112,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
       const code = url.searchParams.get('code')
       if (!code) throw new Error('No code in URL')
       setStep('loading')
-      const r = await fetch(`/admin/oauth/${provider.id}/callback?code=${encodeURIComponent(code)}`)
+      const r = await fetch(`/admin/oauth/${provider!.id}/callback?code=${encodeURIComponent(code)}`)
       if (!r.ok) throw new Error('Exchange failed')
       setStep('success'); onSuccess()
     } catch (e: any) { setError(e.message); setStep('error') }
