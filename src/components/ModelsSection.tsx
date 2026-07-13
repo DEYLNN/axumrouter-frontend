@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { iconUrl } from '../api'
 import type { ProviderMeta } from '../api'
 
 interface ToggleModel { id: string; owned_by: string; enabled: boolean; toggling?: boolean }
@@ -60,7 +61,7 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
                           style={{ background: `${p.color}15`, border: `1px solid ${p.color}25` }}>
-                          {p.icon_url ? <img src={p.icon_url} alt="" className="w-4 h-4 object-contain" /> : <span className="text-[9px] font-bold" style={{ color: p.color }}>{p.id.charAt(0).toUpperCase()}</span>}
+                          {p.icon_url ? <img src={iconUrl(p.icon_url)} alt="" className="w-4 h-4 object-contain" /> : <span className="text-[9px] font-bold" style={{ color: p.color }}>{p.id.charAt(0).toUpperCase()}</span>}
                         </div>
                         <div className="min-w-0">
                           <div className="text-[11px] font-semibold text-slate-200 truncate">{p.display_name}</div>

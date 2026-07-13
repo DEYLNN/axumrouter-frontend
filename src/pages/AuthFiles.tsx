@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { apiFetch } from '../api'
+import { iconUrl, apiFetch } from '../api'
 import { copyToClipboard } from '../utils/clipboard'
 
 interface AuthFile {
@@ -292,7 +292,7 @@ export default function AuthFiles() {
                     {(() => {
                       const fm = getMeta(providerFilter)
                       return fm.icon_url ? (
-                        <img src={fm.icon_url} alt="" className="w-full h-full object-contain" />
+                        <img src={iconUrl(fm.icon_url)} alt="" className="w-full h-full object-contain" />
                       ) : (
                         <span className="font-mono text-[8px] text-zinc-400">{fm.name[0]}</span>
                       )
@@ -335,7 +335,7 @@ export default function AuthFiles() {
                           <div className="w-5 h-5 rounded shrink-0 overflow-hidden bg-black/40 border flex items-center justify-center"
                             style={{ borderColor: fm.color ? `${fm.color}50` : 'rgba(255,255,255,0.04)', boxShadow: providerFilter === p.id ? `0 0 8px ${fm.color}30` : 'none' }}>
                             {fm.icon_url ? (
-                              <img src={fm.icon_url} alt="" className="w-full h-full object-contain p-0.5" />
+                              <img src={iconUrl(fm.icon_url)} alt="" className="w-full h-full object-contain p-0.5" />
                             ) : (
                               <span className="font-mono text-[9px] text-zinc-400">{fm.name[0]}</span>
                             )}
@@ -415,7 +415,7 @@ export default function AuthFiles() {
                       boxShadow: `0 0 8px ${accentColor}15`,
                     }}>
                     {meta.icon_url ? (
-                      <img src={meta.icon_url} alt="" className="w-full h-full object-contain p-1" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; const el = (e.target as HTMLImageElement).nextElementSibling as HTMLElement; if (el) el.style.display = 'flex' }} />
+                      <img src={iconUrl(meta.icon_url)} alt="" className="w-full h-full object-contain p-1" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; const el = (e.target as HTMLImageElement).nextElementSibling as HTMLElement; if (el) el.style.display = 'flex' }} />
                     ) : null}
                     <div className={`w-full h-full items-center justify-center ${meta.icon_url ? 'hidden' : 'flex'}`}>
                       <span className="font-mono text-sm font-bold" style={{ color: accentColor }}>{meta.name[0]}</span>

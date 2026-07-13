@@ -3,6 +3,7 @@ import { useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import OAuthConnectModal from '../components/OAuthConnectModal'
 import { useProviderDetail } from '../hooks/useProviderDetail'
+import { iconUrl } from '../api'
 
 const typeLabel: Record<string, string> = {
   apikey: "API Key",
@@ -52,7 +53,7 @@ export default function ProviderDetail() {
         <div className="flex items-center gap-4">
           {data.icon_url ? (
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/[0.04] border border-white/[0.06]">
-              <img src={data.icon_url} alt="" className="w-6 h-6 object-contain" />
+              <img src={iconUrl(data.icon_url)} alt="" className="w-6 h-6 object-contain" />
             </div>
           ) : (
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/[0.03] border border-white/[0.06]">

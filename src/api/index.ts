@@ -1,7 +1,7 @@
 // API layer — barrel re-export
 // All domain files import from './client' and './types', not from here.
 
-export { API_BASE, fetcher, apiFetch } from './client'
+export { API_BASE, fetcher, apiFetch, iconUrl } from './client'
 
 // Types
 export type {

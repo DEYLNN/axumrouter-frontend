@@ -24,3 +24,12 @@ export { API_BASE, fetcher }
 /** Raw fetch with API_BASE prefix — use instead of bare fetch() for API calls */
 export const apiFetch = (url: string, init?: RequestInit) =>
   fetch(`${API_BASE}${url}`, init)
+
+/** Resolve provider icon URL (handles relative paths from backend) */
+export function iconUrl(src: string): string {
+  if (!src || src.startsWith('http')) return src
+  if (API_BASE.startsWith('http')) {
+    return new URL(API_BASE).origin + src
+  }
+  return window.location.origin + src
+}

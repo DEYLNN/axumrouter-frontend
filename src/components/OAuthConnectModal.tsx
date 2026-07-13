@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-import { apiFetch } from '../api'
+import { iconUrl, apiFetch } from '../api'
 
 interface ProviderInfo {
   id: string; name: string; display_name: string; icon_url: string; color: string; oauth_flow: string | null
@@ -128,7 +128,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
       <div className="w-full max-w-md mx-4 rounded-2xl border border-white/[0.06] bg-[#0a0f1e] backdrop-blur-xl p-6"
         style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3 mb-5">
-          {provider.icon_url && <img src={provider.icon_url} alt="" className="w-8 h-8 rounded-lg object-contain" style={{ background: `${color}15`, border: `1px solid ${color}25` }} />}
+          {provider.icon_url && <img src={iconUrl(provider.icon_url)} alt="" className="w-8 h-8 rounded-lg object-contain" style={{ background: `${color}15`, border: `1px solid ${color}25` }} />}
           <div>
             <h2 className="text-sm font-bold text-slate-200">Connect {provider.display_name}</h2>
             <p className="text-[10px] font-mono text-slate-500">{provider.id} — OAuth</p>

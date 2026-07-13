@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getProviders, getProviderDetail, testModel } from '../api'
+import { iconUrl, getProviders, getProviderDetail, testModel } from '../api'
 import type { ProviderMeta, ProviderDetail, ModelInfo, TestResult } from '../api'
 
 
@@ -135,7 +135,7 @@ export default function Playground() {
                           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
                             style={{ background: `${p.color}15`, border: `1px solid ${p.color}30` }}>
                             {p.icon_url ? (
-                              <img src={p.icon_url} alt="" className="w-4 h-4 object-contain" />
+                              <img src={iconUrl(p.icon_url)} alt="" className="w-4 h-4 object-contain" />
                             ) : (
                               <span className="text-[10px] font-bold" style={{ color: p.color }}>{p.id.charAt(0).toUpperCase()}</span>
                             )}
