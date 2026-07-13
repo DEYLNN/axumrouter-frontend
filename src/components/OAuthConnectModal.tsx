@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 interface ProviderInfo {
-  id: string; name: string; display_name: string; icon_url: string; color: string
+  id: string; name: string; display_name: string; icon_url: string; color: string; oauth_flow: string | null
 }
 
 interface OAuthConnectModalProps {
@@ -21,40 +21,31 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
   const popupRef = useRef<Window | null>(null)
   const pollAbort = useRef(false)
   const processed = useRef(false)
-
-  if (!open || !provider) return null
-
-  const isDeviceCode = ['freebuff','np'].includes(provider.id)
+  const isDeviceCode = provider?.oauth_flow === 'device_code'
 
   // Start OAuth flow
   useEffect(() => {
-    if (!open || !provider) return
+    if (!open || !provider || processed.current) return
     setStep('loading'); setError(''); processed.current = false
     pollAbort.current = false
     ;(async () => {
       try {
         if (isDeviceCode) {
-          // Device code flow
           const r = await fetch(`/admin/oauth/${provider.id}/start`)
           const d = await r.json()
           if (!r.ok) throw new Error(d.error || 'Failed')
           setDeviceData(d)
           setStep('waiting')
           setPolling(true)
-          if (d.verification_uri_complete) window.open(d.verification_uri_complete, '_blank', 'noopener,noreferrer')
+          const openUrl = d.verification_uri_complete || d.verification_uri || d._loginUrl || d.login_url
+          if (openUrl) window.open(openUrl, '_blank', 'noopener,noreferrer')
         } else {
-          // Auth code flow
           const r = await fetch(`/admin/oauth/${provider.id}/start`)
           const d = await r.json()
           if (!r.ok) throw new Error(d.error || 'Failed')
           setAuthUrl(d.url)
-          // Try popup
           popupRef.current = window.open(d.url, 'oauth_popup', 'width=600,height=700')
-          if (popupRef.current) {
-            setStep('waiting')
-          } else {
-            setStep('input')
-          }
+          if (popupRef.current) { setStep('waiting') } else { setStep('input') }
         }
       } catch (e: any) { setError(e.message); setStep('error') }
     })()
@@ -70,12 +61,16 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
         await new Promise(r => setTimeout(r, (deviceData.interval || 5) * 1000))
         if (cancelled || pollAbort.current) return
         try {
-          const params = new URLSearchParams({ device_code: deviceData.device_code })
-          if (deviceData._fingerprintHash) params.set('_fingerprintHash', deviceData._fingerprintHash)
-          if (deviceData._expiresAt) params.set('_expiresAt', deviceData._expiresAt)
-          const r = await fetch(`/admin/oauth/${provider!.id}/poll?${params.toString()}`)
+          const body: any = { device_code: deviceData.device_code }
+          if (deviceData._fingerprintHash) body.fingerprint_hash = deviceData._fingerprintHash
+          if (deviceData._expiresAt) body.expires_at = deviceData._expiresAt
+          const r = await fetch(`/admin/oauth/${provider!.id}/poll`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          })
           const d = await r.json()
-          if (d.accessToken || d.token || d.success) {
+          if (d.accessToken || d.token || d.success || d.ok) {
             processed.current = true; setStep('success'); setPolling(false); onSuccess()
             return
           }
@@ -123,8 +118,9 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
     } catch (e: any) { setError(e.message); setStep('error') }
   }
 
-  const color = provider.color || '#06b6d4'
+  if (!open || !provider) return null
 
+  const color = provider.color
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-md mx-4 rounded-2xl border border-white/[0.06] bg-[#0a0f1e] backdrop-blur-xl p-6"

@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { startOAuth, exchangeOAuth, getProviderDetail, blockModel, unblockModel, addKey, deleteKey, testModel } from '../api'
+import { getProviderDetail, blockModel, unblockModel, addKey, deleteKey, testModel } from '../api'
 import type { ProviderDetail as ProviderDetailType } from '../api'
+import OAuthConnectModal from '../components/OAuthConnectModal'
 
 const typeLabel: Record<string, string> = {
   apikey: ['A','P','I',' ','K','e','y'].join(''),
@@ -31,16 +32,6 @@ export default function ProviderDetail() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [testing, setTesting] = useState<string | null>(null)
   const [testResult, setTestResult] = useState<any>(null)
-  const [showOAuthModal, setShowOAuthModal] = useState(false)
-  const [oauthUrl, setOauthUrl] = useState('')
-  const [oauthSession, setOauthSession] = useState('')
-  const [oauthCode, setOauthCode] = useState('')
-  const [oauthConnecting, setOauthConnecting] = useState(false)
-  const [oauthError, setOauthError] = useState('')
-  const [oauthDone, setOauthDone] = useState(false)
-  const [isDeviceCode, setIsDeviceCode] = useState(false)
-  const [fbPolling, setFbPolling] = useState(false)
-  const fbPollRef = useRef(false)
 
   const load = useCallback(() => {
     if (!id) return
@@ -49,6 +40,13 @@ export default function ProviderDetail() {
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [id])
+
+  const [showOAuth, setShowOAuth] = useState(false)
+
+  const providerInfo = useMemo(() => data ? {
+    id: data.id, name: data.name, display_name: data.display_name,
+    icon_url: data.icon_url, color: data.color, oauth_flow: data.oauth_flow
+  } : null, [data])
 
   useEffect(() => { load() }, [load])
 
@@ -132,114 +130,6 @@ export default function ProviderDetail() {
       setError(e.message)
     }
     setDeletingKey('')
-  }
-
-  const handleOpenOAuth = async () => {
-    if (!id) return
-    setOauthError('')
-    setOauthDone(false)
-    setOauthCode('')
-    setOauthConnecting(true)
-    setIsDeviceCode(false)
-
-    try {
-      if (id === 'fb' || id === 'np') {
-        setIsDeviceCode(true)
-        const res = await fetch(`/admin/oauth/${id}/start`)
-        if (!res.ok) throw new Error('OAuth start failed: ' + res.status)
-        const data = await res.json()
-        setOauthUrl(data.verification_uri_complete || data.login_url || '')
-        setShowOAuthModal(true)
-        window.open(data.verification_uri_complete || data.login_url, '_blank', 'noopener,noreferrer')
-        // Start polling
-        fbPollRef.current = true
-        setFbPolling(true)
-        startFbPoll(data)
-      } else {
-        const result = await startOAuth(id)
-        setOauthUrl(result.url)
-        setOauthSession(result.id)
-        setShowOAuthModal(true)
-      }
-    } catch (e: any) {
-      setOauthError(e.message)
-    }
-    setOauthConnecting(false)
-  }
-
-  const startFbPoll = (data: any) => {
-    const interval = (data.interval || 4) * 1000
-    let attempts = 0
-    const maxAttempts = Math.floor(600 / (data.interval || 4))
-
-    // First poll immediately
-    const tick = async () => {
-      if (!fbPollRef.current || attempts >= maxAttempts) {
-        setFbPolling(false)
-        if (attempts >= maxAttempts) setOauthError('Authorization timeout')
-        return
-      }
-      attempts++
-      try {
-        const isNp = id === 'np'
-        const body = isNp
-          ? JSON.stringify({ device_code: data.device_code })
-          : JSON.stringify({
-              device_code: data.device_code,
-              fingerprint_hash: data.fingerprint_hash || null,
-              expires_at: data.expires_at || null,
-            })
-        const res = await fetch(`/admin/oauth/${id}/poll`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body,
-        })
-        if (!res.ok) {
-          setTimeout(tick, interval)
-          return
-        }
-        const result = await res.json()
-        if (!fbPollRef.current) return
-        const success = isNp ? (result.success && result.accessToken) : (result.ok && result.access_token)
-        if (success) {
-          fbPollRef.current = false
-          setFbPolling(false)
-          setOauthDone(true)
-          await load()
-          return
-        }
-        if (result.error === 'expired_token' || result.error === 'access_denied') {
-          fbPollRef.current = false
-          setFbPolling(false)
-          setOauthError('Link expired or already used. Close and try again.')
-          return
-        }
-        // Any non-success: keep polling
-        setTimeout(tick, interval)
-      } catch (e: any) {
-        if (!fbPollRef.current) return
-        setTimeout(tick, interval)
-      }
-    }
-    tick() // immediate first call
-  }
-
-  const handleOAuthExchange = async () => {
-    if (!id || !oauthCode.trim()) return
-    setOauthConnecting(true)
-    setOauthError('')
-    try {
-      const result = await exchangeOAuth(id, oauthSession, oauthCode.trim())
-      if (result.success) {
-        setOauthDone(true)
-        await load()
-      } else {
-        setOauthError(result.error || 'Exchange failed')
-      }
-    } catch (e: any) {
-      setOauthError(e.message)
-    }
-    setOauthConnecting(false)
   }
 
   const handleTest = async (modelName: string) => {
@@ -393,7 +283,7 @@ export default function ProviderDetail() {
             <span className="text-[10px] font-mono text-slate-600">{data.keys.length}</span>
           </div>
           {data.type === 'oauth' ? (
-            <button onClick={handleOpenOAuth}
+            <button onClick={() => setShowOAuth(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-mono font-semibold text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 transition-all">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -485,104 +375,12 @@ export default function ProviderDetail() {
       )}
 
       {/* OAuth Connect Modal */}
-      {showOAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => { setShowOAuthModal(false); setOauthDone(false) }}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-full max-w-lg mx-4 rounded-2xl bg-[#0F1A2A] border border-white/[0.08] shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.04]">
-              <h2 className="text-xs font-mono font-bold text-white tracking-tight">Connect OAuth</h2>
-              <button onClick={() => { setShowOAuthModal(false); setOauthDone(false) }} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/[0.06] transition-colors">
-                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {oauthDone ? (
-              <div className="p-8 text-center space-y-4">
-                <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <p className="text-sm font-mono text-emerald-400">Connected successfully!</p>
-                <button onClick={() => { setShowOAuthModal(false); setOauthDone(false) }} className="px-4 py-2 rounded-lg text-[11px] font-mono text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 transition-all">Done</button>
-              </div>
-            ) : isDeviceCode ? (
-              /* Device Code Flow (FreeBuff) - URL + auto-poll */
-              <div className="p-5 space-y-4">
-                <p className="text-[10px] font-mono text-slate-400 leading-relaxed">Open the login page below and authorize.</p>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-mono text-slate-600 uppercase tracking-wider">Login URL</label>
-                  <div className="flex gap-2">
-                    <input readOnly value={oauthUrl}
-                      className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-[10px] font-mono text-purple-300 truncate" />
-                    <a href={oauthUrl} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] font-mono font-semibold text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 transition-all flex-shrink-0">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                      Open
-                    </a>
-                  </div>
-                </div>
-                {fbPolling && (
-                  <div className="flex items-center gap-2 text-[10px] font-mono text-slate-500">
-                    <svg className="w-3 h-3 text-purple-400 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Waiting for login...
-                  </div>
-                )}
-                {oauthError && (
-                  <div className="rounded-lg bg-red-950/15 border border-red-900/25 p-3">
-                    <p className="text-[10px] font-mono text-red-400/80">{oauthError}</p>
-                  </div>
-                )}
-                <div className="flex justify-end gap-2">
-                  <button onClick={() => { fbPollRef.current = false; setShowOAuthModal(false); setOauthDone(false) }} className="px-4 py-2 rounded-lg text-[11px] font-mono text-slate-400 hover:text-slate-300 hover:bg-white/[0.04] transition-all">Close</button>
-                </div>
-              </div>
-            ) : (
-              /* PKCE Flow (CX) - URL + redirect code */
-              <div className="p-5 space-y-4">
-                <p className="text-[10px] font-mono text-slate-400 leading-relaxed">Open the authorization page, log in, then paste the redirect code below.</p>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-mono text-slate-600 uppercase tracking-wider">Authorization URL</label>
-                  <div className="flex gap-2">
-                    <input readOnly value={oauthUrl}
-                      className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-[10px] font-mono text-purple-300 truncate" />
-                    <a href={oauthUrl} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] font-mono font-semibold text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 transition-all flex-shrink-0">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                      Open
-                    </a>
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-mono text-slate-600 uppercase tracking-wider">Redirect Code</label>
-                  <input value={oauthCode} onChange={e => setOauthCode(e.target.value)} placeholder="Paste the code from the redirect URL..."
-                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-[10px] font-mono text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-purple-500/40 transition-all" />
-                </div>
-                {oauthError && (
-                  <div className="rounded-lg bg-red-950/15 border border-red-900/25 p-3">
-                    <p className="text-[10px] font-mono text-red-400/80">{oauthError}</p>
-                  </div>
-                )}
-                <div className="flex justify-end gap-2 pt-2">
-                  <button onClick={() => { setShowOAuthModal(false); setOauthDone(false) }} className="px-4 py-2 rounded-lg text-[11px] font-mono text-slate-400 hover:text-slate-300 hover:bg-white/[0.04] transition-all">Cancel</button>
-                  <button onClick={handleOAuthExchange} disabled={oauthConnecting || !oauthCode.trim()}
-                    className="flex items-center gap-1.5 px-5 py-2 rounded-lg text-[11px] font-mono font-semibold text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 transition-all disabled:opacity-40">
-                    {oauthConnecting ? 'Connecting...' : 'Connect'}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <OAuthConnectModal
+        open={showOAuth}
+        provider={providerInfo}
+        onClose={() => setShowOAuth(false)}
+        onSuccess={() => { setShowOAuth(false); load() }}
+      />
 
       {/* Test Result Modal */}
       {testResult && (
