@@ -32,7 +32,9 @@ export default function DatabaseSection({ dbInfo, stats, onDbReload }: Props) {
     setImporting(true); setImportStatus('Reading...')
     try {
       const text = await file.text()
-      await importDatabase(JSON.parse(text))
+      const parsed = JSON.parse(text)
+      if (!parsed.tables) throw new Error('Invalid backup file — missing "tables" key')
+      await importDatabase(parsed.tables)
       setImportStatus('Imported!')
       onDbReload()
     } catch (err: any) { setImportStatus('Failed: ' + (err.message || 'unknown')) }
