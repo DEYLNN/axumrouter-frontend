@@ -10,7 +10,6 @@ interface Props {
 
 export default function DatabaseSection({ dbInfo, stats, onDbReload }: Props) {
   const [exporting, setExporting] = useState(false)
-  const [_importing, setImporting] = useState(false)
   const [importStatus, setImportStatus] = useState('')
   const importRef = useRef<HTMLInputElement>(null)
 
@@ -29,7 +28,7 @@ export default function DatabaseSection({ dbInfo, stats, onDbReload }: Props) {
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
-    setImporting(true); setImportStatus('Reading...')
+    setImportStatus('Reading...')
     try {
       const text = await file.text()
       const parsed = JSON.parse(text)
@@ -38,7 +37,6 @@ export default function DatabaseSection({ dbInfo, stats, onDbReload }: Props) {
       setImportStatus('Imported!')
       onDbReload()
     } catch (err: any) { setImportStatus('Failed: ' + (err.message || 'unknown')) }
-    setImporting(false)
   }
 
   return (

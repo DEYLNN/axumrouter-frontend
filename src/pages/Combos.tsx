@@ -2,6 +2,7 @@ import Modal from '../components/Modal'
 import { useState, useEffect } from 'react'
 
 import { apiFetch } from '../api'
+import type { ProviderMeta } from '../api'
 
 interface ComboTier {
   tier: number
@@ -18,14 +19,6 @@ interface Combo {
   round_robin: boolean
   is_active: boolean
   created_at: string
-}
-
-interface ProviderMeta {
-  id: string
-  display_name: string
-  color: string
-  icon_url: string
-  total_keys: number
 }
 
 interface AllModels {
@@ -77,7 +70,9 @@ export default function Combos() {
         setSelectedModels([])
         load()
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Create combo failed:', e)
+    }
     setCreating(false)
   }
 

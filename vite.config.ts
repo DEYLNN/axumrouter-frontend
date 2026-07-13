@@ -31,14 +31,6 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
-      '/admin/auth-files/delete': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-      '/admin/auth-files/import': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
       '/public/providers': {
         target: 'http://localhost:3000',
         changeOrigin: true,

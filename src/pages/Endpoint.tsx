@@ -1,30 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getSettings, getGatewayKeys, createGatewayKey, deleteGatewayKey, toggleSetting } from '../api'
 import type { SettingsData, GatewayKey } from '../api'
-
-function copyToClipboard(text: string): Promise<boolean> {
-  if (navigator.clipboard?.writeText) {
-    return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackCopy(text))
-  }
-  return fallbackCopy(text)
-}
-
-function fallbackCopy(text: string): Promise<boolean> {
-  const ta = document.createElement('textarea')
-  ta.value = text
-  ta.style.position = 'fixed'
-  ta.style.opacity = '0'
-  document.body.appendChild(ta)
-  ta.select()
-  try {
-    document.execCommand('copy')
-    return Promise.resolve(true)
-  } catch {
-    return Promise.resolve(false)
-  } finally {
-    document.body.removeChild(ta)
-  }
-}
+import { copyToClipboard } from '../utils/clipboard'
 
 const cavemanLevels = [
   { key: 'off', label: 'OFF' },
@@ -66,14 +43,14 @@ export default function Endpoint() {
 
   const gatewayUrl = envGatewayUrl
     ? `${envGatewayUrl.replace(/\/+$/, '')}/v1`
-    : settings
-      ? `http://${settings.public_ip}:${settings.port}/v1`
+    : settings?.public_url
+      ? `${settings.public_url.replace(/\/+$/, '')}/v1`
       : ''
 
   const claudeUrl = envGatewayUrl
     ? envGatewayUrl.replace(/\/+$/, '')
-    : settings
-      ? `http://${settings.public_ip}:${settings.port}`
+    : settings?.public_url
+      ? settings.public_url.replace(/\/+$/, '')
       : ''
 
   const handleCreate = async () => {

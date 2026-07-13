@@ -6,7 +6,8 @@ export { API_BASE, fetcher, apiFetch } from './client'
 // Types
 export type {
   SettingsData, ProviderMeta, ProviderDetail, ModelInfo, KeyInfo,
-  LogEntry, ApiResponse, GatewayKey, DatabaseInfo, AuthFile,
+  LogEntry, ApiResponse, GatewayKey, DatabaseInfo, AuthFile, TestResult,
+  OAuthKey, RateLimit, QuotaData,
 } from './types'
 
 // Domain functions

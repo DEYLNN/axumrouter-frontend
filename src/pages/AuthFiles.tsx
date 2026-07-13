@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { apiFetch } from '../api'
+import { copyToClipboard } from '../utils/clipboard'
 
 interface AuthFile {
   id: string
@@ -117,27 +118,13 @@ export default function AuthFiles() {
   }
 
   const copySecret = async (key: string, val: string) => {
-    try {
-      await navigator.clipboard.writeText(val)
+    const ok = await copyToClipboard(val)
+    if (ok) {
       setCopiedKey(key)
       setTimeout(() => setCopiedKey(c => c === key ? null : c), 1500)
-    } catch {
-      // Fallback for HTTP (non-HTTPS)
-      try {
-        const ta = document.createElement('textarea')
-        ta.value = val
-        ta.style.position = 'fixed'
-        ta.style.opacity = '0'
-        document.body.appendChild(ta)
-        ta.select()
-        document.execCommand('copy')
-        document.body.removeChild(ta)
-        setCopiedKey(key)
-        setTimeout(() => setCopiedKey(c => c === key ? null : c), 1500)
-      } catch {
-        setCopiedKey(`${key}:err`)
-        setTimeout(() => setCopiedKey(c => c === `${key}:err` ? null : c), 1800)
-      }
+    } else {
+      setCopiedKey(`${key}:err`)
+      setTimeout(() => setCopiedKey(c => c === `${key}:err` ? null : c), 1800)
     }
   }
 
@@ -175,7 +162,7 @@ export default function AuthFiles() {
     try {
       const parsed = await Promise.all(files.map(f => f.text().then(t => JSON.parse(t))))
       const items = parsed.flatMap(p => Array.isArray(p) ? p : Array.isArray(p.files) ? p.files : [p])
-      const res = await fetch('/admin/auth-files/import', {
+      const res = await apiFetch('/auth-files/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(items),
@@ -197,7 +184,7 @@ export default function AuthFiles() {
     let deleted = 0, failed = 0
     for (const id of ids) {
       try {
-        const res = await fetch(`/admin/auth-files/delete`, {
+        const res = await apiFetch('/auth-files/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ids: [id] }),
@@ -521,7 +508,7 @@ export default function AuthFiles() {
                   <button onClick={async () => {
                     if (!confirm(`Delete ${f.label || f.id}?`)) return
                     try {
-                      await fetch('/admin/auth-files/delete', {
+                      await apiFetch('/auth-files/delete', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ ids: [f.id] }),
                       })

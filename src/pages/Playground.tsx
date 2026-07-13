@@ -1,17 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getProviders, getProviderDetail, testModel } from '../api'
-import type { ProviderMeta, ProviderDetail, ModelInfo } from '../api'
+import type { ProviderMeta, ProviderDetail, ModelInfo, TestResult } from '../api'
 
-interface TestResult {
-  ok: boolean
-  response: string
-  model: string
-  latency_ms: number
-  prompt_tokens: number
-  completion_tokens: number
-  total_tokens: number
-  error: string | null
-}
 
 export default function Playground() {
   const [providers, setProviders] = useState<ProviderMeta[]>([])

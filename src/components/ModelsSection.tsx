@@ -10,7 +10,6 @@ interface Props {
   providers: ProviderMeta[] | null
   models: Record<string, ToggleModel[]>
   onToggleModel: (modelId: string, enabled: boolean) => void
-  onFetchModels: () => void
 }
 
 export default function ModelsSection({ providers, models, onToggleModel }: Props) {

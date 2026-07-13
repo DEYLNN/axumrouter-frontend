@@ -1,37 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { apiFetch } from '../api'
-
-interface QuotaKey {
-  id: string
-  provider_id: string
-  label: string | null
-}
-
-interface ProviderMeta {
-  id: string
-  display_name: string
-  color: string
-  icon_url: string
-}
-
-interface QuotaData {
-  provider_id?: string
-  error?: string | null
-  expires_at?: string | null
-  last_refresh?: string | null
-  key_plan?: string | null
-  rate_limits?: RateLimit[]
-}
-
-interface RateLimit {
-  name: string
-  limit: number
-  remaining: number
-  used: number
-  period_seconds: number | null
-  reset_at: string | null
-}
+import type { OAuthKey, QuotaData, RateLimit, ProviderMeta } from '../api'
 
 function fmt(n: number) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M'
@@ -56,7 +26,7 @@ function timeLeft(iso: string | null): string {
 }
 
 export default function Quota() {
-  const [keys, setKeys] = useState<QuotaKey[]>([])
+  const [keys, setKeys] = useState<OAuthKey[]>([])
   const [providers, setProviders] = useState<Record<string, ProviderMeta>>({})
   const [quotaMap, setQuotaMap] = useState<Record<string, QuotaData>>({})
   const [refreshing, setRefreshing] = useState<Record<string, boolean>>({})
@@ -71,7 +41,7 @@ export default function Quota() {
       const pm: Record<string, ProviderMeta> = {}
       provData.forEach((p: ProviderMeta) => { pm[p.id] = p })
       setProviders(pm)
-      keyData.forEach((k: QuotaKey) => fetchQuota(k.id))
+      keyData.forEach((k: OAuthKey) => fetchQuota(k.id))
     }).catch(console.error)
       .finally(() => setLoading(false))
   }, [])

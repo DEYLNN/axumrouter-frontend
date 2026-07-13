@@ -1,5 +1,5 @@
 import { fetcher } from './client'
-import type { ProviderMeta, ProviderDetail } from './types'
+import type { ProviderMeta, ProviderDetail, TestResult } from './types'
 
 export const getProviders = () => fetcher<ProviderMeta[]>('/providers')
 export const getProviderDetail = (id: string) => fetcher<ProviderDetail>(`/providers/${id}`)
@@ -13,11 +13,8 @@ export const unblockModel = (providerId: string, modelId: string) =>
     method: 'POST', body: JSON.stringify({ model: modelId }),
   })
 
-export function testModel(providerId: string, model: string): Promise<{
-  ok: boolean; response: string; model: string; latency_ms: number;
-  prompt_tokens: number; completion_tokens: number; total_tokens: number; error: string | null
-}> {
-  return fetcher(`/providers/${providerId}/test`, {
+export function testModel(providerId: string, model: string): Promise<TestResult> {
+  return fetcher<TestResult>(`/providers/${providerId}/test`, {
     method: 'POST', body: JSON.stringify({ model }),
   })
 }

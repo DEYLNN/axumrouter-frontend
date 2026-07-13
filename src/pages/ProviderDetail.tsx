@@ -36,7 +36,7 @@ export default function ProviderDetail() {
 
   if (!ctx.data) return null
 
-  const { data } = ctx
+  const { data, testResult } = ctx
   const label = typeLabel[data.type] || data.type
 
   return (
@@ -230,15 +230,18 @@ export default function ProviderDetail() {
           </div>
         )}
         {/* Add Key */}
+        {data.type !== 'oauth' && (
         <div className="px-5 py-4 border-t border-white/[0.04] bg-white/[0.01]">
           <button onClick={() => ctx.setShowAddModal(true)}
             className="text-[10px] font-mono px-3 py-1.5 rounded bg-white/[0.04] border border-white/[0.06] text-slate-400 hover:text-slate-200 hover:border-white/[0.1] transition-colors">
             + Add Key
           </button>
         </div>
+        )}
       </div>
 
       {/* Add Key Modal */}
+      {data.type !== 'oauth' && (
       <Modal open={ctx.showAddModal} onClose={() => ctx.setShowAddModal(false)}>
             <h2 className="text-sm font-bold text-slate-200 mb-4">Add Key</h2>
             {keyFormConfig[data.id] ? (
@@ -266,20 +269,22 @@ export default function ProviderDetail() {
               </button>
             </div>
         </Modal>
-
+      )}
       {/* Test Result Modal */}
-      <Modal open={!!ctx.testResult} onClose={() => ctx.setTestResult(null)}>
+      {testResult && (
+      <Modal open={true} onClose={() => ctx.setTestResult(null)}>
             <h2 className="text-sm font-bold text-slate-200 mb-4">Test Result</h2>
             <div className="space-y-2 text-[10px] font-mono">
               <div className="flex justify-between"><span className="text-slate-500">Status</span>
-                <span className={ctx.testResult.ok ? 'text-emerald-400' : 'text-red-400'}>{ctx.testResult.ok ? 'OK' : 'FAIL'}</span></div>
-              {ctx.testResult.error && <div className="flex justify-between"><span className="text-slate-500">Error</span><span className="text-red-400">{ctx.testResult.error}</span></div>}
-              <div className="flex justify-between"><span className="text-slate-500">Latency</span><span className="text-slate-300">{ctx.testResult.latency_ms}ms</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Tokens</span><span className="text-slate-300">{ctx.testResult.total_tokens} (in: {ctx.testResult.prompt_tokens}, out: {ctx.testResult.completion_tokens})</span></div>
-              {ctx.testResult.response && <div className="mt-2 p-3 rounded-lg bg-black/20 border border-white/[0.06] text-slate-400 max-h-32 overflow-y-auto"><code className="text-[9px]">{ctx.testResult.response}</code></div>}
+                <span className={testResult.ok ? 'text-emerald-400' : 'text-red-400'}>{testResult.ok ? 'OK' : 'FAIL'}</span></div>
+              {testResult.error && <div className="flex justify-between"><span className="text-slate-500">Error</span><span className="text-red-400">{testResult.error}</span></div>}
+              <div className="flex justify-between"><span className="text-slate-500">Latency</span><span className="text-slate-300">{testResult.latency_ms}ms</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Tokens</span><span className="text-slate-300">{testResult.total_tokens} (in: {testResult.prompt_tokens}, out: {testResult.completion_tokens})</span></div>
+              {testResult.response && <div className="mt-2 p-3 rounded-lg bg-black/20 border border-white/[0.06] text-slate-400 max-h-32 overflow-y-auto"><code className="text-[9px]">{testResult.response}</code></div>}
             </div>
             <button onClick={() => ctx.setTestResult(null)} className="w-full mt-4 py-2 rounded-lg text-[10px] font-mono text-slate-400 bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.15]">Close</button>
         </Modal>
+      )}
 
       {/* OAuth Modal */}
       <OAuthConnectModal

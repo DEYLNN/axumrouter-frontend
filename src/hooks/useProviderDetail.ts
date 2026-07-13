@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { getProviderDetail, blockModel, unblockModel, addKey, deleteKey, testModel } from '../api'
 import type { ProviderDetail as ProviderDetailType } from '../api'
+import { copyToClipboard } from '../utils/clipboard'
 
 const keyFormConfig: Record<string, { fields: { key: string; label: string; placeholder: string }[] }> = {
   cf: { fields: [
@@ -44,12 +45,7 @@ export function useProviderDetail(id: string | undefined) {
   }
 
   const copy = async (val: string) => {
-    try { await navigator.clipboard.writeText(val) } catch {
-      const ta = document.createElement('textarea')
-      ta.value = val; ta.style.position = 'fixed'; ta.style.opacity = '0'
-      document.body.appendChild(ta); ta.select()
-      document.execCommand('copy'); document.body.removeChild(ta)
-    }
+    await copyToClipboard(val)
     setCopiedId(val)
     setTimeout(() => setCopiedId(''), 1800)
   }

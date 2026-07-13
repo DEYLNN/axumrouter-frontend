@@ -33,7 +33,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
     ;(async () => {
       try {
         if (isDeviceCode) {
-          const r = await apiFetch(`/admin/oauth/${provider.id}/start`)
+          const r = await apiFetch(`/oauth/${provider.id}/start`)
           const d = await r.json()
           if (!r.ok) throw new Error(d.error || 'Failed')
           setDeviceData(d)
@@ -42,7 +42,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
           const openUrl = d.verification_uri_complete || d.verification_uri || d._loginUrl || d.login_url
           if (openUrl) window.open(openUrl, '_blank', 'noopener,noreferrer')
         } else {
-          const r = await apiFetch(`/admin/oauth/${provider.id}/start`)
+          const r = await apiFetch(`/oauth/${provider.id}/start`)
           const d = await r.json()
           if (!r.ok) throw new Error(d.error || 'Failed')
           setAuthUrl(d.url)
@@ -66,7 +66,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
           const body: any = { device_code: deviceData.device_code }
           if (deviceData._fingerprintHash) body.fingerprint_hash = deviceData._fingerprintHash
           if (deviceData._expiresAt) body.expires_at = deviceData._expiresAt
-          const r = await apiFetch(`/admin/oauth/${provider!.id}/poll`, {
+          const r = await apiFetch(`/oauth/${provider!.id}/poll`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -98,7 +98,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
       if (!code) return
       processed.current = true
       try {
-        const r = await apiFetch(`/admin/oauth/${provider!.id}/callback?code=${encodeURIComponent(code)}`)
+        const r = await apiFetch(`/oauth/${provider!.id}/callback?code=${encodeURIComponent(code)}`)
         if (!r.ok) throw new Error('Exchange failed')
         setStep('success'); onSuccess()
       } catch (e: any) { setError(e.message); setStep('error') }

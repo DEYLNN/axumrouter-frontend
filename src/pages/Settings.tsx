@@ -26,10 +26,10 @@ export default function Settings() {
     if (!providers) return
     try {
       const r = await apiFetch('/models/all')
-      const data = await r.json()
+      const data: Record<string, { id: string; enabled: boolean; owned_by: string }[]> = await r.json()
       const mapped: Record<string, ToggleModel[]> = {}
-      for (const [prov, list] of Object.entries(data) as [string, any[]][]) {
-        mapped[prov] = list.map((m: any) => ({ id: m.id, owned_by: m.owned_by || prov, enabled: m.enabled }))
+      for (const [prov, list] of Object.entries(data)) {
+        mapped[prov] = list.map(m => ({ id: m.id, owned_by: m.owned_by || prov, enabled: m.enabled }))
       }
       setModels(mapped)
     } catch (_) {}
@@ -48,7 +48,7 @@ export default function Settings() {
     ]).then(([_d, blocked, usage]) => {
       let total = 0, dCount = 0
       for (const list of Object.values(models)) {
-        for (const m of list as any[]) { total++; if (!m.enabled) dCount++ }
+        for (const m of list) { total++; if (!m.enabled) dCount++ }
       }
       setStats({ totalModels: total, disabledModels: dCount, blockedModels: Array.isArray(blocked) ? blocked.length : 0, totalUsage: usage?.total_requests || 0 })
     })
@@ -96,7 +96,7 @@ export default function Settings() {
       <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 bg-clip-text text-transparent"
         style={{ textShadow: '0 0 30px rgba(6,182,212,0.3)' }}>CONFIG</h1>
       <DatabaseSection dbInfo={dbInfo} stats={stats} onDbReload={reloadDb} />
-      <ModelsSection providers={providers} models={models} onToggleModel={toggleModel} onFetchModels={fetchModels} />
+      <ModelsSection providers={providers} models={models} onToggleModel={toggleModel} />
       <GatewayKeysSection keys={gwKeys} onRefresh={fetchGw} />
     </div>
   )

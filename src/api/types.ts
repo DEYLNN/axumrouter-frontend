@@ -3,6 +3,7 @@ export interface SettingsData {
   caveman_enabled: string
   gateway_timeout: number
   public_ip: string
+  public_url: string
   port: number
   server_host: string
   api_key_header: string
@@ -104,4 +105,44 @@ export interface AuthFile {
   expires_at: string
   is_active: boolean
   created_at: string
+}
+
+export interface TestResult {
+  ok: boolean
+  response: string
+  model: string
+  latency_ms: number
+  prompt_tokens: number
+  completion_tokens: number
+  total_tokens: number
+  error: string | null
+}
+
+export interface OAuthKey {
+  id: string
+  provider_id: string
+  label: string | null
+}
+
+export interface RateLimit {
+  name: string
+  limit: number
+  remaining: number
+  used: number
+  period_seconds: number | null
+  reset_at: string | null
+}
+
+export interface QuotaData {
+  provider_id?: string
+  error?: string | null
+  expires_at?: string | null
+  last_refresh?: string | null
+  key_plan?: string | null
+  rate_limits?: RateLimit[]
+}
+
+export interface ExportResult {
+  tables: Record<string, any[]>
+  meta: { exported_at: string; version: string }
 }
