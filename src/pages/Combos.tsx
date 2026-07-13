@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 
+import { apiFetch } from '../api'
+
 interface ComboTier {
   tier: number
   provider: string

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import ModelPickerModal from './ModelPickerModal'
 
+import { apiFetch } from '../api'
+
 interface GatewayKeyJson {
   id: string; key_value: string; label: string | null; is_active: number
   access_type: string; allowed_models: string[]; max_tokens: number; created_at: string

@@ -1,3 +1,5 @@
+import { apiFetch } from './client'
+
 export async function startOAuth(provider: string): Promise<{ id: string; url: string }> {
   const res = await apiFetch(`/admin/oauth/${provider}/start`)
   if (!res.ok) throw new Error(`OAuth start failed: ${res.status}`)

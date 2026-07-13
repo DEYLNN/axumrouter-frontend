@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 
+import { apiFetch } from '../api'
+
 interface ProviderInfo {
   id: string; name: string; display_name: string; icon_url: string; color: string; oauth_flow: string | null
 }
