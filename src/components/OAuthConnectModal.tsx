@@ -24,7 +24,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
 
   if (!open || !provider) return null
 
-  const isDeviceCode = ['freebuff'].includes(provider.id)
+  const isDeviceCode = ['freebuff','np'].includes(provider.id)
 
   // Start OAuth flow
   useEffect(() => {

@@ -139,6 +139,33 @@ export default function AuthFiles() {
     }
   }
 
+  const downloadTemplate = (type: 'oauth' | 'apikey') => {
+    const templates = {
+      oauth: [{
+        provider_id: 'xai',
+        key_type: 'oauth',
+        email: 'user@example.com',
+        access_token: 'eyJ...',
+        refresh_token: 'rt_...',
+        expires_in: 21600,
+        scope: 'openid profile email offline_access',
+      }],
+      apikey: [{
+        provider_id: 'mst',
+        key_type: 'apikey',
+        label: 'my-key',
+        apiKey: 'sk-xxxxxxxxxxxxxxxxxxxxxxxx',
+      }],
+    }
+    const json = JSON.stringify(templates[type], null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `template-${type}.json`
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
+
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (!files.length) return
@@ -220,14 +247,29 @@ export default function AuthFiles() {
             </div>
             <p className="text-xs text-zinc-500 mt-0.5 font-mono">Provider credentials · {files.filter(f => f.is_active).length} active</p>
           </div>
-          <div className="flex gap-2">
-            <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-xl border border-cyan-500/25 bg-cyan-500/5 px-4 text-xs text-cyan-300 hover:bg-cyan-500/15 hover:border-cyan-500/40 transition-all font-mono"
+          <div className="flex gap-1.5">
+            <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-cyan-500/25 bg-cyan-500/5 px-2 sm:px-4 text-xs text-cyan-300 hover:bg-cyan-500/15 hover:border-cyan-500/40 transition-all font-mono"
               style={{ textShadow: '0 0 10px rgba(6,182,212,0.2)' }}>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M12 4v16m8-8H4"/></svg>
-              Upload JSON
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M12 4v16m8-8H4"/></svg>
+              <span className="sm:hidden">Upload</span>
+              <span className="hidden sm:inline">Upload JSON</span>
               <input type="file" accept=".json" multiple className="hidden" onChange={handleImport} />
             </label>
-            <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.08] text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-all font-mono text-sm" disabled={loading}>
+            <button onClick={() => downloadTemplate('oauth')}
+              className="h-9 flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-2 sm:px-3 text-[10px] text-zinc-400 hover:text-purple-300 hover:border-purple-500/30 transition-all font-mono"
+              title="Download OAuth template">
+              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+              <span className="sm:hidden">OAUTH</span>
+              <span className="hidden sm:inline">OAuth</span>
+            </button>
+            <button onClick={() => downloadTemplate('apikey')}
+              className="h-9 flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-2 sm:px-3 text-[10px] text-zinc-400 hover:text-amber-300 hover:border-amber-500/30 transition-all font-mono"
+              title="Download API Key template">
+              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+              <span className="sm:hidden">APIKEY</span>
+              <span className="hidden sm:inline">API Key</span>
+            </button>
+            <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.08] text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-all font-mono text-sm shrink-0" disabled={loading}>
               {loading ? '⏳' : '↻'}
             </button>
           </div>

@@ -134,11 +134,13 @@ export default function Playground() {
                   ) : (
                     filtered.map(p => {
                       const isSel = selected === p.id
+                      const hasKeys = p.active_keys > 0
                       return (
                         <div key={p.id}
-                          onClick={() => { setSelected(p.id); setOpen(false); setSearch(''); setCustomModel(''); setResult(null) }}
-                          className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all ${
-                            isSel ? 'bg-cyan-500/8 border-l-2 border-cyan-400' : 'hover:bg-white/[0.03] border-l-2 border-transparent'
+                          onClick={() => { if (!hasKeys) return; setSelected(p.id); setOpen(false); setSearch(''); setCustomModel(''); setResult(null) }}
+                          className={`flex items-center gap-3 px-4 py-3 transition-all ${
+                            !hasKeys ? 'opacity-30 cursor-not-allowed' :
+                            isSel ? 'cursor-pointer bg-cyan-500/8 border-l-2 border-cyan-400' : 'cursor-pointer hover:bg-white/[0.03] border-l-2 border-transparent'
                           }`}>
                           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
                             style={{ background: `${p.color}15`, border: `1px solid ${p.color}30` }}>
@@ -155,9 +157,8 @@ export default function Playground() {
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-[8px] font-mono text-slate-600">{p.total_keys} keys</span>
-                              {p.active_keys > 0 && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                              )}
+                              <div className={`w-1.5 h-1.5 rounded-full ${hasKeys ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                                style={hasKeys ? { boxShadow: '0 0 4px rgba(52,211,153,0.5)' } : {}} />
                             </div>
                           </div>
                         </div>

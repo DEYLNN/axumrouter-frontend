@@ -3,7 +3,21 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    {
+      name: 'admin-slash-redirect',
+      configureServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          if (req.url === '/admin') {
+            req.url = '/admin/'
+          }
+          next()
+        })
+      },
+    },
+  ],
   base: '/admin/',
   appType: 'spa',
   server: {

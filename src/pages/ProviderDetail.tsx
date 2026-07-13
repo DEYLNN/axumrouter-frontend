@@ -143,9 +143,9 @@ export default function ProviderDetail() {
     setIsDeviceCode(false)
 
     try {
-      if (id === 'fb') {
+      if (id === 'fb' || id === 'np') {
         setIsDeviceCode(true)
-        const res = await fetch('/admin/oauth/fb/start')
+        const res = await fetch(`/admin/oauth/${id}/start`)
         if (!res.ok) throw new Error('OAuth start failed: ' + res.status)
         const data = await res.json()
         setOauthUrl(data.verification_uri_complete || data.login_url || '')
@@ -181,23 +181,27 @@ export default function ProviderDetail() {
       }
       attempts++
       try {
-        const res = await fetch('/admin/oauth/fb/poll', {
+        const isNp = id === 'np'
+        const body = isNp
+          ? JSON.stringify({ device_code: data.device_code })
+          : JSON.stringify({
+              device_code: data.device_code,
+              fingerprint_hash: data.fingerprint_hash || null,
+              expires_at: data.expires_at || null,
+            })
+        const res = await fetch(`/admin/oauth/${id}/poll`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            device_code: data.device_code,
-            fingerprint_hash: data.fingerprint_hash || null,
-            expires_at: data.expires_at || null,
-          }),
+          body,
         })
         if (!res.ok) {
-          // Backend error — retry
           setTimeout(tick, interval)
           return
         }
         const result = await res.json()
         if (!fbPollRef.current) return
-        if (result.ok && result.access_token) {
+        const success = isNp ? (result.success && result.accessToken) : (result.ok && result.access_token)
+        if (success) {
           fbPollRef.current = false
           setFbPolling(false)
           setOauthDone(true)
