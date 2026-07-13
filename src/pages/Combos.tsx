@@ -1,3 +1,4 @@
+import Modal from '../components/Modal'
 import { useState, useEffect } from 'react'
 
 import { apiFetch } from '../api'
@@ -210,12 +211,7 @@ export default function Combos() {
       </div>
 
       {/* Create modal */}
-      {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-          onClick={() => !creating && setShowCreate(false)}>
-          <div className="w-full max-w-lg mx-4 rounded-2xl border border-white/[0.06] bg-[#0a0f1e] backdrop-blur-xl p-6"
-            style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}
-            onClick={e => e.stopPropagation()}>
+      <Modal open={showCreate} onClose={() => !creating && setShowCreate(false)} maxWidth="max-w-lg">
 
             <h2 className="text-sm font-bold text-slate-200 mb-4">Create Combo</h2>
 
@@ -281,9 +277,7 @@ export default function Combos() {
               <button onClick={() => setShowCreate(false)} disabled={creating}
                 className="px-4 py-2.5 rounded-lg text-[11px] font-mono text-slate-500 hover:text-slate-300 transition-all">Cancel</button>
             </div>
-          </div>
-        </div>
-      )}
+        </Modal>
 
       {/* Model picker modal */}
       {showPicker && (

@@ -1,3 +1,4 @@
+import Modal from '../components/Modal'
 import { useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import type { ProviderDetail as ProviderDetailType } from '../api'
@@ -238,9 +239,7 @@ export default function ProviderDetail() {
       </div>
 
       {/* Add Key Modal */}
-      {ctx.showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => ctx.setShowAddModal(false)}>
-          <div className="w-full max-w-md mx-4 rounded-2xl border border-white/[0.06] bg-[#0a0f1e] backdrop-blur-xl p-6" style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
+      <Modal open={ctx.showAddModal} onClose={() => ctx.setShowAddModal(false)}>
             <h2 className="text-sm font-bold text-slate-200 mb-4">Add Key</h2>
             {keyFormConfig[data.id] ? (
               <div className="space-y-3">
@@ -266,14 +265,10 @@ export default function ProviderDetail() {
                 {ctx.adding ? 'Adding...' : 'Add'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+        </Modal>
 
       {/* Test Result Modal */}
-      {ctx.testResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => ctx.setTestResult(null)}>
-          <div className="w-full max-w-md mx-4 rounded-2xl border border-white/[0.06] bg-[#0a0f1e] backdrop-blur-xl p-6" style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
+      <Modal open={!!ctx.testResult} onClose={() => ctx.setTestResult(null)}>
             <h2 className="text-sm font-bold text-slate-200 mb-4">Test Result</h2>
             <div className="space-y-2 text-[10px] font-mono">
               <div className="flex justify-between"><span className="text-slate-500">Status</span>
@@ -284,9 +279,7 @@ export default function ProviderDetail() {
               {ctx.testResult.response && <div className="mt-2 p-3 rounded-lg bg-black/20 border border-white/[0.06] text-slate-400 max-h-32 overflow-y-auto"><code className="text-[9px]">{ctx.testResult.response}</code></div>}
             </div>
             <button onClick={() => ctx.setTestResult(null)} className="w-full mt-4 py-2 rounded-lg text-[10px] font-mono text-slate-400 bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.15]">Close</button>
-          </div>
-        </div>
-      )}
+        </Modal>
 
       {/* OAuth Modal */}
       <OAuthConnectModal

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Modal from './Modal'
 
 interface ModelItem { id: string; enabled: boolean }
 
@@ -13,14 +14,9 @@ interface Props {
 export default function ModelPickerModal({ open, onClose, allModels, selected, onToggle }: Props) {
   const [search, setSearch] = useState('')
 
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-      onClick={onClose}>
-      <div className="w-full max-w-lg mx-4 max-h-[75vh] rounded-2xl border border-white/[0.06] bg-[#0a0f1e] backdrop-blur-xl overflow-hidden flex flex-col"
-        style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}
-        onClick={e => e.stopPropagation()}>
+    <Modal open={open} onClose={onClose} maxWidth="max-w-lg">
+      <div className="max-h-[75vh] overflow-hidden flex flex-col -m-6">
         <div className="px-5 py-3 border-b border-white/[0.04] flex items-center justify-between shrink-0">
           <h2 className="text-xs font-mono font-bold text-slate-200">Select Models</h2>
           <button onClick={onClose}
@@ -75,6 +71,5 @@ export default function ModelPickerModal({ open, onClose, allModels, selected, o
             className="px-4 py-2 rounded-lg text-[11px] font-mono font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all">Done</button>
         </div>
       </div>
-    </div>
-  )
+    </Modal>
 }
