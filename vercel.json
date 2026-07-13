@@ -1,9 +1,5 @@
 {
   "rewrites": [
-    { "source": "/admin/api/:path*", "destination": "https://axm-api.dkzhen.org/admin/api/:path*" },
-    { "source": "/admin/oauth/:path*", "destination": "https://axm-api.dkzhen.org/admin/oauth/:path*" },
-    { "source": "/admin/auth-files/:path*", "destination": "https://axm-api.dkzhen.org/admin/auth-files/:path*" },
-    { "source": "/public/providers/:path*", "destination": "https://axm-api.dkzhen.org/public/providers/:path*" },
     { "source": "/admin", "destination": "/index.html" },
     { "source": "/admin/:path*", "destination": "/index.html" }
   ]
