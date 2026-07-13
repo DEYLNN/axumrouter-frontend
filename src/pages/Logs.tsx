@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getLogs, getProviders, clearLogs as apiClearLogs } from '../api'
+import { getLogs, getProviders, clearLogs as apiClearLogs, iconUrl } from '../api'
 import type { LogEntry, ProviderMeta } from '../api'
 
 function timeAgo(dateStr: string): string {
@@ -98,7 +98,7 @@ export default function Logs() {
               const isSuccess = l.status === 'success' || l.status === 'streaming'
               const meta = providerMeta[l.provider_id]
               const color = meta?.color || '#6366F1'
-              const icon = meta?.icon_url || ''
+              const icon = meta?.icon_url ? iconUrl(meta.icon_url) : ''
               const displayName = meta?.display_name || l.provider_id
               const tokPerSec = l.latency_ms && l.latency_ms > 0 && l.total_tokens > 0
                 ? (l.total_tokens / (l.latency_ms / 1000)).toFixed(0)
