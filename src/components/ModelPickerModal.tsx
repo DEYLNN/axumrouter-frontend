@@ -72,4 +72,5 @@ export default function ModelPickerModal({ open, onClose, allModels, selected, o
         </div>
       </div>
     </Modal>
+  )
 }
