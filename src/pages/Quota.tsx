@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { apiFetch } from '../api'
-import type { OAuthKey, QuotaData, RateLimit, ProviderMeta } from '../api'
+import type { OAuthKey, QuotaData, ProviderMeta } from '../api'
 
 function fmt(n: number) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M'

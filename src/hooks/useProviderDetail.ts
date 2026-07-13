@@ -98,7 +98,7 @@ export function useProviderDetail(id: string | undefined) {
     data, loading, error, toggling, copiedId,
     newKeyValue, setNewKeyValue, keyFields, setKeyFields,
     adding, deletingKey, showAddModal, setShowAddModal,
-    showOAuth, setShowOAuth, testing, testResult,
+    showOAuth, setShowOAuth, testing, testResult, setTestResult,
     load, handleToggle, copy, handleAddKey, handleDeleteKey, handleTest,
   }
 }

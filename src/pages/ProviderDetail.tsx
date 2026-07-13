@@ -1,7 +1,6 @@
 import Modal from '../components/Modal'
 import { useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import type { ProviderDetail as ProviderDetailType } from '../api'
 import OAuthConnectModal from '../components/OAuthConnectModal'
 import { useProviderDetail } from '../hooks/useProviderDetail'
 
