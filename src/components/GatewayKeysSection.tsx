@@ -31,7 +31,7 @@ export default function GatewayKeysSection({ keys, onRefresh }: Props) {
   const createKey = async () => {
     setCreating(true)
     try {
-      const r = await apiFetch('/admin/api/gateway_keys', {
+      const r = await apiFetch('/gateway_keys', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ label: label || null, access_type: accessType, allowed_models: accessType === 'full' ? undefined : modelList, max_tokens: maxTokens ? parseInt(maxTokens) : undefined }),
       })
@@ -41,10 +41,10 @@ export default function GatewayKeysSection({ keys, onRefresh }: Props) {
     setCreating(false)
   }
 
-  const deleteKey = async (id: string) => { await apiFetch(`/admin/api/gateway_keys/${id}`, { method: 'DELETE' }); onRefresh() }
+  const deleteKey = async (id: string) => { await apiFetch(`/gateway_keys/${id}`, { method: 'DELETE' }); onRefresh() }
 
   const saveKeyEdit = async (id: string) => {
-    await apiFetch(`/admin/api/gateway_keys/${id}`, {
+    await apiFetch(`/gateway_keys/${id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         label: editLabel || null,
@@ -101,7 +101,7 @@ export default function GatewayKeysSection({ keys, onRefresh }: Props) {
           {accessType !== 'full' ? (
             <div>
               <div className="text-[9px] font-mono text-slate-500 mb-1.5 uppercase tracking-wide">Models</div>
-              <button onClick={() => { apiFetch('/admin/api/models/all').then(r => r.json()).then(data => { setAllModels(data); setShowPicker(true) }).catch(() => {}) }}
+              <button onClick={() => { apiFetch('/models/all').then(r => r.json()).then(data => { setAllModels(data); setShowPicker(true) }).catch(() => {}) }}
                 className="w-full bg-black/50 border border-white/[0.08] rounded-lg px-3 py-2.5 text-[11px] font-mono text-left hover:border-cyan-500/40 transition-all"
                 style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
                 {modelList.length === 0 ? <span className="text-slate-600">Select models...</span> : <span className="text-cyan-400">{modelList.length} selected</span>}

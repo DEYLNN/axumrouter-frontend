@@ -25,7 +25,7 @@ export default function Settings() {
   const fetchModels = async () => {
     if (!providers) return
     try {
-      const r = await apiFetch('/admin/api/models/all')
+      const r = await apiFetch('/models/all')
       const data = await r.json()
       const mapped: Record<string, ToggleModel[]> = {}
       for (const [prov, list] of Object.entries(data) as [string, any[]][]) {
@@ -35,16 +35,16 @@ export default function Settings() {
     } catch (_) {}
   }
 
-  const fetchGw = () => { apiFetch('/admin/api/gateway_keys').then(r => r.json()).then(setGwKeys).catch(() => {}) }
+  const fetchGw = () => { apiFetch('/gateway_keys').then(r => r.json()).then(setGwKeys).catch(() => {}) }
 
   useEffect(() => { if (providers) fetchModels() }, [providers])
   useEffect(() => { fetchGw() }, [])
 
   useEffect(() => {
     Promise.all([
-      apiFetch('/admin/api/models/disabled').then(r => r.json()).catch(() => []),
-      apiFetch('/admin/api/models/blocked').then(r => r.json()).catch(() => []),
-      apiFetch('/admin/api/usage/stats').then(r => r.json()).catch(() => ({ total_requests: 0 })),
+      apiFetch('/models/disabled').then(r => r.json()).catch(() => []),
+      apiFetch('/models/blocked').then(r => r.json()).catch(() => []),
+      apiFetch('/usage/stats').then(r => r.json()).catch(() => ({ total_requests: 0 })),
     ]).then(([_d, blocked, usage]) => {
       let total = 0, dCount = 0
       for (const list of Object.values(models)) {
@@ -64,7 +64,7 @@ export default function Settings() {
       return next
     })
     try {
-      const res = await apiFetch('/admin/api/models/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model_id: modelId, enabled }) })
+      const res = await apiFetch('/models/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model_id: modelId, enabled }) })
       const data = await res.json()
       if (!data.ok) throw new Error('fail')
       setModels(prev => {

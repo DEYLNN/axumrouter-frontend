@@ -49,7 +49,7 @@ export default function Logs() {
     if (!confirm('Delete ALL logs? This cannot be undone.')) return
     setClearing(true)
     try {
-      await apiFetch('/admin/api/logs/clear', { method: 'POST' })
+      await apiFetch('/logs/clear', { method: 'POST' })
       setPage(1)
       await load(1)
     } catch (e: any) {

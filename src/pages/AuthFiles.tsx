@@ -63,8 +63,8 @@ export default function AuthFiles() {
   const load = async () => {
     setLoading(true)
     const [af, pm] = await Promise.all([
-      apiFetch('/admin/api/auth-files').then(r => r.json()),
-      apiFetch('/admin/api/providers').then(r => r.json()).catch(() => []),
+      apiFetch('/auth-files').then(r => r.json()),
+      apiFetch('/providers').then(r => r.json()).catch(() => []),
     ])
     setFiles(af.files || [])
     const m = new Map<string, ProviderInfo>()
@@ -106,7 +106,7 @@ export default function AuthFiles() {
   const clearVisible = () => setSelectedIds(p => { const n = new Set(p); visibleIds.forEach(id => n.delete(id)); return n })
 
   const downloadJson = async (f: AuthFile) => {
-    const res = await apiFetch(`/admin/api/auth-files/download/${f.id}`)
+    const res = await apiFetch(`/auth-files/download/${f.id}`)
     if (!res.ok) { alert('Download failed'); return }
     const blob = await res.blob()
     const a = document.createElement('a')
@@ -175,7 +175,7 @@ export default function AuthFiles() {
     try {
       const parsed = await Promise.all(files.map(f => f.text().then(t => JSON.parse(t))))
       const items = parsed.flatMap(p => Array.isArray(p) ? p : Array.isArray(p.files) ? p.files : [p])
-      const res = await apiFetch('/admin/auth-files/import', {
+      const res = await fetch('/admin/auth-files/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(items),
@@ -197,7 +197,7 @@ export default function AuthFiles() {
     let deleted = 0, failed = 0
     for (const id of ids) {
       try {
-        const res = await apiFetch(`/admin/auth-files/delete`, {
+        const res = await fetch(`/admin/auth-files/delete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ids: [id] }),
@@ -521,7 +521,7 @@ export default function AuthFiles() {
                   <button onClick={async () => {
                     if (!confirm(`Delete ${f.label || f.id}?`)) return
                     try {
-                      await apiFetch('/admin/auth-files/delete', {
+                      await fetch('/admin/auth-files/delete', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ ids: [f.id] }),
                       })

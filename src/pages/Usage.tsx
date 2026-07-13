@@ -65,8 +65,8 @@ export default function Usage() {
   useEffect(() => {
     // Initial load: stats + keyStats + logs (all once)
     getLogs(1, 50).then(r => { setLogs(r.logs); setTotal(r.total) }).catch(() => {})
-    apiFetch('/admin/api/usage/stats').then(r => r.json()).then(setStats).catch(() => {})
-    apiFetch('/admin/api/usage/stats/keys').then(r => r.json()).then(setKeyStats).catch(() => {})
+    apiFetch('/usage/stats').then(r => r.json()).then(setStats).catch(() => {})
+    apiFetch('/usage/stats/keys').then(r => r.json()).then(setKeyStats).catch(() => {})
   }, [])
 
   // Smooth real-time polling — only logs, not stats/keyStats
