@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { iconUrl } from '../api'
 import type { ProviderMeta } from '../api'
 
-interface ToggleModel { id: string; owned_by: string; enabled: boolean; toggling?: boolean }
+interface ToggleModel { id: string; owned_by: string; enabled: boolean; toggling?: boolean; context_length?: number | null }
 
 type Category = 'apikey' | 'oauth'
 const catLabel = (cat: string): string => cat === 'apikey' ? "API Key" : 'OAuth'
@@ -77,7 +77,10 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
                       <div className="px-4 py-2 space-y-0.5">
                         {filtered.map(m => (
                           <div key={m.id} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/[0.02] transition-all">
-                            <span className={`text-[11px] font-mono ${m.enabled ? 'text-slate-400' : 'text-red-400/50 line-through'}`}>{m.id}</span>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`text-[11px] font-mono truncate max-w-[220px] ${m.enabled ? 'text-slate-400' : 'text-red-400/50 line-through'}`}>{m.id}</span>
+                              <span className="text-[9px] font-mono text-slate-600 bg-black/30 px-1.5 py-0.5 rounded shrink-0">{m.context_length?.toLocaleString() || '?'}</span>
+                            </div>
                             <button onClick={() => onToggleModel(m.id, !m.enabled)} disabled={m.toggling}
                               className={`relative w-9 h-5 rounded-full transition-all ${m.enabled ? 'bg-emerald-500/40' : 'bg-slate-700/50'} ${m.toggling ? 'opacity-50' : ''}`}
                               style={m.enabled ? { boxShadow: '0 0 8px rgba(52,211,153,0.2)' } : {}}>

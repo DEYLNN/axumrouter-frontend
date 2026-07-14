@@ -31,16 +31,18 @@ interface ProviderInfo {
 function fmtDate(v?: string) { return v ? new Date(v).toLocaleString() : '-' }
 
 function parseExpiry(e: string) {
-  if (!e || e === 'expired') return { label: 'Expired', expired: true, seconds: 0 }
+  if (!e || !e.trim()) return { label: '∞', expired: false, infinite: true, seconds: Infinity }
+  if (e === 'expired') return { label: 'Expired', expired: true, infinite: false, seconds: 0 }
   const t = Date.parse(e.replace('Z', '+00:00'))
-  if (isNaN(t)) return { label: e, expired: false, seconds: 0 }
+  if (isNaN(t)) return { label: e, expired: false, infinite: false, seconds: 0 }
   const s = Math.max(0, Math.floor((t - Date.now()) / 1000))
-  if (s <= 0) return { label: 'Expired', expired: true, seconds: 0 }
+  if (s <= 0) return { label: 'Expired', expired: true, infinite: false, seconds: 0 }
   const d = Math.floor(s / 86400)
   const h = Math.floor((s % 86400) / 3600)
   return {
     label: d > 0 ? `${d}d ${h}h` : `${h}h`,
     expired: false,
+    infinite: false,
     seconds: s,
   }
 }
@@ -451,9 +453,9 @@ export default function AuthFiles() {
                     style={{ boxShadow: 'inset 0 0 10px rgba(0,0,0,0.2)' }}>
                     <div className="flex items-center justify-between">
                       <span className="text-zinc-500">Token expiry</span>
-                      <span className={`font-mono ${exp.expired ? 'text-red-400' : 'text-zinc-300'}`}
+                      <span className={`font-mono ${exp.expired ? 'text-red-400' : exp.infinite ? 'text-cyan-400' : 'text-zinc-300'}`}
                         style={!exp.expired ? { textShadow: '0 0 8px rgba(255,255,255,0.05)' } : {}}>
-                        {exp.expired ? 'Expired' : exp.label}
+                        {exp.expired ? 'Expired' : exp.infinite ? '∞' : exp.label}
                       </span>
                     </div>
                     {f.email && (
@@ -469,7 +471,7 @@ export default function AuthFiles() {
                           style={{ boxShadow: '0 0 6px rgba(52,211,153,0.1)' }}>{f.plan}</span>
                       </div>
                     )}
-                    {exp.seconds > 0 && !exp.expired && (
+                    {exp.seconds > 0 && !exp.expired && !exp.infinite && (
                       <div className="flex items-center justify-between">
                         <span className="text-zinc-500">Expires</span>
                         <span className="text-zinc-300">{fmtDate(f.expires_at)}</span>

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
+import Dashboard from './pages/Dashboard'
 import Endpoint from './pages/Endpoint'
 import Providers from './pages/Providers'
 import ProviderDetail from './pages/ProviderDetail'
@@ -18,7 +19,8 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/admin" replace />} />
-          <Route path="/admin" element={<Endpoint />} />
+          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/admin/endpoint" element={<Endpoint />} />
           <Route path="/admin/providers" element={<Providers />} />
           <Route path="/admin/providers/:id" element={<ProviderDetail />} />
           <Route path="/admin/settings" element={<Settings />} />

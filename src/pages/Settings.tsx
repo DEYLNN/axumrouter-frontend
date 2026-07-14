@@ -29,7 +29,7 @@ export default function Settings() {
       const data: Record<string, { id: string; enabled: boolean; owned_by: string }[]> = await r.json()
       const mapped: Record<string, ToggleModel[]> = {}
       for (const [prov, list] of Object.entries(data)) {
-        mapped[prov] = list.map(m => ({ id: m.id, owned_by: m.owned_by || prov, enabled: m.enabled }))
+        mapped[prov] = list.map(m => ({ id: m.id, owned_by: m.owned_by || prov, enabled: m.enabled, context_length: m.context_length }))
       }
       setModels(mapped)
     } catch (_) {}
