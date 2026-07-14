@@ -99,8 +99,15 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
       if (!code) return
       processed.current = true
       try {
-        const r = await apiFetch(`/oauth/${provider!.id}/callback?code=${encodeURIComponent(code)}`)
-        if (!r.ok) throw new Error('Exchange failed')
+        const r = await apiFetch(`/oauth/${provider!.id}/exchange`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        })
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Exchange failed' }))
+          throw new Error(err.error || 'Exchange failed')
+        }
         setStep('success'); onSuccess()
       } catch (e: any) { setError(e.message); setStep('error') }
     }
@@ -111,12 +118,37 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
   // Manual submit
   const handleManual = async () => {
     try {
-      const url = new URL(callbackUrl)
-      const code = url.searchParams.get('code')
-      if (!code) throw new Error('No code in URL')
+      const raw = callbackUrl.trim()
+      if (!raw) throw new Error('No URL/code pasted')
+
+      let code: string | null = null
+
+      // Case 1: full URL → extract ?code=
+      if (raw.includes('://') || raw.startsWith('http')) {
+        try {
+          const u = new URL(raw)
+          code = u.searchParams.get('code')
+        } catch { /* fall through to raw code */ }
+      }
+
+      // Case 2: raw code (user pasted only the code, or ?code=xyz fragment)
+      if (!code) {
+        const m = raw.match(/[?&]code=([^&\s]+)/)
+        code = m ? m[1] : raw
+      }
+
+      if (!code) throw new Error('No code found in input')
       setStep('loading')
-      const r = await apiFetch(`/admin/oauth/${provider!.id}/callback?code=${encodeURIComponent(code)}`)
-      if (!r.ok) throw new Error('Exchange failed')
+      // POST /oauth/{id}/exchange returns JSON, not redirect
+      const r = await apiFetch(`/oauth/${provider!.id}/exchange`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      })
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({ error: 'Exchange failed' }))
+        throw new Error(err.error || 'Exchange failed')
+      }
       setStep('success'); onSuccess()
     } catch (e: any) { setError(e.message); setStep('error') }
   }
