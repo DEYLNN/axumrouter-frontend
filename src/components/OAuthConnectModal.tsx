@@ -36,6 +36,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
           const r = await apiFetch(`/oauth/${provider.id}/start`)
           const d = await r.json()
           if (!r.ok) throw new Error(d.error || 'Failed')
+          if (d.error) throw new Error(d.error)
           setDeviceData(d)
           setStep('waiting')
           setPolling(true)
