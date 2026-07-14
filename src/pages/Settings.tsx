@@ -26,7 +26,7 @@ export default function Settings() {
     if (!providers) return
     try {
       const r = await apiFetch('/models/all')
-      const data: Record<string, { id: string; enabled: boolean; owned_by: string }[]> = await r.json()
+      const data: Record<string, { id: string; enabled: boolean; owned_by: string; context_length?: number | null }[]> = await r.json()
       const mapped: Record<string, ToggleModel[]> = {}
       for (const [prov, list] of Object.entries(data)) {
         mapped[prov] = list.map(m => ({ id: m.id, owned_by: m.owned_by || prov, enabled: m.enabled, context_length: m.context_length }))
