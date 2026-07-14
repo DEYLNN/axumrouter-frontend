@@ -10,6 +10,13 @@ const cavemanLevels = [
   { key: 'ultra', label: 'ULTRA' },
 ]
 
+const ponytailLevels = [
+  { key: 'off', label: 'OFF' },
+  { key: 'lite', label: 'LITE' },
+  { key: 'full', label: 'FULL' },
+  { key: 'ultra', label: 'ULTRA' },
+]
+
 const envGatewayUrl = import.meta.env.VITE_GATEWAY_BACKEND_URL
 
 export default function Endpoint() {
@@ -307,21 +314,46 @@ export default function Endpoint() {
               </div>
 
               {/* Ponytail */}
-              <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-black/40 border border-white/[0.04] opacity-50">
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-black/40 border border-white/[0.04]">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-slate-800/60 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 rounded-lg bg-black/30 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-semibold text-slate-300">Ponytail</span>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-slate-500/15 text-slate-500 border border-slate-500/20">SOON</span>
+                      <span className="text-xs font-mono font-semibold text-slate-200">Ponytail</span>
+                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-md border ${
+                        settings.ponytail_enabled !== 'off'
+                          ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/25'
+                          : 'bg-slate-500/15 text-slate-500 border-slate-500/20'
+                      }`}>
+                        {settings.ponytail_enabled === 'off' ? 'OFF' : settings.ponytail_enabled.toUpperCase()}
+                      </span>
                     </div>
-                    <p className="text-[10px] font-mono text-slate-600 mt-0.5 truncate max-w-[220px] sm:max-w-sm">Alternative terse style</p>
+                    <p className="text-[10px] font-mono text-slate-600 mt-0.5 truncate max-w-[220px] sm:max-w-sm">Lazy senior dev — minimal output</p>
                   </div>
                 </div>
+              </div>
+              <div className="flex gap-1.5 px-4 pb-3">
+                {ponytailLevels.map(lv => {
+                  const active = settings.ponytail_enabled === lv.key
+                  return (
+                    <button
+                      key={lv.key}
+                      onClick={() => handleToggle('ponytail_enabled', lv.key)}
+                      className={`flex-1 py-1.5 rounded-lg text-[10px] font-mono font-bold tracking-wide transition-all ${
+                        active
+                          ? 'bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 text-cyan-300 border border-cyan-500/40'
+                          : 'bg-slate-800/40 text-slate-500 border border-slate-700/40 hover:border-cyan-500/30 hover:text-slate-300'
+                      }`}
+                      style={active ? { boxShadow: '0 0 12px rgba(6,182,212,0.2)' } : {}}
+                    >
+                      {lv.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>

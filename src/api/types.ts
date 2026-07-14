@@ -1,6 +1,7 @@
 export interface SettingsData {
   rtk_enabled: string
   caveman_enabled: string
+  ponytail_enabled: string
   gateway_timeout: number
   public_ip: string
   public_url: string
