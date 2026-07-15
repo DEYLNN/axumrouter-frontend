@@ -79,10 +79,10 @@ export default function Providers() {
                       <div className="p-5">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3.5">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-sm border ${p.icon_url ? 'bg-black/50' : 'bg-black/40'}`}
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-sm border ${p.icon_name ? 'bg-black/50' : 'bg-black/40'}`}
                               style={{ borderColor: `${accent}30`, boxShadow: `0 0 8px ${accent}10` }}>
-                              {p.icon_url ? (
-                                <img src={iconUrl(p.icon_url)} alt="" className="w-5 h-5 object-contain" />
+                              {p.icon_name ? (
+                                <img src={iconUrl(p.icon_name)} alt="" className="w-5 h-5 object-contain" />
                               ) : (
                                 <span className="text-sm font-semibold font-mono" style={{ color: accent }}>
                                   {p.display_name.charAt(0)}

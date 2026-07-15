@@ -248,7 +248,7 @@ export default function Combos() {
                       {pm && (
                         <div className="w-4 h-4 rounded flex items-center justify-center shrink-0"
                           style={{ background: `${pm.color}20` }}>
-                          {pm.icon_url ? <img src={iconUrl(pm.icon_url)} alt="" className="w-2.5 h-2.5 object-contain" /> : null}
+                          {pm.icon_name ? <img src={iconUrl(pm.icon_name)} alt="" className="w-2.5 h-2.5 object-contain" /> : null}
                         </div>
                       )}
                       <span className="text-[10px] font-mono text-slate-300 flex-1 truncate">{prov}/{modelName}</span>
@@ -308,7 +308,7 @@ export default function Combos() {
                       {pm && (
                         <div className="w-5 h-5 rounded flex items-center justify-center shrink-0"
                           style={{ background: `${pm.color}20` }}>
-                          {pm.icon_url ? <img src={iconUrl(pm.icon_url)} alt="" className="w-3 h-3 object-contain" /> : null}
+                          {pm.icon_name ? <img src={iconUrl(pm.icon_name)} alt="" className="w-3 h-3 object-contain" /> : null}
                         </div>
                       )}
                       <span className="text-[9px] font-mono font-semibold text-slate-500 uppercase tracking-wider">{pm?.display_name || providerId}</span>

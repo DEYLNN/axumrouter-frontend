@@ -98,7 +98,7 @@ export default function Logs() {
               const isSuccess = l.status === 'success' || l.status === 'streaming'
               const meta = providerMeta[l.provider_id]
               const color = meta?.color || '#6366F1'
-              const icon = meta?.icon_url ? iconUrl(meta.icon_url) : ''
+              const icon = meta?.icon_name ? iconUrl(meta.icon_name) : ''
               const displayName = meta?.display_name || l.provider_id
               const tokPerSec = l.latency_ms && l.latency_ms > 0 && l.total_tokens > 0
                 ? (l.total_tokens / (l.latency_ms / 1000)).toFixed(0)

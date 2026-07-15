@@ -23,7 +23,7 @@ export default function Playground() {
   const sel = providers.find(p => p.id === selected)
   const selName = sel?.display_name || ''
   const selColor = sel?.color || '#6366F1'
-  const selIcon = sel?.icon_url || ''
+  const selIcon = sel?.icon_name || ''
 
   // Load providers
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function Playground() {
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-cyan-500/5 border border-cyan-500/20 cursor-pointer hover:bg-cyan-500/10 transition-all">
                   <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
                     style={{ background: `${selColor}15`, border: `1px solid ${selColor}30` }}>
-                    <img src={selIcon} alt="" className="w-4 h-4 object-contain" onError={e => { (e.target as any).style.display = 'none' }} />
+                    <img src={iconUrl(selIcon)} alt="" className="w-4 h-4 object-contain" onError={e => { (e.target as any).style.display = 'none' }} />
                     <span className="text-[10px] font-bold" style={{ color: selColor, display: 'none' }}>{selected.charAt(0).toUpperCase()}</span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -134,8 +134,8 @@ export default function Playground() {
                           }`}>
                           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
                             style={{ background: `${p.color}15`, border: `1px solid ${p.color}30` }}>
-                            {p.icon_url ? (
-                              <img src={iconUrl(p.icon_url)} alt="" className="w-4 h-4 object-contain" />
+                            {p.icon_name ? (
+                              <img src={iconUrl(p.icon_name)} alt="" className="w-4 h-4 object-contain" />
                             ) : (
                               <span className="text-[10px] font-bold" style={{ color: p.color }}>{p.id.charAt(0).toUpperCase()}</span>
                             )}

@@ -23,7 +23,7 @@ interface AuthFile {
 interface ProviderInfo {
   name: string
   display_name: string
-  icon_url: string
+  icon_name: string
   color: string
 }
 
@@ -61,7 +61,7 @@ export default function AuthFiles() {
   const [providerMeta, setProviderMeta] = useState<Map<string, ProviderInfo>>(new Map())
 
   const getMeta = (id: string): ProviderInfo =>
-    providerMeta.get(id) || { name: id.toUpperCase(), display_name: id.toUpperCase(), icon_url: '', color: '#6366F1' }
+    providerMeta.get(id) || { name: id.toUpperCase(), display_name: id.toUpperCase(), icon_name: '', color: '#6366F1' }
 
   const load = async () => {
     setLoading(true)
@@ -72,7 +72,7 @@ export default function AuthFiles() {
     setFiles(af.files || [])
     const m = new Map<string, ProviderInfo>()
     for (const p of Array.isArray(pm) ? pm : []) {
-      m.set(p.id, { name: p.display_name || p.name || p.id, display_name: p.display_name || p.name || p.id, icon_url: p.icon_url || '', color: p.color || '#6366F1' })
+      m.set(p.id, { name: p.display_name || p.name || p.id, display_name: p.display_name || p.name || p.id, icon_name: p.icon_name || '', color: p.color || '#6366F1' })
     }
     setProviderMeta(m)
     setLoading(false)
@@ -293,8 +293,8 @@ export default function AuthFiles() {
                   style={{ borderColor: `${(getMeta(providerFilter)).color}50`, boxShadow: `0 0 6px ${(getMeta(providerFilter)).color}30` }}>
                     {(() => {
                       const fm = getMeta(providerFilter)
-                      return fm.icon_url ? (
-                        <img src={iconUrl(fm.icon_url)} alt="" className="w-full h-full object-contain" />
+                      return fm.icon_name ? (
+                        <img src={iconUrl(fm.icon_name)} alt="" className="w-full h-full object-contain" />
                       ) : (
                         <span className="font-mono text-[8px] text-zinc-400">{fm.name[0]}</span>
                       )
@@ -336,8 +336,8 @@ export default function AuthFiles() {
                         >
                           <div className="w-5 h-5 rounded shrink-0 overflow-hidden bg-black/40 border flex items-center justify-center"
                             style={{ borderColor: fm.color ? `${fm.color}50` : 'rgba(255,255,255,0.04)', boxShadow: providerFilter === p.id ? `0 0 8px ${fm.color}30` : 'none' }}>
-                            {fm.icon_url ? (
-                              <img src={iconUrl(fm.icon_url)} alt="" className="w-full h-full object-contain p-0.5" />
+                            {fm.icon_name ? (
+                              <img src={iconUrl(fm.icon_name)} alt="" className="w-full h-full object-contain p-0.5" />
                             ) : (
                               <span className="font-mono text-[9px] text-zinc-400">{fm.name[0]}</span>
                             )}
@@ -416,10 +416,10 @@ export default function AuthFiles() {
                       borderColor: `${accentColor}40`,
                       boxShadow: `0 0 8px ${accentColor}15`,
                     }}>
-                    {meta.icon_url ? (
-                      <img src={iconUrl(meta.icon_url)} alt="" className="w-full h-full object-contain p-1" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; const el = (e.target as HTMLImageElement).nextElementSibling as HTMLElement; if (el) el.style.display = 'flex' }} />
+                    {meta.icon_name ? (
+                      <img src={iconUrl(meta.icon_name)} alt="" className="w-full h-full object-contain p-1" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; const el = (e.target as HTMLImageElement).nextElementSibling as HTMLElement; if (el) el.style.display = 'flex' }} />
                     ) : null}
-                    <div className={`w-full h-full items-center justify-center ${meta.icon_url ? 'hidden' : 'flex'}`}>
+                    <div className={`w-full h-full items-center justify-center ${meta.icon_name ? 'hidden' : 'flex'}`}>
                       <span className="font-mono text-sm font-bold" style={{ color: accentColor }}>{meta.name[0]}</span>
                     </div>
                   </div>

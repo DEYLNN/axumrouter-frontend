@@ -100,7 +100,7 @@ export default function Quota() {
           const q = quotaMap[key.id]
           const meta = providers[key.provider_id]
           const color = meta?.color || '#6366F1'
-          const icon = meta?.icon_url ? iconUrl(meta.icon_url) : ''
+          const icon = meta?.icon_name ? iconUrl(meta.icon_name) : ''
           const name = meta?.display_name || key.provider_id
 
           const isExpired = q?.expires_at ? new Date(q.expires_at).getTime() < Date.now() : false

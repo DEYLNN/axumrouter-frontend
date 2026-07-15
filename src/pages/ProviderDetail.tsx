@@ -19,7 +19,7 @@ export default function ProviderDetail() {
 
   const providerInfo = useMemo(() => ctx.data ? {
     id: ctx.data.id, name: ctx.data.name, display_name: ctx.data.display_name,
-    icon_url: ctx.data.icon_url, color: ctx.data.color, oauth_flow: ctx.data.oauth_flow
+    icon_name: ctx.data.icon_name, color: ctx.data.color, oauth_flow: ctx.data.oauth_flow
   } : null, [ctx.data])
 
   if (ctx.loading) return (
@@ -51,9 +51,9 @@ export default function ProviderDetail() {
         </Link>
 
         <div className="flex items-center gap-4">
-          {data.icon_url ? (
+          {data.icon_name ? (
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/[0.04] border border-white/[0.06]">
-              <img src={iconUrl(data.icon_url)} alt="" className="w-6 h-6 object-contain" />
+              <img src={iconUrl(data.icon_name)} alt="" className="w-6 h-6 object-contain" />
             </div>
           ) : (
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/[0.03] border border-white/[0.06]">

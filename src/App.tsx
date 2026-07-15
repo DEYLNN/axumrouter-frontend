@@ -13,10 +13,13 @@ import ProxyPool from './pages/ProxyPool'
 import Playground from './pages/Playground'
 import Combos from './pages/Combos'
 
+import Login from './pages/Login'
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/login" element={<Login />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/admin" replace />} />
           <Route path="/admin" element={<Dashboard />} />

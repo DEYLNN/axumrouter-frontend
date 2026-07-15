@@ -123,7 +123,6 @@ export default function Usage() {
                   <tr key={k.gateway_key_id} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-all">
                     <td className="px-4 py-3">
                       <div className="text-[11px] font-mono font-semibold text-slate-200">{k.label || 'unnamed'}</div>
-                      <code className="text-[9px] font-mono text-slate-500">{k.key_value}...</code>
                     </td>
                     <td className="px-4 py-3 text-right text-[10px] font-mono text-slate-300">{k.requests}</td>
                     <td className="px-4 py-3 text-right text-[10px] font-mono text-sky-400">{fmt(k.prompt_tokens)}</td>
