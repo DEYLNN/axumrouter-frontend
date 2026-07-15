@@ -55,5 +55,5 @@ export const apiFetch = (url: string, init?: RequestInit) => {
 export function iconUrl(name: string): string {
   if (!name) return ''
   if (name.startsWith('http')) return name
-  return '/public/providers/' + name
+  return '/providers/' + name
 }
