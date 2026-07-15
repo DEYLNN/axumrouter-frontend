@@ -68,23 +68,20 @@ export default function Providers() {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {group.items.map(p => {
                   const active = p.total_keys > 0
-                  const accent = p.color || '#6366F1'
                   return (
                     <Link key={p.id} to={`/admin/providers/${p.id}`}
-                      className="group relative block rounded-2xl border transition-all duration-300 bg-[#0a0f1e]/60 backdrop-blur-xl"
+                      className="group relative block rounded-2xl border border-white/[0.06] transition-all duration-300 bg-[#0a0f1e]/60 backdrop-blur-xl hover:border-cyan-500/30"
                       style={{
-                        borderColor: active ? `${accent}25` : 'rgba(255,255,255,0.05)',
-                        boxShadow: active ? `inset 0 0 20px ${accent}05, 0 0 10px ${accent}08` : 'inset 0 1px 0 rgba(255,255,255,0.03)',
+                        boxShadow: active ? 'inset 0 0 20px rgba(6,182,212,0.03), 0 0 10px rgba(6,182,212,0.05)' : 'inset 0 1px 0 rgba(255,255,255,0.03)',
                       }}>
                       <div className="p-5">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3.5">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-sm border ${p.icon_name ? 'bg-black/50' : 'bg-black/40'}`}
-                              style={{ borderColor: `${accent}30`, boxShadow: `0 0 8px ${accent}10` }}>
+                            <div className="w-9 h-9 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/[0.1] bg-black/50">
                               {p.icon_name ? (
-                                <img src={iconUrl(p.icon_name)} alt="" className="w-5 h-5 object-contain" />
+                                <img src={iconUrl(p.icon_name)} alt="" className="w-full h-full p-1 object-contain rounded-lg" />
                               ) : (
-                                <span className="text-sm font-semibold font-mono" style={{ color: accent }}>
+                                <span className="text-sm font-semibold font-mono" style={{ color: p.color || '#6366F1' }}>
                                   {p.display_name.charAt(0)}
                                 </span>
                               )}
