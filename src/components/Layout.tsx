@@ -188,6 +188,15 @@ export default function Layout() {
         <nav className="px-3 py-4 overflow-y-auto space-y-5 h-[calc(100%-3.5rem)]">
           <NavLinks />
         </nav>
+        <div className="px-3 pb-4 border-t border-white/[0.04] pt-3">
+          <button onClick={handleLogout}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[11px] font-medium text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Logout
+          </button>
+        </div>
       </aside>
 
       {/* Spacer for mobile header */}

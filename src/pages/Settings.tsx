@@ -22,22 +22,22 @@ export default function Settings() {
   const [stats, setStats] = useState({ totalModels: 0, disabledModels: 0, blockedModels: 0, totalUsage: 0 })
   const [gwKeys, setGwKeys] = useState<GatewayKeyJson[]>([])
 
-  const fetchModels = async () => {
+  useEffect(() => {
     if (!providers) return
-    try {
-      const r = await apiFetch('/models/all')
-      const data: Record<string, { id: string; enabled: boolean; owned_by: string; context_length?: number | null }[]> = await r.json()
-      const mapped: Record<string, ToggleModel[]> = {}
-      for (const [prov, list] of Object.entries(data)) {
-        mapped[prov] = list.map(m => ({ id: m.id, owned_by: m.owned_by || prov, enabled: m.enabled, context_length: m.context_length }))
-      }
-      setModels(mapped)
-    } catch (_) {}
-  }
-
+    const fetchModels = async () => {
+      try {
+        const r = await apiFetch('/models/all')
+        const data: Record<string, { id: string; enabled: boolean; owned_by: string }[]> = await r.json()
+        const mapped: Record<string, ToggleModel[]> = {}
+        for (const [prov, list] of Object.entries(data)) {
+          mapped[prov] = list.map(m => ({ id: m.id, owned_by: m.owned_by || prov, enabled: m.enabled }))
+        }
+        setModels(mapped)
+      } catch { /* noop */ }
+    }
+    fetchModels()
+  }, [providers])
   const fetchGw = () => { apiFetch('/gateway_keys').then(r => r.json()).then(setGwKeys).catch(() => {}) }
-
-  useEffect(() => { if (providers) fetchModels() }, [providers])
   useEffect(() => { fetchGw() }, [])
 
   useEffect(() => {
@@ -75,16 +75,7 @@ export default function Settings() {
         }
         return next
       })
-    } catch (_: any) {
-      setModels(prev => {
-        const next = { ...prev }
-        for (const [prov, list] of Object.entries(next)) {
-          const idx = list.findIndex(m => m.id === modelId)
-          if (idx > -1) { const nl = [...list]; nl[idx] = { ...nl[idx], enabled: !enabled, toggling: false }; next[prov] = nl; break }
-        }
-        return next
-      })
-    }
+    } catch { /* noop */ }
   }
 
   if (loading) return <Loading />

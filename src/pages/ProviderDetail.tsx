@@ -15,7 +15,7 @@ export default function ProviderDetail() {
   const { id } = useParams()
   const ctx = useProviderDetail(id)
 
-  useEffect(() => { ctx.load() }, [ctx.load])
+  useEffect(() => { ctx.load() }, [ctx])
 
   const providerInfo = useMemo(() => ctx.data ? {
     id: ctx.data.id, name: ctx.data.name, display_name: ctx.data.display_name,

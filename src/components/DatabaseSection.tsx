@@ -22,7 +22,7 @@ export default function DatabaseSection({ dbInfo, stats, onDbReload }: Props) {
       const a = document.createElement('a')
       a.href = url; a.download = `axumrouter-backup-${new Date().toISOString().slice(0, 10)}.json`
       a.click(); URL.revokeObjectURL(url)
-    } catch (_) {}
+    } catch { /* noop */ }
     setExporting(false)
   }
 

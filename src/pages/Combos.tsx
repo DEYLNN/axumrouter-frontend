@@ -91,18 +91,16 @@ export default function Combos() {
       const r = await apiFetch('/models/all')
       const data = await r.json()
       setAllModels(data)
-    } catch (e) {
-      // fallback: fetch each provider detail
-      const m: AllModels = {}
-      for (const p of providers) {
-        try {
-          const r = await apiFetch(`/providers/${p.id}`)
-          const d = await r.json()
-          m[p.id] = (d.models || []).map((md: any) => ({ id: md.id, enabled: true, owned_by: p.id }))
-        } catch (_) {}
-      }
-      setAllModels(m)
+    } catch { /* noop */ }
+    const m: AllModels = {}
+    for (const p of providers) {
+      try {
+        const r = await apiFetch(`/providers/${p.id}`)
+        const d = await r.json()
+        m[p.id] = (d.models || []).map((md: any) => ({ id: md.id, enabled: true, owned_by: p.id }))
+      } catch { /* noop */ }
     }
+    setAllModels(m)
     setShowPicker(true)
   }
 

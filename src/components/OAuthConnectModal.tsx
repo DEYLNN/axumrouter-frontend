@@ -52,7 +52,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
         }
       } catch (e: any) { setError(e.message); setStep('error') }
     })()
-  }, [open, provider])
+  }, [open, provider, isDeviceCode])
 
   // Poll for device code
   useEffect(() => {
@@ -87,7 +87,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
     }
     poll()
     return () => { cancelled = true; pollAbort.current = true }
-  }, [polling, deviceData])
+  }, [polling, deviceData, onSuccess, provider?.id])
 
   // Listen for popup callback
   useEffect(() => {
@@ -113,7 +113,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
-  }, [step, isDeviceCode, provider])
+  }, [step, isDeviceCode, provider, onSuccess])
 
   // Manual submit
   const handleManual = async () => {

@@ -55,5 +55,8 @@ export const apiFetch = (url: string, init?: RequestInit) => {
 export function iconUrl(name: string): string {
   if (!name) return ''
   if (name.startsWith('http')) return name
-  return '/providers/' + name
+  // Dev: Vite serves /providers/ from FE public/
+  // Prod: BE serves /admin/providers/ from FE build (copied to public/admin/providers/)
+  const base = import.meta.env.DEV ? '' : '/admin'
+  return base + '/providers/' + name
 }

@@ -37,7 +37,7 @@ export default function GatewayKeysSection({ keys, onRefresh }: Props) {
       })
       const data = await r.json()
       if (data.success) { setCopied(data.key_value || ''); setLabel(''); setAccessType('full'); setModelList([]); setMaxTokens(''); onRefresh() }
-    } catch (_) {}
+    } catch { /* noop */ }
     setCreating(false)
   }
 
