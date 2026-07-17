@@ -154,6 +154,8 @@ export default function Logs() {
                       <span className="text-[9px] font-mono text-cyan-400/80 truncate max-w-[140px]" title={l.api_key_id}>{l.key_label}</span>
                     ) : l.api_key_id ? (
                       <span className="text-[9px] font-mono text-slate-600 truncate max-w-[120px]" title={l.api_key_id}>{l.api_key_id}</span>
+                    ) : l.error_message ? (
+                      <span className="text-[9px] font-mono text-slate-700">—</span>
                     ) : null}
                   </div>
 

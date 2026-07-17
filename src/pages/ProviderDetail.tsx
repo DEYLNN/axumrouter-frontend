@@ -1,5 +1,5 @@
 import Modal from '../components/Modal'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import OAuthConnectModal from '../components/OAuthConnectModal'
 import { useProviderDetail } from '../hooks/useProviderDetail'
@@ -15,12 +15,20 @@ export default function ProviderDetail() {
   const { id } = useParams()
   const ctx = useProviderDetail(id)
 
-  useEffect(() => { ctx.load() }, [ctx])
+  useEffect(() => { ctx.load() }, [ctx.load])
 
   const providerInfo = useMemo(() => ctx.data ? {
     id: ctx.data.id, name: ctx.data.name, display_name: ctx.data.display_name,
     icon_name: ctx.data.icon_name, color: ctx.data.color, oauth_flow: ctx.data.oauth_flow
   } : null, [ctx.data])
+
+  // Live cooldown ticker — decrements locked_remaining every second
+  const [tick, setTick] = useState(0)
+  const tickRef = useRef<ReturnType<typeof setInterval>>()
+  useEffect(() => {
+    tickRef.current = setInterval(() => setTick(t => t + 1), 1000)
+    return () => clearInterval(tickRef.current)
+  }, [])
 
   if (ctx.loading) return (
     <div className="flex items-center justify-center py-20">
@@ -191,7 +199,19 @@ export default function ProviderDetail() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono text-slate-200 truncate">{k.label || k.id}</span>
-                    {k.is_locked && <span className="text-[8px] font-mono px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">LOCKED</span>}
+                    {k.is_locked && Math.max(0, k.locked_remaining - tick) > 0 && (
+                      <span className="inline-flex items-center gap-1 text-[8px] font-mono px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse" title={k.locked_reason || ''}>
+                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0110 0v4" />
+                        </svg>
+                        {(() => {
+                          const s = Math.max(0, k.locked_remaining - tick)
+                          const m = Math.floor(s / 60)
+                          return `${m}:${String(s % 60).padStart(2, '0')}`
+                        })()}
+                      </span>
+                    )}
                   </div>
                   <div className="text-[10px] font-mono text-slate-600 truncate mt-0.5">
                     <span className="text-slate-600">{k.key_type || 'apikey'}</span>
@@ -277,7 +297,8 @@ export default function ProviderDetail() {
             <div className="space-y-2 text-[10px] font-mono">
               <div className="flex justify-between"><span className="text-slate-500">Status</span>
                 <span className={testResult.ok ? 'text-emerald-400' : 'text-red-400'}>{testResult.ok ? 'OK' : 'FAIL'}</span></div>
-              {testResult.error && <div className="flex justify-between"><span className="text-slate-500">Error</span><span className="text-red-400">{testResult.error}</span></div>}
+              {testResult.error && <div><span className="text-slate-500">Error</span>
+                <div className="text-red-400 mt-1 break-all max-h-24 overflow-y-auto">{testResult.error}</div></div>}
               <div className="flex justify-between"><span className="text-slate-500">Latency</span><span className="text-slate-300">{testResult.latency_ms}ms</span></div>
               <div className="flex justify-between"><span className="text-slate-500">Tokens</span><span className="text-slate-300">{testResult.total_tokens} (in: {testResult.prompt_tokens}, out: {testResult.completion_tokens})</span></div>
               {testResult.response && <div className="mt-2 p-3 rounded-lg bg-black/20 border border-white/[0.06] text-slate-400 max-h-32 overflow-y-auto"><code className="text-[9px]">{testResult.response}</code></div>}
