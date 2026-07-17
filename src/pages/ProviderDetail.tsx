@@ -24,7 +24,7 @@ export default function ProviderDetail() {
 
   // Live cooldown ticker — decrements locked_remaining every second
   const [tick, setTick] = useState(0)
-  const tickRef = useRef<ReturnType<typeof setInterval>>()
+  const tickRef = useRef<ReturnType<typeof setInterval>>(undefined)
   useEffect(() => {
     tickRef.current = setInterval(() => setTick(t => t + 1), 1000)
     return () => clearInterval(tickRef.current)
