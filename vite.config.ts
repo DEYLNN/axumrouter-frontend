@@ -25,11 +25,15 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/admin/api': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:7444',
         changeOrigin: true,
       },
       '/admin/oauth': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:7444',
+        changeOrigin: true,
+      },
+      '/v1': {
+        target: 'http://localhost:7444',
         changeOrigin: true,
       },
     },

@@ -1,32 +1,60 @@
-# React + TypeScript + Vite
+# AxumRouter Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Admin dashboard for AxumRouter AI Gateway. React 19 + TypeScript 6 + Vite 8 + TailwindCSS 4.
 
-Currently, two official plugins are available:
+## Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install        # Install deps
+npm run dev        # Dev → http://localhost:5173
+npx vite build     # Production → dist/
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Prerequisites
+
+- Node.js >= 18
+- Backend AxumRouter running di `localhost:3000`
+
+## Env
+
+Copy `.env.example` ke `.env` — atau biarkan kosong (pake Vite proxy ke backend).
+
+## Documentation
+
+| Doc | Location |
+|-----|----------|
+| **Full Guide** | `docs/GUIDE.md` — setup, config, struktur, deploy |
+| **Project Rules** | `AGENTS.md` — konvensi, api layer |
+
+## Project
+
+```
+frontend/
+├── src/
+│   ├── main.tsx         ← Entry point
+│   ├── App.tsx          ← Router (14 routes)
+│   ├── api/             ← Backend API layer (client.ts, types.ts, + 9 domain files)
+│   ���── components/      ← Reusable: Layout, Modal, OAuthConnect, GatewayKeys, dll
+│   ├── hooks/           ← useAsync, useProviderDetail
+│   ├── pages/           ← 14 route pages
+│   └── utils/           ← clipboard helper
+├── public/
+│   └── providers/       ← 63 provider icons
+└── vite.config.ts       ← Proxy + Tailwind + plugins
+```
+
+## Tech Stack
+
+| Tech | Version |
+|------|---------|
+| React | 19 |
+| TypeScript | 6 |
+| Vite | 8 |
+| TailwindCSS | 4 |
+| react-router-dom | 7 |
+| oxlint | 1 |
+
+## Related
+
+- Backend: `../backend/`
+- Backend AGENTS.md: `../backend/AGENTS.md`

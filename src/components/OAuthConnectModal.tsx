@@ -23,6 +23,8 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
   const popupRef = useRef<Window | null>(null)
   const pollAbort = useRef(false)
   const processed = useRef(false)
+  const onSuccessRef = useRef(onSuccess)
+  onSuccessRef.current = onSuccess
   const isDeviceCode = provider?.oauth_flow === 'device_code'
 
   // Start OAuth flow
@@ -73,8 +75,8 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
             body: JSON.stringify(body),
           })
           const d = await r.json()
-          if (d.accessToken || d.token || d.success || d.ok) {
-            processed.current = true; setStep('success'); setPolling(false); onSuccess()
+          if (d.accessToken || d.token || d.success || d.ok || d.access_token) {
+            processed.current = true; setStep('success'); setPolling(false); onSuccessRef.current()
             return
           }
           if (d.error === 'expired_token' || d.error === 'access_denied') throw new Error(d.error_description || d.error)
@@ -87,7 +89,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
     }
     poll()
     return () => { cancelled = true; pollAbort.current = true }
-  }, [polling, deviceData, onSuccess, provider?.id])
+  }, [polling, deviceData, provider?.id])
 
   // Listen for popup callback
   useEffect(() => {
@@ -108,12 +110,12 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
           const err = await r.json().catch(() => ({ error: 'Exchange failed' }))
           throw new Error(err.error || 'Exchange failed')
         }
-        setStep('success'); onSuccess()
+        setStep('success'); onSuccessRef.current()
       } catch (e: any) { setError(e.message); setStep('error') }
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
-  }, [step, isDeviceCode, provider, onSuccess])
+  }, [step, isDeviceCode, provider, provider?.id])
 
   // Manual submit
   const handleManual = async () => {
@@ -149,7 +151,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
         const err = await r.json().catch(() => ({ error: 'Exchange failed' }))
         throw new Error(err.error || 'Exchange failed')
       }
-      setStep('success'); onSuccess()
+      setStep('success'); onSuccessRef.current()
     } catch (e: any) { setError(e.message); setStep('error') }
   }
 

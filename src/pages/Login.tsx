@@ -1,10 +1,18 @@
 import { useState } from 'react'
 import { API_BASE } from '../api/client'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+
+  // Already logged in? redirect
+  const token = localStorage.getItem('token')
+  if (token) {
+    return <Navigate to="/admin" replace />
+  }
 
   const login = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -19,11 +27,16 @@ export default function Login() {
       const data = await r.json()
       if (!r.ok) throw new Error(data.error || 'Login failed')
       localStorage.setItem('token', data.token)
-      window.location.href = '/admin'
+      navigate('/admin')
     } catch (err: any) {
       setError(err.message)
     }
     setLoading(false)
+  }
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    if (error) setError('')
   }
 
   return (
@@ -44,7 +57,7 @@ export default function Login() {
           <form onSubmit={login} className="px-6 py-6 space-y-4">
             <div>
               <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+              <input type="password" value={password} onChange={handlePasswordChange}
                 placeholder="Enter admin password"
                 autoFocus
                 className="w-full bg-black/50 border border-white/[0.08] rounded-lg px-3.5 py-2.5 text-sm font-mono text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/40 transition-all"
