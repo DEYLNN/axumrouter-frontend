@@ -36,6 +36,7 @@ export default function Combos() {
   const [creating, setCreating] = useState(false)
   const [showPicker, setShowPicker] = useState(false)
   const [modelSearch, setModelSearch] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   const load = () => {
     apiFetch('/combos').then(r => r.json()).then(setCombos).catch(console.error)
@@ -57,17 +58,17 @@ export default function Combos() {
           role: i === 0 ? 'PRIMARY' : 'fallback',
         }
       })
-      const res = await apiFetch('/combos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName.trim(), description: newDesc.trim(), tiers }),
-      })
+      const body = { name: newName.trim(), description: newDesc.trim(), tiers }
+      const url = editingId ? `/combos/${editingId}` : '/combos'
+      const method = editingId ? 'POST' : 'POST'
+      const res = await apiFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       const data = await res.json()
       if (data.ok) {
         setShowCreate(false)
         setNewName('')
         setNewDesc('')
         setSelectedModels([])
+        setEditingId(null)
         load()
       }
     } catch (e) {
@@ -79,6 +80,14 @@ export default function Combos() {
   const deleteCombo = async (id: string) => {
     await apiFetch(`/combos/${id}`, { method: 'DELETE' })
     load()
+  }
+
+  const editCombo = (c: Combo) => {
+    setEditingId(c.id)
+    setNewName(c.name)
+    setNewDesc(c.description)
+    setSelectedModels(c.tiers.map(t => `${t.provider}/${t.model}`))
+    setShowCreate(true)
   }
 
   const toggleCombo = async (id: string) => {
@@ -185,6 +194,13 @@ export default function Combos() {
                   <button onClick={() => deleteCombo(c.id)}
                     className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-500/10 transition-all text-slate-500 hover:text-red-400">
                     ✕
+                  </button>
+                  <button onClick={() => editCombo(c)}
+                    className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-cyan-500/10 transition-all text-slate-500 hover:text-cyan-400">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
                   </button>
                 </div>
               </div>

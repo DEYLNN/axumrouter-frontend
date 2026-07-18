@@ -96,6 +96,7 @@ export default function Providers() {
                       <span className="text-slate-600 ml-1.5">active</span>
                     </div>
                     <div className="text-slate-600">{p.total_keys} total</div>
+                    <div className="text-slate-500">{p.model_count} models</div>
                     {p.locked_keys > 0 && <div className="text-red-400/80">{p.locked_keys} locked</div>}
                   </div>
                 </div>

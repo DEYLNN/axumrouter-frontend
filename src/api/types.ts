@@ -21,6 +21,7 @@ export interface ProviderMeta {
   total_keys: number
   active_keys: number
   locked_keys: number
+  model_count: number
   type: string
   category?: string
   icon_name: string
@@ -35,6 +36,8 @@ export interface ProviderDetail extends ProviderMeta {
   keys: KeyInfo[]
   capabilities: string[]
   base_url?: string
+  docs_url?: string
+  api_key_url?: string
 }
 
 export interface ModelInfo {
@@ -42,6 +45,7 @@ export interface ModelInfo {
   name: string
   available: boolean
   blocked: boolean
+  context_length?: number | null
 }
 
 export interface KeyInfo {

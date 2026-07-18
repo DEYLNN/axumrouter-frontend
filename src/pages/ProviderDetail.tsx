@@ -76,7 +76,28 @@ export default function ProviderDetail() {
             <div className="flex items-center gap-3 mt-1">
               <span className="text-[10px] font-mono text-slate-600">{label}</span>
               <span className="text-slate-700">·</span>
+              <span className="text-[10px] font-mono text-slate-600">{data.models?.length || 0} models</span>
+              <span className="text-slate-700">·</span>
               <span className="text-[10px] font-mono text-slate-600">{data.capabilities?.length || 0} capabilities</span>
+            </div>
+            <div className="flex items-center gap-3 mt-1.5">
+              {data.docs_url && (
+                <a href={data.docs_url} target="_blank" rel="noopener noreferrer"
+                  className="text-[10px] font-mono text-cyan-400/70 hover:text-cyan-300 transition-colors">
+                  Docs ↗
+                </a>
+              )}
+              {data.api_key_url && (
+                <a href={data.api_key_url} target="_blank" rel="noopener noreferrer"
+                  className="text-[10px] font-mono text-cyan-400/70 hover:text-cyan-300 transition-colors">
+                  API Key ↗
+                </a>
+              )}
+              {data.base_url && (
+                <span className="text-[10px] font-mono text-slate-600 truncate max-w-[200px]" title={data.base_url}>
+                  {data.base_url}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -126,6 +147,11 @@ export default function ProviderDetail() {
                 <div className="min-w-0">
                   <div className="text-xs font-medium text-slate-200 truncate">{m.name}</div>
                   <div className="text-[9px] font-mono text-slate-600 truncate mt-0.5">{m.id}</div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-2">
+                  {m.context_length && (
+                    <span className="text-[9px] font-mono text-slate-500 bg-white/[0.04] px-1.5 py-0.5 rounded">{m.context_length.toLocaleString()}</span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0 ml-3">
