@@ -22,8 +22,11 @@ export interface ProviderMeta {
   active_keys: number
   locked_keys: number
   type: string
+  category?: string
   icon_name: string
   color: string
+  docs_url?: string
+  api_key_url?: string
   oauth_flow: string | null
 }
 

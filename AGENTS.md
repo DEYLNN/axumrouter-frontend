@@ -25,6 +25,7 @@
 
 ## Project
 AxumRouter Frontend — admin dashboard untuk AI Gateway.
+Git repo: `DEYLNN/axumrouter-frontend`
 
 ## Workspace
 ```
