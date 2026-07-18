@@ -36,6 +36,7 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
       color: '#f59e0b',
       total_keys: comboModels.length,
       active_keys: comboModels.length,
+      locked_keys: 0,
       docs_url: '',
       api_key_url: '',
       oauth_flow: null,
