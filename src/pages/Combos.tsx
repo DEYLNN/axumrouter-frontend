@@ -86,21 +86,17 @@ export default function Combos() {
     load()
   }
 
+  const toggleRoundRobin = async (id: string) => {
+    await apiFetch(`/combos/${id}/roundrobin`, { method: 'POST' })
+    load()
+  }
+
   const openPicker = async () => {
     try {
       const r = await apiFetch('/models/all')
       const data = await r.json()
       setAllModels(data)
     } catch { /* noop */ }
-    const m: AllModels = {}
-    for (const p of providers) {
-      try {
-        const r = await apiFetch(`/providers/${p.id}`)
-        const d = await r.json()
-        m[p.id] = (d.models || []).map((md: any) => ({ id: md.id, enabled: true, owned_by: p.id }))
-      } catch { /* noop */ }
-    }
-    setAllModels(m)
     setShowPicker(true)
   }
 
@@ -165,10 +161,26 @@ export default function Combos() {
                     {c.description && <p className="text-[10px] font-mono text-slate-600 mt-0.5">{c.description}</p>}
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
+                  {/* Active toggle */}
                   <button onClick={() => toggleCombo(c.id)}
-                    className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/[0.06] transition-all text-slate-500 hover:text-slate-300">
-                    {c.is_active ? '⏸' : '▶'}
+                    className={`relative w-9 h-5 rounded-full transition-all ${
+                      c.is_active ? 'bg-emerald-500' : 'bg-slate-700'
+                    }`}
+                    title={c.is_active ? 'Active' : 'Paused'}>
+                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all shadow ${
+                      c.is_active ? 'translate-x-4' : 'translate-x-0'
+                    }`} />
+                  </button>
+                  {/* Round-robin toggle */}
+                  <button onClick={() => toggleRoundRobin(c.id)}
+                    className={`relative w-9 h-5 rounded-full transition-all ${
+                      c.round_robin ? 'bg-amber-500' : 'bg-slate-700'
+                    }`}
+                    title={c.round_robin ? 'Round-robin ON — random tier order' : 'Round-robin OFF — ordered fallback'}>
+                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all shadow ${
+                      c.round_robin ? 'translate-x-4' : 'translate-x-0'
+                    }`} />
                   </button>
                   <button onClick={() => deleteCombo(c.id)}
                     className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-red-500/10 transition-all text-slate-500 hover:text-red-400">
