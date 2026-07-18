@@ -31,7 +31,7 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
       display_name: 'Combos',
       name: 'combo',
       type: 'apikey',
-      category: 'apikey',
+      model_count: comboModels.length,
       icon_name: 'combo.svg',
       color: '#f59e0b',
       total_keys: comboModels.length,
