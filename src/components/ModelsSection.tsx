@@ -37,8 +37,6 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
       total_keys: comboModels.length,
       active_keys: comboModels.length,
       locked_keys: 0,
-      docs_url: '',
-      api_key_url: '',
       oauth_flow: null,
     }
     if (!grouped['apikey']) grouped['apikey'] = []

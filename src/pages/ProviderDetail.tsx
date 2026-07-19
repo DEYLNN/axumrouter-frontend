@@ -81,18 +81,6 @@ export default function ProviderDetail() {
               <span className="text-[10px] font-mono text-slate-600">{data.capabilities?.length || 0} capabilities</span>
             </div>
             <div className="flex items-center gap-3 mt-1.5">
-              {data.docs_url && (
-                <a href={data.docs_url} target="_blank" rel="noopener noreferrer"
-                  className="text-[10px] font-mono text-cyan-400/70 hover:text-cyan-300 transition-colors">
-                  Docs ↗
-                </a>
-              )}
-              {data.api_key_url && (
-                <a href={data.api_key_url} target="_blank" rel="noopener noreferrer"
-                  className="text-[10px] font-mono text-cyan-400/70 hover:text-cyan-300 transition-colors">
-                  API Key ↗
-                </a>
-              )}
               {data.base_url && (
                 <span className="text-[10px] font-mono text-slate-600 truncate max-w-[200px]" title={data.base_url}>
                   {data.base_url}

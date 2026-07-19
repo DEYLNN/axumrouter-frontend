@@ -203,7 +203,7 @@ export default function Layout() {
       <div className="lg:hidden h-14" />
 
       {/* === MAIN CONTENT === */}
-      <main className="lg:pl-60 min-h-screen">
+      <main className="lg:pl-60 min-h-screen overflow-x-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Outlet />
         </div>

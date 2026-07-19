@@ -50,11 +50,11 @@ export default function Combos() {
     setCreating(true)
     try {
       const tiers = selectedModels.map((mid, i) => {
-        const [prov] = mid.split('/')
+        const [prov, ...rest] = mid.split('/')
         return {
           tier: i + 1,
           provider: prov,
-          model: mid,
+          model: rest.join('/'),
           role: i === 0 ? 'PRIMARY' : 'fallback',
         }
       })
@@ -141,7 +141,9 @@ export default function Combos() {
           </h1>
           <p className="text-[10px] font-mono text-slate-500 mt-0.5">{combos.length} combos</p>
         </div>
-        <button onClick={() => setShowCreate(true)}
+        <button onClick={() => {
+          setEditingId(null); setNewName(''); setNewDesc(''); setSelectedModels([]); setShowCreate(true)
+        }}
           className="px-4 py-2 rounded-lg text-[11px] font-mono font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all"
           style={{ boxShadow: '0 0 10px rgba(6,182,212,0.1)' }}>
           + New Combo
@@ -232,7 +234,7 @@ export default function Combos() {
       </div>
 
       {/* Create modal */}
-      <Modal open={showCreate} onClose={() => !creating && setShowCreate(false)} maxWidth="max-w-lg">
+      <Modal open={showCreate} onClose={() => { setShowCreate(false); setEditingId(null); setNewName(''); setNewDesc(''); setSelectedModels([]) }} maxWidth="max-w-lg">
 
             <h2 className="text-sm font-bold text-slate-200 mb-4">Create Combo</h2>
 
@@ -295,7 +297,7 @@ export default function Combos() {
                 className="flex-1 py-2.5 rounded-lg text-[11px] font-mono font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all disabled:opacity-40">
                 {creating ? 'Creating...' : `Create (${selectedModels.length} tiers)`}
               </button>
-              <button onClick={() => setShowCreate(false)} disabled={creating}
+              <button onClick={() => { setShowCreate(false); setEditingId(null); setNewName(''); setNewDesc(''); setSelectedModels([]) }} disabled={creating}
                 className="px-4 py-2.5 rounded-lg text-[11px] font-mono text-slate-500 hover:text-slate-300 transition-all">Cancel</button>
             </div>
         </Modal>

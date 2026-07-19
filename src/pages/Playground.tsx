@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react'
-import { iconUrl, getProviders, getProviderDetail, testModel } from '../api'
+import { iconUrl, getProviders, getProviderDetail, validateModels, testModel } from '../api'
 import type { ProviderMeta, ProviderDetail, ModelInfo, TestResult } from '../api'
-
+import type { ValidateModel } from '../api/types'
 
 export default function Playground() {
   const [providers, setProviders] = useState<ProviderMeta[]>([])
   const [selected, setSelected] = useState<string>('')
   const [providerDetail, setProviderDetail] = useState<ProviderDetail | null>(null)
   const [models, setModels] = useState<ModelInfo[]>([])
+  const [remoteModels, setRemoteModels] = useState<ValidateModel[]>([])
+  const [remoteLoading, setRemoteLoading] = useState(false)
+  const [remoteError, setRemoteError] = useState('')
+  const [selectedKeyId, setSelectedKeyId] = useState<string>('')
   const [customModel, setCustomModel] = useState('')
   const [testing, setTesting] = useState(false)
   const [result, setResult] = useState<TestResult | null>(null)
@@ -35,13 +39,44 @@ export default function Playground() {
     if (!selected) {
       setProviderDetail(null)
       setModels([])
+      setRemoteModels([])
+      setRemoteError('')
+      setSelectedKeyId('')
       return
     }
     getProviderDetail(selected).then(d => {
       setProviderDetail(d)
       setModels(d.models || [])
+      // auto-select first active key
+      const active = (d.keys || []).find(k => !k.is_locked)
+      setSelectedKeyId(active?.id || '')
     }).catch(console.error)
+    fetchRemote('')
   }, [selected])
+
+  const fetchRemote = (keyId: string) => {
+    if (!selected) return
+    setRemoteLoading(true)
+    setRemoteError('')
+    validateModels(selected, keyId || undefined).then(r => {
+      if (r.ok && r.models) {
+        setRemoteModels(r.models)
+      } else {
+        setRemoteError(r.error || 'Failed')
+        setRemoteModels([])
+      }
+    }).catch(e => {
+      setRemoteError(e.message)
+      setRemoteModels([])
+    }).finally(() => setRemoteLoading(false))
+  }
+
+  const handleKeyChange = (keyId: string) => {
+    setSelectedKeyId(keyId)
+    setRemoteModels([])
+    setRemoteError('')
+    fetchRemote(keyId)
+  }
 
   const handleTest = async () => {
     if (!selected) return
@@ -69,7 +104,7 @@ export default function Playground() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 bg-clip-text text-transparent"
@@ -82,21 +117,19 @@ export default function Playground() {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Left: Provider + Model selection */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Provider selector — modern */}
-          <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden"
+        <div className="lg:col-span-2 space-y-4 min-w-0">
+          {/* Provider selector */}
+          <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden min-w-0"
             style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
             <div className="px-5 py-3 border-b border-white/[0.04]">
               <h2 className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider">Provider</h2>
             </div>
             <div className="p-5">
-              {/* Search */}
               <input type="text" value={search} onChange={e => { setSearch(e.target.value); setOpen(true) }}
                 onFocus={() => setOpen(true)} placeholder="Search provider..."
                 className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-3 py-2.5 text-[11px] font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-500/40 transition-all mb-2"
                 style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }} />
 
-              {/* Selected pill */}
               {selected && !open && (
                 <div onClick={() => setOpen(true)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-cyan-500/5 border border-cyan-500/20 cursor-pointer hover:bg-cyan-500/10 transition-all">
@@ -115,7 +148,6 @@ export default function Playground() {
                 </div>
               )}
 
-              {/* Dropdown */}
               {open && (
                 <div className="rounded-lg bg-[#0d1225] border border-white/[0.1] shadow-xl shadow-black/50 max-h-56 overflow-y-auto"
                   style={{ boxShadow: '0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)' }}>
@@ -163,29 +195,54 @@ export default function Playground() {
           {/* Base URL & Model */}
           {selected && providerDetail && (
             <>
-              {/* Base URL */}
-              <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden"
+              <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden min-w-0"
                 style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
                 <div className="px-5 py-3 border-b border-white/[0.04]">
                   <h2 className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider">Base URL</h2>
                 </div>
                 <div className="p-5">
-                  <code className="block text-[11px] font-mono text-slate-400 bg-black/40 rounded-lg px-3 py-2.5 border border-white/[0.06] break-all"
+                  <code className="block text-[11px] font-mono text-slate-400 bg-black/40 rounded-lg px-3 py-2.5 border border-white/[0.06] break-all overflow-hidden"
                     style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
                     {providerDetail.base_url || `${providerDetail.display_name} (no base URL)`}
                   </code>
                 </div>
               </div>
 
+              {/* Keys */}
+              <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden min-w-0"
+                style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
+                <div className="px-5 py-3 border-b border-white/[0.04]">
+                  <h2 className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider">Key</h2>
+                </div>
+                <div className="p-5 space-y-1">
+                  {(providerDetail.keys || []).length === 0 ? (
+                    <div className="text-[10px] font-mono text-slate-600">No keys</div>
+                  ) : (
+                    (providerDetail.keys || []).map(k => (
+                      <div key={k.id}
+                        onClick={() => handleKeyChange(k.id)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all text-[11px] font-mono ${
+                          selectedKeyId === k.id
+                            ? 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20'
+                            : 'text-slate-400 hover:bg-white/[0.03] border border-transparent'
+                        } ${k.is_locked ? 'opacity-40' : ''}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${k.is_locked ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                        <span className="truncate flex-1">{k.label || k.id}</span>
+                        <span className="text-[9px] text-slate-600">{k.masked}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
               {/* Models */}
-              <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden"
+              <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden min-w-0"
                 style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
                 <div className="px-5 py-3 border-b border-white/[0.04] flex items-center justify-between">
                   <h2 className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider">Models</h2>
-                  <span className="text-[9px] font-mono text-slate-600">{models.length}</span>
+                  <span className="text-[9px] font-mono text-slate-600">{models.length} / {remoteModels.length || '?'}</span>
                 </div>
                 <div className="p-5 space-y-3">
-                  {/* Custom model input */}
                   <div>
                     <div className="text-[9px] font-mono text-slate-600 uppercase tracking-wider mb-1">Custom model</div>
                     <input type="text" value={customModel} onChange={e => setCustomModel(e.target.value)}
@@ -194,7 +251,13 @@ export default function Playground() {
                       style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }} />
                   </div>
 
-                  {/* Model list */}
+                  {remoteLoading && (
+                    <div className="text-[10px] font-mono text-slate-500 animate-pulse">Fetching remote models...</div>
+                  )}
+                  {remoteError && (
+                    <div className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-[10px] font-mono text-red-400 break-all overflow-hidden">{remoteError}</div>
+                  )}
+
                   <div className="max-h-48 overflow-y-auto space-y-1 scrollbar-thin">
                     {models.map(m => (
                       <div key={m.id}
@@ -207,9 +270,26 @@ export default function Playground() {
                         <div className="truncate">{m.id}</div>
                       </div>
                     ))}
+                    {models.length === 0 && remoteModels.length > 0 && (
+                      <div className="text-[9px] font-mono text-slate-500 mb-1 px-1">Remote models ({remoteModels.length}):</div>
+                    )}
+                    {remoteModels.filter(rm => !models.some(m => m.id === rm.id)).map(rm => (
+                      <div key={rm.id}
+                        onClick={() => { setCustomModel(rm.id); setResult(null) }}
+                        className={`px-3 py-2 rounded-lg cursor-pointer transition-all text-[11px] font-mono ${
+                          customModel === rm.id
+                            ? 'bg-purple-500/10 text-purple-300 border border-purple-500/20'
+                            : 'text-slate-500 hover:bg-white/[0.03] border border-transparent'
+                        }`}>
+                        <div className="truncate flex items-center gap-2">
+                          <span>{rm.id}</span>
+                          {rm.context_length && <span className="text-[9px] text-slate-600">{rm.context_length.toLocaleString()}</span>}
+                          <span className="text-[8px] text-slate-700 ml-auto">remote</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* Test button */}
                   <button onClick={handleTest} disabled={testing || !customModel}
                     className="w-full py-2.5 rounded-lg text-[11px] font-mono font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all disabled:opacity-40"
                     style={{ boxShadow: '0 0 10px rgba(6,182,212,0.1)' }}>
@@ -222,14 +302,14 @@ export default function Playground() {
         </div>
 
         {/* Right: Results */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 min-w-0 max-w-full w-full">
           {!selected ? (
             <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl p-12 text-center"
               style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
               <div className="text-xs font-mono text-slate-600">Select a provider to start testing</div>
             </div>
           ) : result ? (
-            <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden"
+            <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden min-w-0"
               style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
               <div className="px-5 py-3 border-b border-white/[0.04] flex items-center justify-between">
                 <h2 className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider">Result</h2>
@@ -240,7 +320,6 @@ export default function Playground() {
                 </span>
               </div>
               <div className="p-5 space-y-4">
-                {/* Stats grid */}
                 <div className="grid grid-cols-3 gap-3">
                   <div className="px-4 py-3 rounded-lg bg-black/40 border border-white/[0.04]">
                     <div className="text-[8px] font-mono text-slate-600 uppercase tracking-wider">Latency</div>
@@ -256,11 +335,10 @@ export default function Playground() {
                   </div>
                 </div>
 
-                {/* Response */}
                 {result.ok ? (
                   <div>
                     <div className="text-[9px] font-mono text-slate-600 uppercase tracking-wider mb-1.5">Response</div>
-                    <div className="px-4 py-3 rounded-lg bg-black/40 border border-white/[0.04]">
+                    <div className="px-4 py-3 rounded-lg bg-black/40 border border-white/[0.04] break-words overflow-hidden">
                       <p className="text-xs font-mono text-slate-300 whitespace-pre-wrap break-all">{result.response || '(empty)'}</p>
                     </div>
                     <div className="flex items-center gap-3 mt-2 text-[10px] font-mono text-slate-600">
@@ -271,7 +349,7 @@ export default function Playground() {
                 ) : (
                   <div>
                     <div className="text-[9px] font-mono text-slate-600 uppercase tracking-wider mb-1.5">Error</div>
-                    <div className="px-4 py-3 rounded-lg bg-red-950/20 border border-red-900/40">
+                    <div className="px-4 py-3 rounded-lg bg-red-950/20 border border-red-900/40 break-words overflow-hidden">
                       <p className="text-xs font-mono text-red-400/90 break-all">{result.error || 'Unknown error'}</p>
                     </div>
                   </div>

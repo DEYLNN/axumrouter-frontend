@@ -26,8 +26,6 @@ export interface ProviderMeta {
   category?: string
   icon_name: string
   color: string
-  docs_url?: string
-  api_key_url?: string
   oauth_flow: string | null
 }
 
@@ -36,8 +34,7 @@ export interface ProviderDetail extends ProviderMeta {
   keys: KeyInfo[]
   capabilities: string[]
   base_url?: string
-  docs_url?: string
-  api_key_url?: string
+  validate_url?: string
 }
 
 export interface ModelInfo {
@@ -153,4 +150,18 @@ export interface QuotaData {
 export interface ExportResult {
   tables: Record<string, any[]>
   meta: { exported_at: string; version: string }
+}
+
+export interface ValidateModel {
+  id: string
+  name?: string
+  owned_by?: string | null
+  context_length?: number | null
+}
+
+export interface ValidateModelsResponse {
+  ok: boolean
+  error?: string
+  models?: ValidateModel[]
+  raw?: any
 }

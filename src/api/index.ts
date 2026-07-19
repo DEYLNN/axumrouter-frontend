@@ -7,12 +7,12 @@ export { API_BASE, fetcher, apiFetch, iconUrl } from './client'
 export type {
   SettingsData, ProviderMeta, ProviderDetail, ModelInfo, KeyInfo,
   LogEntry, ApiResponse, GatewayKey, DatabaseInfo, AuthFile, TestResult,
-  OAuthKey, RateLimit, QuotaData,
+  OAuthKey, RateLimit, QuotaData, ValidateModelsResponse,
 } from './types'
 
 // Domain functions
 export { getSettings, toggleSetting } from './settings'
-export { getProviders, getProviderDetail, blockModel, unblockModel, testModel } from './providers'
+export { getProviders, getProviderDetail, validateModels, blockModel, unblockModel, testModel } from './providers'
 export { getKeys, addKey, deleteKey } from './keys'
 export { getGatewayKeys, createGatewayKey, deleteGatewayKey, updateGatewayKey } from './gateway'
 export { startOAuth, exchangeOAuth } from './oauth'
