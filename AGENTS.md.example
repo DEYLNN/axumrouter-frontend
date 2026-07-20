@@ -1,0 +1,89 @@
+# AGENTS.md — AxumRouter Frontend
+
+## Golden Rule
+**Analisa dulu, edit setelah paham.** Sebelum ubah apapun, baca & pahami kode yang ada — struktur, aliran data, konteks.
+
+## Philosophy
+- **Clear** — readable > clever. Nama variable/fungsi jelas.
+- **Clean** — DRY. Satu tanggung jawab per fungsi. No dead code.
+- **Modern** — React 19, Tailwind v4, TS 6, fitur stabil terbaru.
+- **Modular** — file < 500 baris. Gede? Pecah.
+- **Maintainable** — kalo orang lain baca langsung ngerti.
+
+## Before Any Edit
+1. Baca struktur folder repo
+2. Pahamin alur data: input → process → output
+3. Identifikasi dependensi & side effects
+4. Baru edit
+
+## Project
+AxumRouter Frontend — admin dashboard untuk AI Gateway.
+Git repo: `DEYLNN/axumrouter-frontend`
+
+## Workspace
+```
+frontend/
+├── src/
+│   ├── api/           # Modular API layer (11 files)
+│   │   ├── client.ts  # fetcher + apiFetch helper
+│   │   ├── types.ts   # shared TS types
+│   │   ├── auth-files.ts, database.ts, gateway.ts, keys.ts
+│   │   ├── oauth.ts, providers.ts, settings.ts, usage.ts
+│   │   └── index.ts   # barrel re-export
+│   ├── components/    # Reusable
+│   │   ├── Modal.tsx           # universal modal wrapper
+│   │   ├── AuthFileCard.tsx    # extracted from AuthFiles page
+│   │   ├── DatabaseSection.tsx, GatewayKeysSection.tsx
+│   │   ├── ModelsSection.tsx, ModelPickerModal.tsx
+│   │   ├── OAuthConnectModal.tsx, FeatureRow.tsx
+│   │   ├── Layout.tsx, Loading.tsx, ErrorBox.tsx
+│   │   └── ProtectedRoute.tsx  # auth guard
+│   ├── hooks/         # useProviderDetail, useAsync
+│   ├── pages/         # Route pages
+│   │   ├── Dashboard.tsx, Endpoint.tsx, Settings.tsx
+│   │   ├── Providers.tsx, ProviderDetail.tsx
+│   │   ├── Playground.tsx, AuthFiles.tsx, Combos.tsx
+│   │   ├── Logs.tsx, Usage.tsx, Quota.tsx, ProxyPool.tsx
+│   │   └── Login.tsx
+│   ├── utils/         # Helpers
+│   │   └── clipboard.ts
+│   ├── assets/        # Static
+│   ├── App.tsx
+│   └── main.tsx
+├���─ public/
+├── .env.example
+├── package.json       # React 19.2.7, react-router-dom 7.18.1
+├── tsconfig.json
+├── vite.config.ts     # Tailwind v4.3.2
+└── oxlintrc.json
+```
+
+## Env
+```
+VITE_API_BASE=
+VITE_GATEWAY_BACKEND_URL=http://157.173.124.46:7444
+```
+
+## Commands
+```bash
+npm install        # Install deps
+npm run dev        # Dev server (port 5173)
+npm run build      # tsc -b && vite build
+npm run lint       # oxlint
+npx tsc --noEmit   # Type-check
+```
+
+## API Layer
+- `api/client.ts` → `apiFetch()` wrapper — all calls via `VITE_API_BASE`
+- `api/types.ts` → shared TS types
+- `api/index.ts` → barrel export
+- All `fetch('/admin/...')` in code → use `apiFetch('/...')`
+
+## Conventions
+- `npx tsc --noEmit` after every edit (gak usah nunggu build error)
+- Jangan hardcode API URL — selalu pake `VITE_API_BASE`
+- Props interface > inline types buat component props
+- Barrel export (`index.ts`) per folder
+- `git commit` terpisah dari backend
+- Tailwind v4 — `@import "tailwindcss"` di CSS, no config file
+- React 19 — use `use()` hook for promises/context

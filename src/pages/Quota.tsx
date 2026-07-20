@@ -30,6 +30,7 @@ export default function Quota() {
   const [providers, setProviders] = useState<Record<string, ProviderMeta>>({})
   const [quotaMap, setQuotaMap] = useState<Record<string, QuotaData>>({})
   const [refreshing, setRefreshing] = useState<Record<string, boolean>>({})
+  const [refreshMsg, setRefreshMsg] = useState<Record<string, {type:'ok'|'error', text:string}>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -58,15 +59,25 @@ export default function Quota() {
 
   const handleRefresh = async (keyId: string) => {
     setRefreshing(prev => ({ ...prev, [keyId]: true }))
+    setRefreshMsg(prev => ({ ...prev, [keyId]: { type:'ok', text:'↻ Refreshing...' } }))
     try {
       const res = await apiFetch(`/usage/refresh/${keyId}`, { method: 'POST' })
       const data = await res.json()
-      if (data.ok) fetchQuota(keyId)
-      else console.error('Refresh failed:', data.error)
+      if (data.ok) {
+        fetchQuota(keyId)
+        setRefreshMsg(prev => ({ ...prev, [keyId]: { type:'ok', text: data.message || '✓ Refreshed' } }))
+      } else {
+        const errText = data.error || 'Failed'
+        setRefreshMsg(prev => ({ ...prev, [keyId]: { type:'error', text: `✗ ${errText}` } }))
+        console.error('Refresh failed:', errText)
+      }
     } catch (e) {
+      const errText = String(e)
+      setRefreshMsg(prev => ({ ...prev, [keyId]: { type:'error', text: `✗ ${errText}` } }))
       console.error('Refresh error:', e)
     }
     setRefreshing(prev => ({ ...prev, [keyId]: false }))
+    setTimeout(() => setRefreshMsg(prev => { const n={...prev}; delete n[keyId]; return n }), 6000)
   }
 
   const barColor = (used: number, total: number, remaining: number) => {
@@ -163,10 +174,19 @@ export default function Quota() {
                     )}
                   </div>
                   {isExpired && (
-                    <button onClick={() => handleRefresh(key.id)} disabled={refreshing[key.id]}
-                      className="mt-2 w-full py-1.5 rounded-lg text-[10px] font-mono font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all disabled:opacity-50">
-                      {refreshing[key.id] ? '↻ Refreshing...' : '↻ Refresh Token'}
-                    </button>
+                    <div className="w-full">
+                      <button onClick={() => handleRefresh(key.id)} disabled={refreshing[key.id]}
+                        className="mt-2 w-full py-1.5 rounded-lg text-[10px] font-mono font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 transition-all disabled:opacity-50">
+                        {refreshing[key.id] ? '↻ Refreshing...' : '↻ Refresh Token'}
+                      </button>
+                      {refreshMsg[key.id] && (
+                        <div className={`mt-1 text-[9px] font-mono text-center w-full truncate ${
+                          refreshMsg[key.id].type === 'error' ? 'text-red-400' : 'text-emerald-400'
+                        }`}>
+                          {refreshMsg[key.id].text}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 
