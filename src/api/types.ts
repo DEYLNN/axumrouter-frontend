@@ -101,6 +101,7 @@ export interface AuthFile {
   provider_id: string
   label: string
   key_type: string
+  key_value: string
   key_preview: string
   email: string
   plan: string
@@ -115,6 +116,7 @@ export interface AuthFile {
   last_error_model?: string | null
   last_error_at?: string | null
   error_count?: number
+  is_problem?: boolean
 }
 
 export interface TestResult {

@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 
 import { iconUrl, apiFetch } from '../api'
 import { copyToClipboard } from '../utils/clipboard'
+import { getAuthFiles } from '../api/auth-files'
+import type { AuthFilesResponse } from '../api/auth-files'
 
 interface AuthFile {
   id: string
@@ -23,6 +25,7 @@ interface AuthFile {
   last_error_model?: string | null
   last_error_at?: string | null
   error_count?: number
+  is_problem?: boolean
 }
 
 interface ProviderInfo {
@@ -54,8 +57,12 @@ function parseExpiry(e: string) {
 
 export default function AuthFiles() {
   const [files, setFiles] = useState<AuthFile[]>([])
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [perPage, setPerPage] = useState(50)
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [providerFilter, setProviderFilter] = useState('all')
   const [onlyProblem, setOnlyProblem] = useState(false)
   const [onlyDisabled, setOnlyDisabled] = useState(false)
@@ -65,26 +72,54 @@ export default function AuthFiles() {
   const [providerOpen, setProviderOpen] = useState(false)
   const [providerMeta, setProviderMeta] = useState<Map<string, ProviderInfo>>(new Map())
   const [page, setPage] = useState(0)
-  const PAGE_SIZE = 20
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Debounce search: update searchQuery 300ms after user stops typing
+  const onSearchChange = useCallback((v: string) => {
+    setQuery(v)
+    clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => setSearchQuery(v), 300)
+  }, [])
 
   const getMeta = (id: string): ProviderInfo =>
     providerMeta.get(id) || { name: id.toUpperCase(), display_name: id.toUpperCase(), icon_name: '', color: '#6366F1' }
 
-  const load = async () => {
+  const load = useCallback(async (p: number, q: string, pid: string, prob: boolean, dis: boolean) => {
     setLoading(true)
     const [af, pm] = await Promise.all([
-      apiFetch('/auth-files').then(r => r.json()),
+      getAuthFiles({
+        page: p + 1, per_page: 50,
+        query: q || undefined,
+        provider_id: pid !== 'all' ? pid : undefined,
+        only_problem: prob || undefined,
+        only_disabled: dis || undefined,
+      }),
       apiFetch('/providers').then(r => r.json()).catch(() => []),
     ])
-    setFiles(af.files || [])
+    setFiles(af.files)
+    setTotal(af.total)
+    setTotalPages(af.total_pages)
+    setPerPage(af.per_page)
     const m = new Map<string, ProviderInfo>()
-    for (const p of Array.isArray(pm) ? pm : []) {
-      m.set(p.id, { name: p.display_name || p.name || p.id, display_name: p.display_name || p.name || p.id, icon_name: p.icon_name || '', color: p.color || '#6366F1' })
+    for (const prov of Array.isArray(pm) ? pm : []) {
+      m.set(prov.id, { name: prov.display_name || prov.name || prov.id, display_name: prov.display_name || prov.name || prov.id, icon_name: prov.icon_name || '', color: prov.color || '#6366F1' })
     }
     setProviderMeta(m)
     setLoading(false)
-  }
-  useEffect(() => { load() }, [])
+  }, [])
+
+  // Reload current page after mutations
+  const reload = useCallback(() => {
+    load(page, searchQuery, providerFilter, onlyProblem, onlyDisabled)
+  }, [page, searchQuery, providerFilter, onlyProblem, onlyDisabled, load])
+
+  // Fetch on mount + filter changes — reset to page 0
+  useEffect(() => {
+    setPage(0)
+  }, [searchQuery, providerFilter, onlyProblem, onlyDisabled])
+  useEffect(() => {
+    load(page, searchQuery, providerFilter, onlyProblem, onlyDisabled)
+  }, [page, searchQuery, providerFilter, onlyProblem, onlyDisabled, load])
 
   const providerTypes = useMemo(() => {
     const m = new Map<string, { id: string; name: string; count: number }>()
@@ -103,22 +138,11 @@ export default function AuthFiles() {
     return oauthBroken || hasUsageError
   }
 
-  const filtered = useMemo(() => {
-    const needle = query.toLowerCase().trim()
-    return files
-      .filter(f => providerFilter === 'all' || f.provider_id === providerFilter)
-      .filter(f => !onlyProblem || isProblem(f))
-      .filter(f => !onlyDisabled || !f.is_active)
-      .filter(f => !needle || [f.provider_id, f.label, f.email, f.key_type, f.last_error_message || ''].some(v => v?.toLowerCase().includes(needle)))
-  }, [files, query, providerFilter, onlyProblem, onlyDisabled])
+  const filtered = useMemo(() => files, [files])
 
-  useEffect(() => { setPage(0) }, [files, query, providerFilter, onlyProblem, onlyDisabled])
+  useEffect(() => { /* page reset handled in hook above */ }, [files])
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const paginated = useMemo(() => {
-    const start = page * PAGE_SIZE
-    return filtered.slice(start, start + PAGE_SIZE)
-  }, [filtered, page])
+  const paginated = useMemo(() => files, [files])
 
   const problemCount = useMemo(() => files.filter(isProblem).length, [files])
   const disabledCount = useMemo(() => files.filter(f => !f.is_active).length, [files])
@@ -193,7 +217,7 @@ export default function AuthFiles() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Import failed')
       setImportMsg({ ok: true, text: `Imported ${data.success || data.imported || items.length} file(s)` })
-      await load()
+      await reload()
     } catch (err: any) {
       setImportMsg({ ok: false, text: err.message })
     }
@@ -218,10 +242,7 @@ export default function AuthFiles() {
     }
     setImportMsg({ ok: failed === 0, text: failed ? `Deleted ${deleted}, failed ${failed}` : `Deleted ${deleted} account(s)` })
     setSelectedIds(new Set())
-    await load()
   }
-
-  // Build secrets per file for display
   const getSecrets = (f: AuthFile) => {
     const secs: { field: string; preview: string; value: string }[] = []
     let parsed: any = null
@@ -281,7 +302,7 @@ export default function AuthFiles() {
               <span className="sm:hidden">APIKEY</span>
               <span className="hidden sm:inline">API Key</span>
             </button>
-            <button onClick={load} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.08] text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-all font-mono text-sm shrink-0" disabled={loading}>
+            <button onClick={reload} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.08] text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-all font-mono text-sm shrink-0" disabled={loading}>
               {loading ? '⏳' : '↻'}
             </button>
           </div>
@@ -298,7 +319,7 @@ export default function AuthFiles() {
         <div className="rounded-xl border border-white/[0.06] bg-[#0a0f1e]/80 backdrop-blur-xl p-4 space-y-3"
           style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
           <div className="flex flex-wrap items-center gap-2">
-            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Filter by name, type, provider..."
+            <input value={query} onChange={e => onSearchChange(e.target.value)} placeholder="Filter by name, type, provider..."
               className="flex-1 min-w-[200px] h-9 bg-black/50 border border-white/[0.06] rounded-lg px-3 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/40 transition-all font-mono"
               style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }} />
             
@@ -399,7 +420,7 @@ export default function AuthFiles() {
 
         {/* CARDS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {!filtered.length && !loading && (
+          {!paginated.length && !loading && (
             <div className="col-span-full text-center py-20 text-zinc-600 text-sm font-mono">
               <span className="text-cyan-500/50">◈</span> No auth files match your filter.
             </div>
@@ -568,7 +589,7 @@ export default function AuthFiles() {
                         body: JSON.stringify({ ids: [f.id] }),
                       })
                       setImportMsg({ ok: true, text: 'Deleted' })
-                      await load()
+                      await reload()
                     } catch { setImportMsg({ ok: false, text: 'Delete failed' }) }
                   }}
                     className="text-[10px] py-1.5 rounded-lg border border-red-500/20 text-red-400/70 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/40 transition-all font-mono">
@@ -602,7 +623,7 @@ export default function AuthFiles() {
               className="h-8 w-8 flex items-center justify-center rounded-lg border border-white/[0.06] text-xs text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 disabled:opacity-30 disabled:pointer-events-none transition-all font-mono">
               ›
             </button>
-            <span className="text-[10px] font-mono text-zinc-600 ml-1">{filtered.length} total</span>
+            <span className="text-[10px] font-mono text-zinc-600 ml-1">{total} total</span>
           </div>
         )}
       </div>
