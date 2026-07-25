@@ -71,9 +71,10 @@ export default function Providers() {
     await deleteCustomProvider(id); refetch(); refetchCustom()
   }
 
-  const customCards: JSX.Element[] = []
+  const customCards = []
   for (const p of customFiltered) {
     const active = (p.total_keys || 0) > 0
+    const modelCount = p.models?.length ?? 0
     customCards.push(
       <div key={p.id} className="relative group">
         <button onClick={() => handleDelete(p.id)}
@@ -88,7 +89,7 @@ export default function Providers() {
                   <img src={CUSTOM_ICON} alt="" className="w-full h-full p-1 object-contain rounded-lg" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors leading-tight">{p.name || p.display_name}</h2>
+                  <h2 className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors leading-tight">{p.name}</h2>
                   <span className="text-[10px] font-mono text-slate-600 mt-0.5 block">{p.id}</span>
                 </div>
               </div>
@@ -101,7 +102,7 @@ export default function Providers() {
             <div className="flex items-center gap-5 text-[11px] font-mono">
               <div><span className="text-slate-300">{p.active_keys}</span><span className="text-slate-600 ml-1.5">active</span></div>
               <div className="text-slate-600">{p.total_keys} total</div>
-              <div className="text-slate-500">{p.model_count || 0} models</div>
+              <div className="text-slate-500">{modelCount} models</div>
             </div>
           </div>
         </Link>
@@ -109,7 +110,7 @@ export default function Providers() {
     )
   }
 
-  const oauthCards: JSX.Element[] = []
+  const oauthCards = []
   for (const p of oauth) {
     const active = (p.total_keys || 0) > 0
     oauthCards.push(
@@ -144,7 +145,7 @@ export default function Providers() {
     )
   }
 
-  const apikeyCards: JSX.Element[] = []
+  const apikeyCards = []
   for (const p of apikeyShow) {
     const active = (p.total_keys || 0) > 0
     apikeyCards.push(
