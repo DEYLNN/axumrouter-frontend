@@ -110,6 +110,11 @@ export interface AuthFile {
   expires_at: string
   is_active: boolean
   created_at: string
+  last_error_status?: number | null
+  last_error_message?: string | null
+  last_error_model?: string | null
+  last_error_at?: string | null
+  error_count?: number
 }
 
 export interface TestResult {

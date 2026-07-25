@@ -4,8 +4,8 @@ import type { ProviderMeta } from '../api'
 
 interface ToggleModel { id: string; owned_by: string; enabled: boolean; toggling?: boolean; context_length?: number | null }
 
-type Category = 'apikey' | 'oauth'
-const catLabel = (cat: string): string => cat === 'apikey' ? "API Key" : 'OAuth'
+type Category = 'apikey' | 'oauth' | 'custom'
+const catLabel = (cat: string): string => cat === 'apikey' ? "API Key" : cat === 'oauth' ? 'OAuth' : 'Custom'
 
 interface Props {
   providers: ProviderMeta[] | null

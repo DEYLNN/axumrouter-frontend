@@ -32,6 +32,17 @@ export default function Settings() {
         for (const [prov, list] of Object.entries(data)) {
           mapped[prov] = list.map(m => ({ id: m.id, owned_by: m.owned_by || prov, enabled: m.enabled, context_length: (m as any).context_length }))
         }
+        // Alias custom provider models: model prefix → custom_provider_id
+        if (providers) {
+          for (const p of providers) {
+            if (p.type === 'custom' && p.id.startsWith('custom_')) {
+              const prefix = p.id.replace('custom_', '')
+              if (mapped[prefix] && !mapped[p.id]) {
+                mapped[p.id] = mapped[prefix]
+              }
+            }
+          }
+        }
         setModels(mapped)
       } catch { /* noop */ }
     }

@@ -18,6 +18,11 @@ interface AuthFile {
   expires_at: string
   is_active: boolean
   created_at: string
+  last_error_status?: number | null
+  last_error_message?: string | null
+  last_error_model?: string | null
+  last_error_at?: string | null
+  error_count?: number
 }
 
 interface ProviderInfo {
@@ -59,6 +64,8 @@ export default function AuthFiles() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [providerOpen, setProviderOpen] = useState(false)
   const [providerMeta, setProviderMeta] = useState<Map<string, ProviderInfo>>(new Map())
+  const [page, setPage] = useState(0)
+  const PAGE_SIZE = 20
 
   const getMeta = (id: string): ProviderInfo =>
     providerMeta.get(id) || { name: id.toUpperCase(), display_name: id.toUpperCase(), icon_name: '', color: '#6366F1' }
@@ -90,18 +97,32 @@ export default function AuthFiles() {
     return Array.from(m.values()).sort((a, b) => a.name.localeCompare(b.name))
   }, [files])
 
+  const isProblem = (f: AuthFile) => {
+    const oauthBroken = f.key_type?.toLowerCase() === 'oauth' && (!f.has_access || !f.is_active)
+    const hasUsageError = (f.error_count ?? 0) > 0 || !!f.last_error_message || !!f.last_error_status
+    return oauthBroken || hasUsageError
+  }
+
   const filtered = useMemo(() => {
     const needle = query.toLowerCase().trim()
     return files
       .filter(f => providerFilter === 'all' || f.provider_id === providerFilter)
-      .filter(f => !onlyProblem || (f.key_type?.toLowerCase() === 'oauth' && (!f.has_access || !f.is_active)))
+      .filter(f => !onlyProblem || isProblem(f))
       .filter(f => !onlyDisabled || !f.is_active)
-      .filter(f => !needle || [f.provider_id, f.label, f.email, f.key_type].some(v => v?.toLowerCase().includes(needle)))
+      .filter(f => !needle || [f.provider_id, f.label, f.email, f.key_type, f.last_error_message || ''].some(v => v?.toLowerCase().includes(needle)))
   }, [files, query, providerFilter, onlyProblem, onlyDisabled])
 
-  const problemCount = useMemo(() => files.filter(f => f.key_type?.toLowerCase() === 'oauth' && (!f.has_access || !f.is_active)).length, [files])
+  useEffect(() => { setPage(0) }, [files, query, providerFilter, onlyProblem, onlyDisabled])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const paginated = useMemo(() => {
+    const start = page * PAGE_SIZE
+    return filtered.slice(start, start + PAGE_SIZE)
+  }, [filtered, page])
+
+  const problemCount = useMemo(() => files.filter(isProblem).length, [files])
   const disabledCount = useMemo(() => files.filter(f => !f.is_active).length, [files])
-  const visibleIds = useMemo(() => filtered.map(f => f.id), [filtered])
+  const visibleIds = useMemo(() => paginated.map(f => f.id), [paginated])
   const selectedVisible = useMemo(() => visibleIds.filter(id => selectedIds.has(id)).length, [visibleIds, selectedIds])
 
   const toggle = (id: string) => setSelectedIds(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })
@@ -364,7 +385,7 @@ export default function AuthFiles() {
             </button>
             <span className="w-px h-5 bg-white/[0.06]" />
             <button onClick={selectVisible} disabled={!visibleIds.length} className="rounded-full bg-white/[0.03] px-3 py-1 text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06] disabled:opacity-40 hover:text-cyan-300 transition-all">
-              Select {filtered.length}
+              Select {paginated.length}
             </button>
             <button onClick={clearVisible} disabled={!selectedVisible} className="rounded-full bg-white/[0.03] px-3 py-1 text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06] disabled:opacity-40 hover:text-cyan-300 transition-all">
               Clear {selectedVisible}
@@ -383,13 +404,15 @@ export default function AuthFiles() {
               <span className="text-cyan-500/50">◈</span> No auth files match your filter.
             </div>
           )}
-          {filtered.map(f => {
+          {paginated.map(f => {
             const meta = getMeta(f.provider_id)
             const sel = selectedIds.has(f.id)
             const exp = parseExpiry(f.expires_at)
             const secrets = getSecrets(f)
             const isOAuth = f.key_type?.toLowerCase() === 'oauth'
-            const problem = isOAuth && (!f.has_access || !f.is_active) ? (!f.has_access ? 'no_access' : 'disabled') : null
+            const oauthBroken = isOAuth && (!f.has_access || !f.is_active)
+            const hasUsageError = (f.error_count ?? 0) > 0 || !!f.last_error_message || !!f.last_error_status
+            const problem = oauthBroken ? (!f.has_access ? 'no_access' : 'disabled') : hasUsageError ? 'error' : null
             const accentColor = meta.color || '#6366F1'
 
             return (
@@ -434,7 +457,14 @@ export default function AuthFiles() {
                         {f.is_active ? 'active' : 'disabled'}
                       </span>
                       {problem && !onlyDisabled && (
-                        <span className="text-[9px] font-mono text-red-400/70 bg-red-500/6 border border-red-500/20 px-1.5 py-px rounded">problem</span>
+                        <span className="text-[9px] font-mono text-red-400/70 bg-red-500/6 border border-red-500/20 px-1.5 py-px rounded">
+                          {problem === 'error' ? 'error' : 'problem'}
+                        </span>
+                      )}
+                      {!!(f.error_count && f.error_count > 0) && (
+                        <span className="text-[9px] font-mono text-red-300/80 bg-red-500/10 border border-red-500/25 px-1.5 py-px rounded">
+                          {f.error_count} err
+                        </span>
                       )}
                     </div>
                     <div className="text-[12px] text-white/70 font-medium truncate mt-0.5" title={f.label}>{f.label || '—'}</div>
@@ -477,6 +507,29 @@ export default function AuthFiles() {
                         <span className="text-zinc-300">{fmtDate(f.expires_at)}</span>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* LAST ERROR (from usage logs) */}
+                {hasUsageError && (
+                  <div className="mx-3 mb-2 rounded-lg border border-red-500/25 bg-red-950/20 p-2.5 space-y-1"
+                    style={{ boxShadow: '0 0 12px rgba(239,68,68,0.08)' }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[9px] font-mono font-semibold text-red-300/90 uppercase tracking-wider">Last error</span>
+                      <span className="text-[9px] font-mono text-red-400/80">
+                        {f.last_error_status ? `[${f.last_error_status}]` : 'ERR'}
+                        {f.error_count ? ` · ${f.error_count}x` : ''}
+                      </span>
+                    </div>
+                    {f.last_error_message && (
+                      <div className="text-[10px] font-mono text-red-300/85 break-words leading-relaxed">
+                        {f.last_error_message}
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between gap-2 text-[9px] font-mono text-red-400/50">
+                      <span className="truncate" title={f.last_error_model || ''}>{f.last_error_model || '—'}</span>
+                      <span className="shrink-0">{f.last_error_at ? fmtDate(f.last_error_at) : ''}</span>
+                    </div>
                   </div>
                 )}
 
@@ -526,6 +579,32 @@ export default function AuthFiles() {
             )
           })}
         </div>
+
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-2">
+            <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-white/[0.06] text-xs text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 disabled:opacity-30 disabled:pointer-events-none transition-all font-mono">
+              ‹
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button key={i} onClick={() => setPage(i)}
+                className={`h-8 min-w-[2rem] flex items-center justify-center rounded-lg text-xs font-mono transition-all ${
+                  i === page
+                    ? 'bg-cyan-500/12 text-cyan-300 border border-cyan-500/30'
+                    : 'text-zinc-500 border border-white/[0.04] hover:text-zinc-300 hover:border-white/[0.1]'
+                }`}
+                style={i === page ? { boxShadow: '0 0 10px rgba(6,182,212,0.15)' } : {}}>
+                {i + 1}
+              </button>
+            ))}
+            <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
+              className="h-8 w-8 flex items-center justify-center rounded-lg border border-white/[0.06] text-xs text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 disabled:opacity-30 disabled:pointer-events-none transition-all font-mono">
+              ›
+            </button>
+            <span className="text-[10px] font-mono text-zinc-600 ml-1">{filtered.length} total</span>
+          </div>
+        )}
       </div>
     </div>
   )

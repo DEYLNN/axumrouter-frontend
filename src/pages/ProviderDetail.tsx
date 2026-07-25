@@ -1,9 +1,9 @@
 import Modal from '../components/Modal'
 import { useEffect, useMemo, useState, useRef } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import OAuthConnectModal from '../components/OAuthConnectModal'
 import { useProviderDetail } from '../hooks/useProviderDetail'
-import { iconUrl } from '../api'
+import { iconUrl, deleteCustomProvider, addCustomModel, removeCustomModel } from '../api'
 
 const typeLabel: Record<string, string> = {
   apikey: "API Key",
@@ -13,9 +13,14 @@ const typeLabel: Record<string, string> = {
 
 export default function ProviderDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const ctx = useProviderDetail(id)
+  const [showAddModel, setShowAddModel] = useState(false)
+  const [newModel, setNewModel] = useState({ model_id: '', ctx: 256000 })
 
   useEffect(() => { ctx.load() }, [ctx.load])
+
+  const isCustom = id?.startsWith('custom_')
 
   const providerInfo = useMemo(() => ctx.data ? {
     id: ctx.data.id, name: ctx.data.name, display_name: ctx.data.display_name,
@@ -88,6 +93,19 @@ export default function ProviderDetail() {
               )}
             </div>
           </div>
+          {isCustom && (
+            <button onClick={async () => {
+              if (!confirm('Delete this custom provider?')) return
+              if (!id) return
+              await deleteCustomProvider(id)
+              navigate('/admin/providers')
+            }}
+              className="self-start mt-1 w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors shrink-0" title="Delete provider">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -125,7 +143,13 @@ export default function ProviderDetail() {
       <div className="rounded-xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.06] overflow-hidden">
         <div className="px-5 py-3 border-b border-white/[0.04] flex items-center justify-between">
           <h2 className="text-[10px] font-mono font-semibold uppercase tracking-[0.12em] text-slate-500">Models</h2>
-          <span className="text-[10px] font-mono text-slate-600">{data.models.length}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-slate-600">{data.models.length}</span>
+            {isCustom && (
+              <button onClick={() => setShowAddModel(true)}
+                className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-colors">+ Add Model</button>
+            )}
+          </div>
         </div>
         <div className="divide-y divide-white/[0.04]">
           {data.models.map(m => (
@@ -184,6 +208,20 @@ export default function ProviderDetail() {
                     </svg>
                   )}
                 </button>
+                {isCustom && (
+                  <button onClick={async () => {
+                    if (!confirm(`Delete model "${m.id}"?`)) return
+                    if (!id) return
+                    const rawId = m.id.split('/').slice(1).join('/') || m.id
+                    await removeCustomModel(id, rawId)
+                    ctx.load()
+                  }}
+                    className="w-7 h-7 flex items-center justify-center rounded-md text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete model">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -319,6 +357,40 @@ export default function ProviderDetail() {
             </div>
             <button onClick={() => ctx.setTestResult(null)} className="w-full mt-4 py-2 rounded-lg text-[10px] font-mono text-slate-400 bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.15]">Close</button>
         </Modal>
+      )}
+
+      {/* Add Model Modal */}
+      {isCustom && (
+      <Modal open={showAddModel} onClose={() => setShowAddModel(false)}>
+        <h2 className="text-sm font-bold text-slate-200 mb-4">Add Model</h2>
+        <div className="space-y-3">
+          <div>
+            <label className="text-[10px] font-mono text-slate-500 mb-1 block">Model ID</label>
+            <input value={newModel.model_id} onChange={e => setNewModel(f => ({ ...f, model_id: e.target.value }))}
+              placeholder="model-name"
+              className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-500/40" />
+          </div>
+          <div>
+            <label className="text-[10px] font-mono text-slate-500 mb-1 block">Context Length</label>
+            <input type="number" value={newModel.ctx} onChange={e => setNewModel(f => ({ ...f, ctx: +e.target.value }))}
+              className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500/40" />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <button onClick={() => setShowAddModel(false)}
+            className="px-3 py-1.5 text-[10px] font-mono text-slate-500 hover:text-slate-300">Cancel</button>
+          <button onClick={async () => {
+            if (!id || !newModel.model_id) return
+            await addCustomModel(id, newModel)
+            setShowAddModel(false)
+            setNewModel({ model_id: '', ctx: 256000 })
+            ctx.load()
+          }} disabled={!newModel.model_id}
+            className="px-4 py-1.5 text-[10px] font-mono font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-lg hover:bg-cyan-500/20 disabled:opacity-40">
+            Add
+          </button>
+        </div>
+      </Modal>
       )}
 
       {/* OAuth Modal */}

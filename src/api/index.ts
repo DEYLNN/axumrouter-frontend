@@ -13,6 +13,7 @@ export type {
 // Domain functions
 export { getSettings, toggleSetting } from './settings'
 export { getProviders, getProviderDetail, validateModels, blockModel, unblockModel, testModel } from './providers'
+export { listCustomProviders, createCustomProvider, deleteCustomProvider, getCustomProvider, addCustomModel, removeCustomModel } from './custom-providers'
 export { getKeys, addKey, deleteKey } from './keys'
 export { getGatewayKeys, createGatewayKey, deleteGatewayKey, updateGatewayKey } from './gateway'
 export { startOAuth, exchangeOAuth } from './oauth'
