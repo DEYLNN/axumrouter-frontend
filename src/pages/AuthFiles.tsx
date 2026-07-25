@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { iconUrl, apiFetch } from '../api'
 import { copyToClipboard } from '../utils/clipboard'
 import { getAuthFiles } from '../api/auth-files'
-import type { AuthFilesResponse } from '../api/auth-files'
 
 interface AuthFile {
   id: string
@@ -59,7 +58,6 @@ export default function AuthFiles() {
   const [files, setFiles] = useState<AuthFile[]>([])
   const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
-  const [perPage, setPerPage] = useState(50)
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -77,7 +75,7 @@ export default function AuthFiles() {
   // Debounce search: update searchQuery 300ms after user stops typing
   const onSearchChange = useCallback((v: string) => {
     setQuery(v)
-    clearTimeout(searchTimer.current)
+    clearTimeout(searchTimer.current ?? undefined)
     searchTimer.current = setTimeout(() => setSearchQuery(v), 300)
   }, [])
 
@@ -99,7 +97,6 @@ export default function AuthFiles() {
     setFiles(af.files)
     setTotal(af.total)
     setTotalPages(af.total_pages)
-    setPerPage(af.per_page)
     const m = new Map<string, ProviderInfo>()
     for (const prov of Array.isArray(pm) ? pm : []) {
       m.set(prov.id, { name: prov.display_name || prov.name || prov.id, display_name: prov.display_name || prov.name || prov.id, icon_name: prov.icon_name || '', color: prov.color || '#6366F1' })
@@ -137,8 +134,6 @@ export default function AuthFiles() {
     const hasUsageError = (f.error_count ?? 0) > 0 || !!f.last_error_message || !!f.last_error_status
     return oauthBroken || hasUsageError
   }
-
-  const filtered = useMemo(() => files, [files])
 
   useEffect(() => { /* page reset handled in hook above */ }, [files])
 
