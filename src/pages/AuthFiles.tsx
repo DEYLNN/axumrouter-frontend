@@ -34,6 +34,13 @@ interface ProviderInfo {
   color: string
 }
 
+interface Stats {
+  total: number
+  active: number
+  disabled: number
+  providers: { provider_id: string; count: number }[]
+}
+
 
 function fmtDate(v?: string) { return v ? new Date(v).toLocaleString() : '-' }
 
@@ -69,6 +76,7 @@ export default function AuthFiles() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [providerOpen, setProviderOpen] = useState(false)
   const [providerMeta, setProviderMeta] = useState<Map<string, ProviderInfo>>(new Map())
+  const [stats, setStats] = useState<Stats | null>(null)
   const [page, setPage] = useState(0)
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -84,7 +92,7 @@ export default function AuthFiles() {
 
   const load = useCallback(async (p: number, q: string, pid: string, prob: boolean, dis: boolean) => {
     setLoading(true)
-    const [af, pm] = await Promise.all([
+    const [af, pm, st] = await Promise.all([
       getAuthFiles({
         page: p + 1, per_page: 50,
         query: q || undefined,
@@ -93,10 +101,12 @@ export default function AuthFiles() {
         only_disabled: dis || undefined,
       }),
       apiFetch('/providers').then(r => r.json()).catch(() => []),
+      apiFetch('/auth-files/stats').then(r => r.json()).catch(() => null),
     ])
     setFiles(af.files)
     setTotal(af.total)
     setTotalPages(af.total_pages)
+    if (st?.providers) setStats(st)
     const m = new Map<string, ProviderInfo>()
     for (const prov of Array.isArray(pm) ? pm : []) {
       m.set(prov.id, { name: prov.display_name || prov.name || prov.id, display_name: prov.display_name || prov.name || prov.id, icon_name: prov.icon_name || '', color: prov.color || '#6366F1' })
@@ -119,15 +129,22 @@ export default function AuthFiles() {
   }, [page, searchQuery, providerFilter, onlyProblem, onlyDisabled, load])
 
   const providerTypes = useMemo(() => {
-    const m = new Map<string, { id: string; name: string; count: number }>()
-    for (const f of files) {
-      const meta = getMeta(f.provider_id)
-      const cur = m.get(f.provider_id) || { id: f.provider_id, name: meta.name, count: 0 }
-      cur.count++
-      m.set(f.provider_id, cur)
+    if (!stats?.providers) {
+      // fallback: from current page
+      const m = new Map<string, { id: string; name: string; count: number }>()
+      for (const f of files) {
+        const meta = getMeta(f.provider_id)
+        const cur = m.get(f.provider_id) || { id: f.provider_id, name: meta.name, count: 0 }
+        cur.count++
+        m.set(f.provider_id, cur)
+      }
+      return Array.from(m.values()).sort((a, b) => a.name.localeCompare(b.name))
     }
-    return Array.from(m.values()).sort((a, b) => a.name.localeCompare(b.name))
-  }, [files])
+    return stats.providers.map(p => {
+      const meta = getMeta(p.provider_id)
+      return { id: p.provider_id, name: meta.name, count: p.count }
+    }).sort((a, b) => a.name.localeCompare(b.name))
+  }, [stats, files])
 
   const isProblem = (f: AuthFile) => {
     const oauthBroken = f.key_type?.toLowerCase() === 'oauth' && (!f.has_access || !f.is_active)
@@ -271,9 +288,9 @@ export default function AuthFiles() {
                 style={{ textShadow: '0 0 30px rgba(6,182,212,0.3)' }}>
                 AUTH FILES
               </h1>
-              <span className="rounded-full bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-mono text-cyan-400">{files.length}</span>
+              <span className="rounded-full bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-mono text-cyan-400">{stats?.total ?? files.length}</span>
             </div>
-            <p className="text-xs text-zinc-500 mt-0.5 font-mono">Provider credentials · {files.filter(f => f.is_active).length} active</p>
+            <p className="text-xs text-zinc-500 mt-0.5 font-mono">Provider credentials · {stats?.active ?? files.filter(f => f.is_active).length} active</p>
           </div>
           <div className="flex gap-1.5">
             <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-cyan-500/25 bg-cyan-500/5 px-2 sm:px-4 text-xs text-cyan-300 hover:bg-cyan-500/15 hover:border-cyan-500/40 transition-all font-mono"
@@ -342,7 +359,7 @@ export default function AuthFiles() {
                   {providerFilter === 'all' ? 'All providers' : getMeta(providerFilter).name}
                 </span>
                 <span className="text-zinc-600 text-[10px]">
-                  {providerFilter === 'all' ? files.length : providerTypes.find(p => p.id === providerFilter)?.count || 0}
+                  {providerFilter === 'all' ? (stats?.total ?? files.length) : providerTypes.find(p => p.id === providerFilter)?.count || 0}
                 </span>
                 <svg className={`w-3.5 h-3.5 text-zinc-500 transition-transform ${providerOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M6 9l6 6 6-6"/></svg>
               </button>
@@ -360,7 +377,7 @@ export default function AuthFiles() {
                         <svg className="w-3 h-3 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                       </div>
                       <span className="flex-1 text-left">All providers</span>
-                      <span className="text-zinc-600">{files.length}</span>
+                      <span className="text-zinc-600">{stats?.total ?? files.length}</span>
                       {providerFilter === 'all' && <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
                     </button>
                     {providerTypes.map(p => {
@@ -598,25 +615,43 @@ export default function AuthFiles() {
 
         {/* PAGINATION */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 pt-2">
+          <div className="flex items-center justify-center gap-1.5 pt-2">
             <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-white/[0.06] text-xs text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 disabled:opacity-30 disabled:pointer-events-none transition-all font-mono">
-              ‹
+              className="h-8 px-2.5 flex items-center justify-center rounded-lg border border-white/[0.06] text-xs text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 disabled:opacity-30 disabled:pointer-events-none transition-all font-mono">
+              ← Prev
             </button>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button key={i} onClick={() => setPage(i)}
-                className={`h-8 min-w-[2rem] flex items-center justify-center rounded-lg text-xs font-mono transition-all ${
-                  i === page
-                    ? 'bg-cyan-500/12 text-cyan-300 border border-cyan-500/30'
-                    : 'text-zinc-500 border border-white/[0.04] hover:text-zinc-300 hover:border-white/[0.1]'
-                }`}
-                style={i === page ? { boxShadow: '0 0 10px rgba(6,182,212,0.15)' } : {}}>
-                {i + 1}
-              </button>
-            ))}
+            {(() => {
+              const pages: (number | '...')[] = []
+              const total = totalPages
+              const cur = page
+              if (total <= 7) {
+                for (let i = 0; i < total; i++) pages.push(i)
+              } else {
+                pages.push(0)
+                if (cur > 2) pages.push('...')
+                for (let i = Math.max(1, cur - 1); i <= Math.min(total - 2, cur + 1); i++) pages.push(i)
+                if (cur < total - 3) pages.push('...')
+                pages.push(total - 1)
+              }
+              return pages.map((p, idx) =>
+                p === '...' ? (
+                  <span key={`ellipsis-${idx}`} className="text-zinc-600 text-xs px-1 font-mono">…</span>
+                ) : (
+                  <button key={p} onClick={() => setPage(p)}
+                    className={`h-8 min-w-[2rem] flex items-center justify-center rounded-lg text-xs font-mono transition-all ${
+                      p === page
+                        ? 'bg-cyan-500/12 text-cyan-300 border border-cyan-500/30'
+                        : 'text-zinc-500 border border-white/[0.04] hover:text-zinc-300 hover:border-white/[0.1]'
+                    }`}
+                    style={p === page ? { boxShadow: '0 0 10px rgba(6,182,212,0.15)' } : {}}>
+                    {p + 1}
+                  </button>
+                )
+              )
+            })()}
             <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-              className="h-8 w-8 flex items-center justify-center rounded-lg border border-white/[0.06] text-xs text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 disabled:opacity-30 disabled:pointer-events-none transition-all font-mono">
-              ›
+              className="h-8 px-2.5 flex items-center justify-center rounded-lg border border-white/[0.06] text-xs text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 disabled:opacity-30 disabled:pointer-events-none transition-all font-mono">
+              Next →
             </button>
             <span className="text-[10px] font-mono text-zinc-600 ml-1">{total} total</span>
           </div>
