@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import OAuthConnectModal from '../components/OAuthConnectModal'
 import { useProviderDetail } from '../hooks/useProviderDetail'
-import { iconUrl, deleteCustomProvider, addCustomModel, removeCustomModel } from '../api'
+import { iconUrl, deleteCustomProvider, addCustomModelForProvider, removeCustomModelForProvider, listCustomModels } from '../api'
 
 const typeLabel: Record<string, string> = {
   apikey: "API Key",
@@ -17,8 +17,16 @@ export default function ProviderDetail() {
   const ctx = useProviderDetail(id)
   const [showAddModel, setShowAddModel] = useState(false)
   const [newModel, setNewModel] = useState({ model_id: '', ctx: 256000 })
+  const [customModels, setCustomModels] = useState<string[]>([])
+  const [cmKey, setCmKey] = useState(0)
 
   useEffect(() => { ctx.load() }, [ctx.load])
+
+  // Load custom models whenever provider id changes or cmKey bumps
+  useEffect(() => {
+    if (!id) return
+    listCustomModels(id).then(rows => setCustomModels(rows.map(r => r.model_id))).catch(() => {})
+  }, [id, cmKey])
 
   const isCustom = id?.startsWith('custom_')
 
@@ -145,10 +153,8 @@ export default function ProviderDetail() {
           <h2 className="text-[10px] font-mono font-semibold uppercase tracking-[0.12em] text-slate-500">Models</h2>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono text-slate-600">{data.models.length}</span>
-            {isCustom && (
               <button onClick={() => setShowAddModel(true)}
                 className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-colors">+ Add Model</button>
-            )}
           </div>
         </div>
         <div className="divide-y divide-white/[0.04]">
@@ -208,13 +214,13 @@ export default function ProviderDetail() {
                     </svg>
                   )}
                 </button>
-                {isCustom && (
-                  <button onClick={async () => {
+                {customModels.includes(m.id.split('/').slice(1).join('/') || m.id) && (
+                <button onClick={async () => {
                     if (!confirm(`Delete model "${m.id}"?`)) return
                     if (!id) return
                     const rawId = m.id.split('/').slice(1).join('/') || m.id
-                    await removeCustomModel(id, rawId)
-                    ctx.load()
+                    await removeCustomModelForProvider(id, rawId)
+                    setCmKey(k => k + 1)
                   }}
                     className="w-7 h-7 flex items-center justify-center rounded-md text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete model">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -360,7 +366,6 @@ export default function ProviderDetail() {
       )}
 
       {/* Add Model Modal */}
-      {isCustom && (
       <Modal open={showAddModel} onClose={() => setShowAddModel(false)}>
         <h2 className="text-sm font-bold text-slate-200 mb-4">Add Model</h2>
         <div className="space-y-3">
@@ -381,17 +386,16 @@ export default function ProviderDetail() {
             className="px-3 py-1.5 text-[10px] font-mono text-slate-500 hover:text-slate-300">Cancel</button>
           <button onClick={async () => {
             if (!id || !newModel.model_id) return
-            await addCustomModel(id, newModel)
+            await addCustomModelForProvider(id, newModel)
             setShowAddModel(false)
             setNewModel({ model_id: '', ctx: 256000 })
-            ctx.load()
+            setCmKey(k => k + 1)
           }} disabled={!newModel.model_id}
             className="px-4 py-1.5 text-[10px] font-mono font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-lg hover:bg-cyan-500/20 disabled:opacity-40">
             Add
           </button>
         </div>
       </Modal>
-      )}
 
       {/* OAuth Modal */}
       <OAuthConnectModal

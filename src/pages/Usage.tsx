@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getLogs } from '../api'
+import { getLogs, getUsageKeys } from '../api'
 import { apiFetch } from '../api'
 import type { LogEntry } from '../api'
 
@@ -49,7 +49,7 @@ interface UsageStats {
 interface KeyUsage {
   gateway_key_id: string
   label: string | null
-  key_value: string
+  key_value: string | null
   requests: number
   prompt_tokens: number
   completion_tokens: number
@@ -66,7 +66,7 @@ export default function Usage() {
     // Initial load: stats + keyStats + logs (all once)
     getLogs(1, 50).then(r => { setLogs(r.logs); setTotal(r.total) }).catch(() => {})
     apiFetch('/usage/stats').then(r => r.json()).then(setStats).catch(() => {})
-    apiFetch('/usage/stats/keys').then(r => r.json()).then(setKeyStats).catch(() => {})
+    getUsageKeys().then(setKeyStats).catch(() => {})
   }, [])
 
   // Smooth real-time polling — only logs, not stats/keyStats

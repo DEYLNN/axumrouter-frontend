@@ -147,16 +147,34 @@ export default function Logs() {
                     </div>
                   </div>
 
-                  {/* Row 2: provider display name + key label */}
-                  <div className="flex items-center justify-between mb-3 ml-9">
-                    <span className="text-[10px] font-mono text-slate-500">{displayName}</span>
-                    {l.key_label ? (
-                      <span className="text-[9px] font-mono text-cyan-400/80 truncate max-w-[140px]" title={l.api_key_id}>{l.key_label}</span>
-                    ) : l.api_key_id ? (
-                      <span className="text-[9px] font-mono text-slate-600 truncate max-w-[120px]" title={l.api_key_id}>{l.api_key_id}</span>
-                    ) : l.error_message ? (
-                      <span className="text-[9px] font-mono text-slate-700">—</span>
-                    ) : null}
+                  {/* Row 2: provider display name + gateway key label + provider key label */}
+                  <div className="flex items-center justify-between mb-3 ml-9 gap-2">
+                    <span className="text-[10px] font-mono text-slate-500 truncate">{displayName}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {l.provider_key_label ? (
+                        <span
+                          className="text-[9px] font-mono text-amber-400/80 truncate max-w-[120px]"
+                          title={l.provider_key_label}
+                        >
+                          🔑 {l.provider_key_label}
+                        </span>
+                      ) : null}
+                      {l.key_label ? (
+                        <span
+                          className="text-[9px] font-mono text-cyan-400/80 truncate max-w-[120px]"
+                          title={l.api_key_id}
+                        >
+                          {l.key_label}
+                        </span>
+                      ) : l.api_key_id ? (
+                        <span
+                          className="text-[9px] font-mono text-slate-600 truncate max-w-[120px]"
+                          title={l.api_key_id}
+                        >
+                          {l.api_key_id}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
 
                   {/* Row 3: stats */}
@@ -209,19 +227,18 @@ export default function Logs() {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-3 pt-2">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 pt-2 px-2 flex-nowrap">
             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
-              className="px-3 py-1.5 rounded-lg text-[11px] font-mono text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] transition-all disabled:opacity-30">← Prev</button>
-            <div className="flex items-center gap-1.5">
+              className="px-3 py-1.5 rounded-lg text-[11px] font-mono text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] transition-all disabled:opacity-30 shrink-0">← Prev</button>
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none justify-center">
               {(() => {
                 const pages: number[] = []
-                const maxVisible = 7
-                if (totalPages <= maxVisible) {
+                if (totalPages <= 7) {
                   for (let i = 1; i <= totalPages; i++) pages.push(i)
                 } else {
                   pages.push(1)
-                  const start = Math.max(2, page - 2)
-                  const end = Math.min(totalPages - 1, page + 2)
+                  const start = Math.max(2, page - 1)
+                  const end = Math.min(totalPages - 1, page + 1)
                   if (start > 2) pages.push(-1)
                   for (let i = start; i <= end; i++) pages.push(i)
                   if (end < totalPages - 1) pages.push(-1)
@@ -229,16 +246,16 @@ export default function Logs() {
                 }
                 return pages.map((p, idx) =>
                   p === -1 ? (
-                    <span key={`ellipsis-${idx}`} className="text-slate-600 px-1">…</span>
+                    <span key={`ellipsis-${idx}`} className="text-slate-600 px-0.5 shrink-0">…</span>
                   ) : (
                     <button key={p} onClick={() => setPage(p)}
-                      className={`w-7 h-7 rounded-lg text-[10px] font-mono transition-all ${p === page ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-slate-600 hover:text-slate-400 hover:bg-white/[0.04]'}`}>{p}</button>
+                      className={`w-6 h-6 rounded text-[10px] font-mono transition-all shrink-0 ${p === page ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' : 'text-slate-600 hover:text-slate-400 hover:bg-white/[0.04]'}`}>{p}</button>
                   )
                 )
               })()}
             </div>
             <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
-              className="px-3 py-1.5 rounded-lg text-[11px] font-mono text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] transition-all disabled:opacity-30">Next →</button>
+              className="px-3 py-1.5 rounded-lg text-[11px] font-mono text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] transition-all disabled:opacity-30 shrink-0">Next →</button>
           </div>
         )}
       </div>

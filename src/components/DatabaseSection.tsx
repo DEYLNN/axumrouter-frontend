@@ -4,7 +4,7 @@ import { exportDatabase, importDatabase } from '../api'
 
 interface Props {
   dbInfo: DbInfo | null
-  stats: { totalModels: number; disabledModels: number; blockedModels: number; totalUsage: number }
+  stats: { totalModels: number; disabledModels: number; blockedModels: number }
   onDbReload: () => void
 }
 
@@ -58,8 +58,7 @@ export default function DatabaseSection({ dbInfo, stats, onDbReload }: Props) {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-slate-600">
               <span>{stats.totalModels} models</span><span>·</span>
               <span className="text-red-400/60">{stats.disabledModels} disabled</span><span>·</span>
-              <span className="text-amber-400/60">{stats.blockedModels} blocked</span><span>·</span>
-              <span>{stats.totalUsage.toLocaleString()} requests</span>
+              <span className="text-amber-400/60">{stats.blockedModels} blocked</span>
             </div>
           </div>
         )}

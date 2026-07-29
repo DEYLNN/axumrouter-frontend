@@ -23,26 +23,6 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
     return acc
   }, {} as Record<Category, ProviderMeta[]>) ?? {} as Record<Category, ProviderMeta[]>
 
-  // Inject combo provider if combo models exist
-  const comboModels = models['combo']
-  if (comboModels && comboModels.length > 0) {
-    const comboMeta: ProviderMeta = {
-      id: 'combo',
-      display_name: 'Combos',
-      name: 'combo',
-      type: 'apikey',
-      model_count: comboModels.length,
-      icon_name: 'combo.svg',
-      color: '#f59e0b',
-      total_keys: comboModels.length,
-      active_keys: comboModels.length,
-      locked_keys: 0,
-      oauth_flow: null,
-    }
-    if (!grouped['apikey']) grouped['apikey'] = []
-    grouped['apikey'].push(comboMeta)
-  }
-
   const filter = (list: ToggleModel[]) => {
     if (!search) return list
     const q = search.toLowerCase()

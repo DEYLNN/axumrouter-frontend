@@ -19,7 +19,7 @@ export default function Settings() {
   const { data: dbInfo, refetch: reloadDb } = useAsync(getDatabaseInfo, [])
   const { data: providers } = useAsync(getProviders, [])
   const [models, setModels] = useState<Record<string, ToggleModel[]>>({})
-  const [stats, setStats] = useState({ totalModels: 0, disabledModels: 0, blockedModels: 0, totalUsage: 0 })
+  const [stats, setStats] = useState({ totalModels: 0, disabledModels: 0, blockedModels: 0 })
   const [gwKeys, setGwKeys] = useState<GatewayKeyJson[]>([])
 
   useEffect(() => {
@@ -55,22 +55,22 @@ export default function Settings() {
     Promise.all([
       apiFetch('/models/disabled').then(r => r.json()).catch(() => []),
       apiFetch('/models/blocked').then(r => r.json()).catch(() => []),
-      apiFetch('/usage/stats').then(r => r.json()).catch(() => ({ total_requests: 0 })),
-    ]).then(([_d, blocked, usage]) => {
+    ]).then(([, blocked]) => {
       let total = 0, dCount = 0
       for (const list of Object.values(models)) {
         for (const m of list) { total++; if (!m.enabled) dCount++ }
       }
-      setStats({ totalModels: total, disabledModels: dCount, blockedModels: Array.isArray(blocked) ? blocked.length : 0, totalUsage: usage?.total_requests || 0 })
+      setStats({ totalModels: total, disabledModels: dCount, blockedModels: Array.isArray(blocked) ? blocked.length : 0 })
     })
   }, [models])
 
   const toggleModel = async (modelId: string, enabled: boolean) => {
     setModels(prev => {
-      const next = { ...prev }
-      for (const [prov, list] of Object.entries(next)) {
+      const next: Record<string, ToggleModel[]> = {}
+      for (const [prov, list] of Object.entries(prev)) {
         const idx = list.findIndex(m => m.id === modelId)
-        if (idx > -1) { const nl = [...list]; nl[idx] = { ...nl[idx], enabled, toggling: true }; next[prov] = nl; break }
+        if (idx > -1) { const nl = [...list]; nl[idx] = { ...nl[idx], enabled, toggling: true }; next[prov] = nl }
+        else { next[prov] = list }
       }
       return next
     })
@@ -79,14 +79,27 @@ export default function Settings() {
       const data = await res.json()
       if (!data.ok) throw new Error('fail')
       setModels(prev => {
-        const next = { ...prev }
-        for (const [prov, list] of Object.entries(next)) {
+        const next: Record<string, ToggleModel[]> = {}
+        for (const [prov, list] of Object.entries(prev)) {
           const idx = list.findIndex(m => m.id === modelId)
-          if (idx > -1) { const nl = [...list]; nl[idx] = { ...nl[idx], toggling: false }; next[prov] = nl; break }
+          if (idx > -1) { const nl = [...list]; nl[idx] = { ...nl[idx], toggling: false }; next[prov] = nl }
+          else { next[prov] = list }
         }
         return next
       })
-    } catch { /* noop */ }
+    } catch (err) {
+      // Surface failure so the toggle can be diagnosed from DevTools console.
+      // Roll back the optimistic update since the DB row was not changed.
+      console.error('[toggleModel] failed:', modelId, enabled, err)
+      setModels(prev => {
+        const next = { ...prev }
+        for (const [prov, list] of Object.entries(next)) {
+          const idx = list.findIndex(m => m.id === modelId)
+          if (idx > -1) { const nl = [...list]; nl[idx] = { ...nl[idx], enabled: !enabled, toggling: false }; next[prov] = nl; break }
+        }
+        return next
+      })
+    }
   }
 
   if (loading) return <Loading />

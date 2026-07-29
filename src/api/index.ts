@@ -6,17 +6,18 @@ export { API_BASE, fetcher, apiFetch, iconUrl } from './client'
 // Types
 export type {
   SettingsData, ProviderMeta, ProviderDetail, ModelInfo, KeyInfo,
-  LogEntry, ApiResponse, GatewayKey, DatabaseInfo, AuthFile, TestResult,
-  OAuthKey, RateLimit, QuotaData, ValidateModelsResponse,
+  ApiResponse, GatewayKey, DatabaseInfo, TestResult,
+  RateLimit, ValidateModelsResponse, LogEntry, AuthFile,
 } from './types'
 
 // Domain functions
 export { getSettings, toggleSetting } from './settings'
-export { getProviders, getProviderDetail, validateModels, blockModel, unblockModel, testModel } from './providers'
+export { getProviders, getProviderDetail, validateModels, blockModel, unblockModel, testModel, listCustomModels, addCustomModelForProvider, removeCustomModelForProvider } from './providers'
 export { listCustomProviders, createCustomProvider, deleteCustomProvider, getCustomProvider, addCustomModel, removeCustomModel } from './custom-providers'
 export { getKeys, addKey, deleteKey } from './keys'
 export { getGatewayKeys, createGatewayKey, deleteGatewayKey, updateGatewayKey } from './gateway'
 export { startOAuth, exchangeOAuth } from './oauth'
-export { getLogs, clearLogs, getUsageStats, getUsageKeys, getUsageQuota, refreshUsageKey } from './usage'
 export { getDatabaseInfo, exportDatabase, importDatabase } from './database'
+export { getUsageStats, getUsageKeys, getLogs, clearLogs } from './usage'
+// Auth-files
 export { getAuthFiles } from './auth-files'

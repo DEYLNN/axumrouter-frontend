@@ -55,11 +55,18 @@ export interface KeyInfo {
   locked_remaining: number
 }
 
+export interface ApiResponse<T> {
+  ok: boolean
+  data?: T
+  error?: string
+}
+
 export interface LogEntry {
   id: string
   provider_id: string
   api_key_id: string
   key_label: string | null
+  provider_key_label?: string | null
   model_id: string
   status: string
   status_code: number | null
@@ -71,12 +78,6 @@ export interface LogEntry {
   request_body: string | null
   response_body: string | null
   created_at: string
-}
-
-export interface ApiResponse<T> {
-  ok: boolean
-  data?: T
-  error?: string
 }
 
 export interface GatewayKey {
@@ -94,6 +95,45 @@ export interface DatabaseInfo {
   tables: { name: string; rows: number; row_count: number }[]
   total_rows: number
   backup_count: number
+}
+
+export interface TestResult {
+  ok: boolean
+  response: string
+  model: string
+  latency_ms: number
+  prompt_tokens: number
+  completion_tokens: number
+  total_tokens: number
+  error: string | null
+}
+
+export interface RateLimit {
+  name: string
+  limit: number
+  remaining: number
+  used: number
+  period_seconds: number | null
+  reset_at: string | null
+}
+
+export interface ExportResult {
+  tables: Record<string, any[]>
+  meta: { exported_at: string; version: string }
+}
+
+export interface ValidateModel {
+  id: string
+  name?: string
+  owned_by?: string | null
+  context_length?: number | null
+}
+
+export interface ValidateModelsResponse {
+  ok: boolean
+  error?: string
+  models?: ValidateModel[]
+  raw?: any
 }
 
 export interface AuthFile {
@@ -119,56 +159,13 @@ export interface AuthFile {
   is_problem?: boolean
 }
 
-export interface TestResult {
-  ok: boolean
-  response: string
-  model: string
-  latency_ms: number
-  prompt_tokens: number
-  completion_tokens: number
-  total_tokens: number
-  error: string | null
-}
-
-export interface OAuthKey {
+export interface CustomModelRow {
   id: string
   provider_id: string
-  label: string | null
-}
-
-export interface RateLimit {
-  name: string
-  limit: number
-  remaining: number
-  used: number
-  period_seconds: number | null
-  reset_at: string | null
-}
-
-export interface QuotaData {
-  provider_id?: string
-  error?: string | null
-  expires_at?: string | null
-  last_refresh?: string | null
-  key_plan?: string | null
-  rate_limits?: RateLimit[]
-}
-
-export interface ExportResult {
-  tables: Record<string, any[]>
-  meta: { exported_at: string; version: string }
-}
-
-export interface ValidateModel {
-  id: string
-  name?: string
-  owned_by?: string | null
-  context_length?: number | null
-}
-
-export interface ValidateModelsResponse {
-  ok: boolean
-  error?: string
-  models?: ValidateModel[]
-  raw?: any
+  model_id: string
+  display_name: string
+  ctx: number
+  vision: number
+  tools: number
+  created_at: string
 }

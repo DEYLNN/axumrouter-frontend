@@ -3,29 +3,8 @@ import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { iconUrl, apiFetch } from '../api'
 import { copyToClipboard } from '../utils/clipboard'
 import { getAuthFiles } from '../api/auth-files'
-
-interface AuthFile {
-  id: string
-  provider_id: string
-  label: string
-  key_type: string
-  key_value: string
-  key_preview: string
-  email: string
-  plan: string
-  account_id: string
-  has_refresh: boolean
-  has_access: boolean
-  expires_at: string
-  is_active: boolean
-  created_at: string
-  last_error_status?: number | null
-  last_error_message?: string | null
-  last_error_model?: string | null
-  last_error_at?: string | null
-  error_count?: number
-  is_problem?: boolean
-}
+import { getSchema, validateImportItem } from '../api/import-schemas'
+import type { AuthFile } from '../api'
 
 interface ProviderInfo {
   name: string
@@ -41,8 +20,7 @@ interface Stats {
   providers: { provider_id: string; count: number }[]
 }
 
-
-function fmtDate(v?: string) { return v ? new Date(v).toLocaleString() : '-' }
+function fmtDate(v?: string) { return v ? new Date(v).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : '-' }
 
 function parseExpiry(e: string) {
   if (!e || !e.trim()) return { label: '∞', expired: false, infinite: true, seconds: Infinity }
@@ -71,8 +49,10 @@ export default function AuthFiles() {
   const [providerFilter, setProviderFilter] = useState('all')
   const [onlyProblem, setOnlyProblem] = useState(false)
   const [onlyDisabled, setOnlyDisabled] = useState(false)
+  const [statusCodeFilter, setStatusCodeFilter] = useState('all')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [importMsg, setImportMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [importProgress, setImportProgress] = useState<{ current: number; total: number } | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [providerOpen, setProviderOpen] = useState(false)
   const [providerMeta, setProviderMeta] = useState<Map<string, ProviderInfo>>(new Map())
@@ -80,47 +60,59 @@ export default function AuthFiles() {
   const [page, setPage] = useState(0)
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Debounce search: update searchQuery 300ms after user stops typing
   const onSearchChange = useCallback((v: string) => {
     setQuery(v)
     clearTimeout(searchTimer.current ?? undefined)
     searchTimer.current = setTimeout(() => setSearchQuery(v), 300)
   }, [])
 
-  const getMeta = (id: string): ProviderInfo =>
-    providerMeta.get(id) || { name: id.toUpperCase(), display_name: id.toUpperCase(), icon_name: '', color: '#6366F1' }
+  const getMeta = useCallback((id: string): ProviderInfo =>
+    providerMeta.get(id) || { name: id.toUpperCase(), display_name: id.toUpperCase(), icon_name: '', color: '#6366F1' }, [providerMeta])
 
   const load = useCallback(async (p: number, q: string, pid: string, prob: boolean, dis: boolean) => {
     setLoading(true)
-    const [af, pm, st] = await Promise.all([
-      getAuthFiles({
-        page: p + 1, per_page: 50,
-        query: q || undefined,
-        provider_id: pid !== 'all' ? pid : undefined,
-        only_problem: prob || undefined,
-        only_disabled: dis || undefined,
-      }),
+    // BE page: always load page 1 (100 keys). FE page p = internal 20/page sub-page.
+    const [bePage, pm] = await Promise.all([
+      getAuthFiles(1),
       apiFetch('/providers').then(r => r.json()).catch(() => []),
-      apiFetch('/auth-files/stats').then(r => r.json()).catch(() => null),
     ])
-    setFiles(af.files)
-    setTotal(af.total)
-    setTotalPages(af.total_pages)
-    if (st?.providers) setStats(st)
+    const allKeys = bePage.keys
+    const totalAll = bePage.total
+    // Filter client-side on the 100 loaded keys
+    let filtered = allKeys
+    if (q) {
+      const lq = q.toLowerCase()
+      filtered = filtered.filter(f => f.provider_id.toLowerCase().includes(lq) || (f.label || '').toLowerCase().includes(lq) || f.key_type.toLowerCase().includes(lq))
+    }
+    if (pid !== 'all') filtered = filtered.filter(f => f.provider_id === pid)
+    if (prob) filtered = filtered.filter(f => ((f.error_count ?? 0) > 0 || !!f.last_error_message || !!f.last_error_status))
+    if (dis) filtered = filtered.filter(f => !f.is_active)
+    // Status code sub-filter (only when problematic active)
+    if (prob && statusCodeFilter !== 'all') filtered = filtered.filter(f => f.last_error_status === Number(statusCodeFilter))
+    // FE pagination: 20 per internal page
+    const fePerPage = 20
+    const totalPages = Math.ceil(filtered.length / fePerPage)
+    const pageIdx = Math.min(p, Math.max(0, totalPages - 1))
+    const pageData = filtered.slice(pageIdx * fePerPage, (pageIdx + 1) * fePerPage)
+    setFiles(pageData)
+    setTotal(totalAll)
+    setTotalPages(totalPages)
+    setStats({ total: totalAll, active: allKeys.filter(f => f.is_active).length, disabled: allKeys.filter(f => !f.is_active).length, providers: null })
     const m = new Map<string, ProviderInfo>()
     for (const prov of Array.isArray(pm) ? pm : []) {
       m.set(prov.id, { name: prov.display_name || prov.name || prov.id, display_name: prov.display_name || prov.name || prov.id, icon_name: prov.icon_name || '', color: prov.color || '#6366F1' })
     }
     setProviderMeta(m)
     setLoading(false)
-  }, [])
+  }, [getMeta, statusCodeFilter])
 
-  // Reload current page after mutations
+  // Reset status code filter when leaving problematic mode
+  useEffect(() => { if (!onlyProblem) setStatusCodeFilter('all') }, [onlyProblem])
+
   const reload = useCallback(() => {
     load(page, searchQuery, providerFilter, onlyProblem, onlyDisabled)
   }, [page, searchQuery, providerFilter, onlyProblem, onlyDisabled, load])
 
-  // Fetch on mount + filter changes — reset to page 0
   useEffect(() => {
     setPage(0)
   }, [searchQuery, providerFilter, onlyProblem, onlyDisabled])
@@ -130,7 +122,6 @@ export default function AuthFiles() {
 
   const providerTypes = useMemo(() => {
     if (!stats?.providers) {
-      // fallback: from current page
       const m = new Map<string, { id: string; name: string; count: number }>()
       for (const f of files) {
         const meta = getMeta(f.provider_id)
@@ -144,7 +135,7 @@ export default function AuthFiles() {
       const meta = getMeta(p.provider_id)
       return { id: p.provider_id, name: meta.name, count: p.count }
     }).sort((a, b) => a.name.localeCompare(b.name))
-  }, [stats, files])
+  }, [stats, files, getMeta])
 
   const isProblem = (f: AuthFile) => {
     const oauthBroken = f.key_type?.toLowerCase() === 'oauth' && (!f.has_access || !f.is_active)
@@ -152,23 +143,43 @@ export default function AuthFiles() {
     return oauthBroken || hasUsageError
   }
 
-  useEffect(() => { /* page reset handled in hook above */ }, [files])
-
   const paginated = useMemo(() => files, [files])
 
   const problemCount = useMemo(() => files.filter(isProblem).length, [files])
   const disabledCount = useMemo(() => files.filter(f => !f.is_active).length, [files])
+  const availableCodes = useMemo(() => {
+    const codes = new Set<number>()
+    for (const f of files) {
+      if (f.last_error_status) codes.add(f.last_error_status)
+    }
+    return Array.from(codes).sort()
+  }, [files])
   const visibleIds = useMemo(() => paginated.map(f => f.id), [paginated])
   const selectedVisible = useMemo(() => visibleIds.filter(id => selectedIds.has(id)).length, [visibleIds, selectedIds])
 
-  const toggle = (id: string) => setSelectedIds(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const toggle = (id: string) => setSelectedIds(p => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n })
   const selectVisible = () => setSelectedIds(p => { const n = new Set(p); visibleIds.forEach(id => n.add(id)); return n })
   const clearVisible = () => setSelectedIds(p => { const n = new Set(p); visibleIds.forEach(id => n.delete(id)); return n })
 
   const downloadJson = async (f: AuthFile) => {
-    const res = await apiFetch(`/auth-files/download/${f.id}`)
-    if (!res.ok) { alert('Download failed'); return }
-    const blob = await res.blob()
+    let data: Record<string, any> = {
+      provider_id: f.provider_id,
+      key_type: f.key_type,
+      label: f.label,
+    }
+    // Try parse key_value as JSON for both OAuth and structured API keys (cf)
+    try {
+      const parsed = JSON.parse(f.key_value)
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        data = { ...data, ...parsed }
+        delete data.key_value
+      } else {
+        data.key_value = f.key_value
+      }
+    } catch {
+      data.key_value = f.key_value
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = `credential-${f.id.slice(0, 8)}.json`
@@ -221,14 +232,60 @@ export default function AuthFiles() {
     try {
       const parsed = await Promise.all(files.map(f => f.text().then(t => JSON.parse(t))))
       const items = parsed.flatMap(p => Array.isArray(p) ? p : Array.isArray(p.files) ? p.files : [p])
-      const res = await apiFetch('/auth-files/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(items),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Import failed')
-      setImportMsg({ ok: true, text: `Imported ${data.success || data.imported || items.length} file(s)` })
+      // Fetch valid provider IDs
+      const provRes = await apiFetch('/providers').then(r => r.json()).catch(() => [])
+      const validIds = new Set(provRes.map((p: any) => p.id))
+      let imported = 0, skipped = 0
+      const allErrors: string[] = []
+      const importedItems: string[] = []
+      setImportProgress({ current: 0, total: items.length })
+      for (const [idx, item] of items.entries()) {
+        const pid = item.provider_id || 'unknown'
+        const kt = item.key_type || 'apikey'
+        const schema = getSchema(pid, kt)
+        if (!schema) {
+          allErrors.push(`Item: no import schema for '${pid}:${kt}' — configure in import-schemas.ts first`)
+          skipped++
+          continue
+        }
+        const itemErrors = validateImportItem(item, schema, validIds)
+        if (itemErrors.length > 0) {
+          allErrors.push(`Item ${pid}: ${itemErrors.join('; ')}`)
+          skipped++
+          continue
+        }
+        try {
+          // Build key_value from structured fields
+          let kv = item.key_value
+          if (!kv && item.apiKey && item.accountId) kv = JSON.stringify({ apiKey: item.apiKey, accountId: item.accountId })
+          if (!kv && item.access_token) {
+            const oauthFields: Record<string, any> = { access_token: item.access_token }
+            if (item.email) oauthFields.email = item.email
+            if (item.orgId) oauthFields.orgId = item.orgId
+            if (item.refresh_token) oauthFields.refresh_token = item.refresh_token
+            kv = JSON.stringify(oauthFields)
+          }
+          if (!kv) kv = '{}'
+          await apiFetch('/keys', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              provider_id: pid,
+              key_value: kv,
+              label: item.label || item.email || '',
+            }),
+          })
+          imported++
+          importedItems.push(`${pid}/${item.label || item.email || item.key_value?.slice(0, 8) || ''}`)
+        } catch { skipped++ }
+        setImportProgress({ current: idx + 1, total: items.length })
+      }
+      setImportProgress(null)
+      const detail = importedItems.length > 0 ? `: ${importedItems.join(', ')}` : ''
+      const msg = allErrors.length > 0
+        ? `Imported ${imported}, skipped ${skipped}: ${allErrors.slice(0, 3).join(' | ')}${allErrors.length > 3 ? ` (+${allErrors.length - 3} more)` : ''}`
+        : `Imported ${imported} file(s)${detail}`
+      setImportMsg({ ok: imported > 0, text: msg })
       await reload()
     } catch (err: any) {
       setImportMsg({ ok: false, text: err.message })
@@ -243,10 +300,10 @@ export default function AuthFiles() {
     let deleted = 0, failed = 0
     for (const id of ids) {
       try {
-        const res = await apiFetch('/auth-files/delete', {
+        const res = await apiFetch('/keys/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: [id] }),
+          body: JSON.stringify({ key_id: id }),
         })
         await res.json()
         deleted++
@@ -254,25 +311,39 @@ export default function AuthFiles() {
     }
     setImportMsg({ ok: failed === 0, text: failed ? `Deleted ${deleted}, failed ${failed}` : `Deleted ${deleted} account(s)` })
     setSelectedIds(new Set())
+    await reload()
   }
+
   const getSecrets = (f: AuthFile) => {
     const secs: { field: string; preview: string; value: string }[] = []
     let parsed: any = null
     try { parsed = JSON.parse(f.key_value) } catch { parsed = null }
     if (f.key_type?.toLowerCase() === 'oauth') {
-      if (f.has_access) secs.push({
+      // Add id if available
+      const userId = parsed?.user?.id || parsed?.user_id || parsed?.userId
+      if (userId) secs.push({ field: 'id', preview: userId.slice(0, 8) + '...', value: userId })
+      const mask = (s: string) => s.length > 10 ? `${s.slice(0, 4)}...${s.slice(-4)}` : s.slice(0, 8)
+      if (parsed?.access_token) secs.push({
         field: 'access_token',
-        preview: '••••••••',
-        value: parsed?.access_token || '[stored in db]'
+        preview: mask(parsed.access_token),
+        value: parsed.access_token,
       })
-      if (f.has_refresh) secs.push({
+      if (parsed?.refresh_token) secs.push({
         field: 'refresh_token',
         preview: '••••••••',
-        value: parsed?.refresh_token || '[stored in db]'
+        value: parsed.refresh_token || '[stored in db]',
       })
     } else {
-      const rawKey = parsed?.apiKey || parsed?.apiToken || parsed?.key || f.key_value
-      secs.push({ field: 'api_key', preview: f.key_preview, value: rawKey })
+      const mask = (s: string) => s.length > 10 ? `${s.slice(0, 4)}...${s.slice(-4)}` : s.slice(0, 8)
+      if (parsed && parsed.accountId) {
+        // Cloudflare-style: JSON with apiKey + accountId
+        const apiKey = parsed.apiKey || parsed.apiToken || ''
+        if (apiKey) secs.push({ field: 'api_key', preview: mask(apiKey), value: apiKey })
+        secs.push({ field: 'account_id', preview: mask(parsed.accountId), value: parsed.accountId })
+      } else {
+        const rawKey = parsed?.apiKey || parsed?.apiToken || parsed?.key || f.key_value
+        secs.push({ field: 'api_key', preview: f.key_preview, value: rawKey })
+      }
     }
     return secs
   }
@@ -324,6 +395,20 @@ export default function AuthFiles() {
           <div className={`rounded-xl px-4 py-2.5 text-xs font-mono border ${importMsg.ok ? 'bg-emerald-500/8 text-emerald-300 border-emerald-500/25' : 'bg-red-500/8 text-red-300 border-red-500/25'}`}
             style={importMsg.ok ? { boxShadow: '0 0 15px rgba(52,211,153,0.1)' } : { boxShadow: '0 0 15px rgba(239,68,68,0.1)' }}>
             {importMsg.text}
+          </div>
+        )}
+
+        {importProgress && (
+          <div className="rounded-xl px-4 py-2.5 text-xs font-mono border bg-cyan-500/5 text-cyan-300 border-cyan-500/20"
+            style={{ boxShadow: '0 0 12px rgba(6,182,212,0.08)' }}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              <span>Importing... {importProgress.current}/{importProgress.total}</span>
+            </div>
+            <div className="w-full h-1 rounded-full bg-cyan-500/10 overflow-hidden">
+              <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-cyan-300 transition-all duration-200"
+                style={{ width: `${(importProgress.current / importProgress.total) * 100}%` }} />
+            </div>
           </div>
         )}
 
@@ -416,6 +501,23 @@ export default function AuthFiles() {
               style={onlyDisabled ? { boxShadow: '0 0 12px rgba(245,158,11,0.15)' } : {}}>
               Disabled {disabledCount}
             </button>
+            {onlyProblem && availableCodes.length > 0 && (
+              <>
+                <span className="w-px h-5 bg-white/[0.06]" />
+                <button onClick={() => setStatusCodeFilter('all')}
+                  className={`rounded-full px-2.5 py-1 transition-all text-[10px] font-mono ${statusCodeFilter === 'all' ? 'bg-red-500/15 text-red-300 border border-red-500/30' : 'bg-white/[0.03] text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06]'}`}
+                  style={statusCodeFilter === 'all' ? { boxShadow: '0 0 8px rgba(239,68,68,0.12)' } : {}}>
+                  All
+                </button>
+                {availableCodes.map(code => (
+                  <button key={code} onClick={() => setStatusCodeFilter(String(code))}
+                    className={`rounded-full px-2.5 py-1 transition-all text-[10px] font-mono ${statusCodeFilter === String(code) ? 'bg-red-500/20 text-red-300 border border-red-500/35' : 'bg-white/[0.03] text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06]'}`}
+                    style={statusCodeFilter === String(code) ? { boxShadow: '0 0 10px rgba(239,68,68,0.15)' } : {}}>
+                    {code}
+                  </button>
+                ))}
+              </>
+            )}
             <span className="w-px h-5 bg-white/[0.06]" />
             <button onClick={selectVisible} disabled={!visibleIds.length} className="rounded-full bg-white/[0.03] px-3 py-1 text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06] disabled:opacity-40 hover:text-cyan-300 transition-all">
               Select {paginated.length}
@@ -443,9 +545,7 @@ export default function AuthFiles() {
             const exp = parseExpiry(f.expires_at)
             const secrets = getSecrets(f)
             const isOAuth = f.key_type?.toLowerCase() === 'oauth'
-            const oauthBroken = isOAuth && (!f.has_access || !f.is_active)
             const hasUsageError = (f.error_count ?? 0) > 0 || !!f.last_error_message || !!f.last_error_status
-            const problem = oauthBroken ? (!f.has_access ? 'no_access' : 'disabled') : hasUsageError ? 'error' : null
             const accentColor = meta.color || '#6366F1'
 
             return (
@@ -485,18 +585,12 @@ export default function AuthFiles() {
                       <span className={`px-1.5 py-px text-[9px] rounded font-mono border ${
                         isOAuth ? 'border-purple-400/30 text-purple-300/70 bg-purple-500/6' : 'border-zinc-500/30 text-zinc-400 bg-white/[0.02]'
                       }`}>{isOAuth ? 'OAUTH' : 'API'}</span>
-                      <span className={`px-1.5 py-px text-[9px] rounded font-mono ${f.is_active ? 'text-emerald-400/70 bg-emerald-500/6 border border-emerald-500/20' : 'text-red-400/60 bg-red-500/6 border border-red-500/20'}`}
-                        style={f.is_active ? { boxShadow: '0 0 6px rgba(52,211,153,0.1)' } : {}}>
-                        {f.is_active ? 'active' : 'disabled'}
-                      </span>
-                      {problem && !onlyDisabled && (
-                        <span className="text-[9px] font-mono text-red-400/70 bg-red-500/6 border border-red-500/20 px-1.5 py-px rounded">
-                          {problem === 'error' ? 'error' : 'problem'}
-                        </span>
-                      )}
-                      {!!(f.error_count && f.error_count > 0) && (
-                        <span className="text-[9px] font-mono text-red-300/80 bg-red-500/10 border border-red-500/25 px-1.5 py-px rounded">
-                          {f.error_count} err
+                      {hasUsageError ? (
+                        <span className="px-1.5 py-px text-[9px] rounded font-mono text-red-400/80 bg-red-500/8 border border-red-500/25">error</span>
+                      ) : (
+                        <span className={`px-1.5 py-px text-[9px] rounded font-mono ${f.is_active ? 'text-emerald-400/70 bg-emerald-500/6 border border-emerald-500/20' : 'text-red-400/60 bg-red-500/6 border border-red-500/20'}`}
+                          style={f.is_active ? { boxShadow: '0 0 6px rgba(52,211,153,0.1)' } : {}}>
+                          {f.is_active ? 'active' : 'disabled'}
                         </span>
                       )}
                     </div>
@@ -543,7 +637,7 @@ export default function AuthFiles() {
                   </div>
                 )}
 
-                {/* LAST ERROR (from usage logs) */}
+                {/* LAST ERROR */}
                 {hasUsageError && (
                   <div className="mx-3 mb-2 rounded-lg border border-red-500/25 bg-red-950/20 p-2.5 space-y-1"
                     style={{ boxShadow: '0 0 12px rgba(239,68,68,0.08)' }}>
@@ -596,9 +690,9 @@ export default function AuthFiles() {
                   <button onClick={async () => {
                     if (!confirm(`Delete ${f.label || f.id}?`)) return
                     try {
-                      await apiFetch('/auth-files/delete', {
+                      await apiFetch('/keys/delete', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ids: [f.id] }),
+                        body: JSON.stringify({ key_id: f.id }),
                       })
                       setImportMsg({ ok: true, text: 'Deleted' })
                       await reload()
