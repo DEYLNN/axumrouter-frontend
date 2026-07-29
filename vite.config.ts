@@ -18,7 +18,7 @@ export default defineConfig({
       },
     },
   ],
-  base: '/',
+  base: '/admin/',
   appType: 'spa',
   server: {
     host: '0.0.0.0',
