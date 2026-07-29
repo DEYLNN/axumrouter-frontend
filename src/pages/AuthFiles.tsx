@@ -17,7 +17,7 @@ interface Stats {
   total: number
   active: number
   disabled: number
-  providers: { provider_id: string; count: number }[]
+  providers: { provider_id: string; count: number }[] | null
 }
 
 function fmtDate(v?: string) { return v ? new Date(v).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : '-' }
@@ -233,8 +233,8 @@ export default function AuthFiles() {
       const parsed = await Promise.all(files.map(f => f.text().then(t => JSON.parse(t))))
       const items = parsed.flatMap(p => Array.isArray(p) ? p : Array.isArray(p.files) ? p.files : [p])
       // Fetch valid provider IDs
-      const provRes = await apiFetch('/providers').then(r => r.json()).catch(() => [])
-      const validIds = new Set(provRes.map((p: any) => p.id))
+      const provRes: { id: string }[] = await apiFetch('/providers').then(r => r.json()).catch(() => [])
+      const validIds = new Set(provRes.map(p => p.id))
       let imported = 0, skipped = 0
       const allErrors: string[] = []
       const importedItems: string[] = []
