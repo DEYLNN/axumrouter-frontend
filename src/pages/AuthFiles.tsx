@@ -41,7 +41,6 @@ function parseExpiry(e: string) {
 
 export default function AuthFiles() {
   const [files, setFiles] = useState<AuthFile[]>([])
-  const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
@@ -56,7 +55,6 @@ export default function AuthFiles() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [providerOpen, setProviderOpen] = useState(false)
   const [providerMeta, setProviderMeta] = useState<Map<string, ProviderInfo>>(new Map())
-  const [error, setError] = useState('')
   const [stats, setStats] = useState<Stats | null>(null)
   const [page, setPage] = useState(0)
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -130,11 +128,8 @@ export default function AuthFiles() {
       const totalAll = bePage1.total
       const totalAllPages = Math.ceil(totalAll / fePerPage)
       setFiles(pageData)
-      setTotal(totalAll)
       setTotalPages(totalAllPages)
       setStats({ total: totalAll, active: pageData.filter(f => f.is_active).length, disabled: pageData.filter(f => !f.is_active).length, providers: null })
-      // Clear stale error if load succeeded
-      setError('')
       const m = new Map<string, ProviderInfo>()
       for (const prov of Array.isArray(pm) ? pm : []) {
         m.set(prov.id, { name: prov.display_name || prov.name || prov.id, display_name: prov.display_name || prov.name || prov.id, icon_name: prov.icon_name || '', color: prov.color || '#6366F1' })

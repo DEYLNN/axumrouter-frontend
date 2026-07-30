@@ -26,7 +26,7 @@ export const getAuthFiles = (params: AuthFilesQuery) => {
   if (params.provider_id && params.provider_id !== 'all') qs.set('provider_id', params.provider_id)
   if (params.only_problem) qs.set('only_problem', '1')
   if (params.only_disabled) qs.set('only_disabled', '1')
-  if (params.status_code != null && params.status_code !== 'all') qs.set('status_code', params.status_code)
+  if (params.status_code != null && params.status_code !== 'all') qs.set('status_code', String(params.status_code))
   return fetcher<AuthFilesResponse>(`/keys?${qs}`)
 }
 
