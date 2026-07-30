@@ -8,6 +8,7 @@ export interface AuthFilesQuery {
   provider_id?: string
   only_problem?: boolean
   only_disabled?: boolean
+  status_code?: string | number  // 'all' or specific code
 }
 
 export interface AuthFilesResponse {
@@ -25,5 +26,11 @@ export const getAuthFiles = (params: AuthFilesQuery) => {
   if (params.provider_id && params.provider_id !== 'all') qs.set('provider_id', params.provider_id)
   if (params.only_problem) qs.set('only_problem', '1')
   if (params.only_disabled) qs.set('only_disabled', '1')
+  if (params.status_code != null && params.status_code !== 'all') qs.set('status_code', params.status_code)
   return fetcher<AuthFilesResponse>(`/keys?${qs}`)
 }
+
+export const toggleAuthFile = (keyId: string, isActive: boolean) =>
+  fetcher<{ success: boolean; message: string }>(`/keys/toggle`, {
+    method: 'POST', body: JSON.stringify({ key_id: keyId, is_active: isActive }),
+  })

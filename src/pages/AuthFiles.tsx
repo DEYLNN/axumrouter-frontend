@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 
 import { iconUrl, apiFetch } from '../api'
 import { copyToClipboard } from '../utils/clipboard'
-import { getAuthFiles } from '../api/auth-files'
+import { getAuthFiles, toggleAuthFile } from '../api/auth-files'
 import { getSchema, validateImportItem } from '../api/import-schemas'
 import type { AuthFile } from '../api'
 
@@ -56,58 +56,125 @@ export default function AuthFiles() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [providerOpen, setProviderOpen] = useState(false)
   const [providerMeta, setProviderMeta] = useState<Map<string, ProviderInfo>>(new Map())
+  const [error, setError] = useState('')
   const [stats, setStats] = useState<Stats | null>(null)
   const [page, setPage] = useState(0)
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Generation counter — bumped on each load() call. Old responses ignored.
+  const loadGen = useRef(0)
+  // Latest searchQuery ref — keeps load() callbacks honest about which query
+  // they should send, even if a stale closure captured an older value.
+  const searchQueryRef = useRef('')
+  // Default icon/color fallback per provider ID — used when BE returns empty
+  // icon_name (e.g. for custom providers or missing data). Ensures UI never
+  // shows blank/gray icons for known providers.
+  const providerDefaults: Record<string, { icon: string; color: string }> = {
+    orc: { icon: 'orc.png', color: '#1a8cdb' },
+    ocf: { icon: 'ocf.webp', color: '#E87040' },
+    cf:  { icon: 'cf.png',  color: '#F38020' },
+    cl:  { icon: 'cl.png',  color: '#5B9BD5' },
+    fb:  { icon: 'fb.png',  color: '#4F7CFF' },
+    kc:  { icon: 'kc.png',  color: '#FF6B35' },
+  }
 
   const onSearchChange = useCallback((v: string) => {
     setQuery(v)
     clearTimeout(searchTimer.current ?? undefined)
-    searchTimer.current = setTimeout(() => setSearchQuery(v), 300)
+    searchTimer.current = setTimeout(() => {
+      searchQueryRef.current = v
+      setSearchQuery(v)
+    }, 300)
   }, [])
 
-  const getMeta = useCallback((id: string): ProviderInfo =>
-    providerMeta.get(id) || { name: id.toUpperCase(), display_name: id.toUpperCase(), icon_name: '', color: '#6366F1' }, [providerMeta])
+  const getMeta = useCallback((id: string): ProviderInfo => {
+    const fromMap = providerMeta.get(id)
+    // Trust BE response fully — name/display_name are real provider names like
+    // "OrcaRouter", not uppercase IDs. Use defaults only for icon/color.
+    if (fromMap && fromMap.name && fromMap.name !== fromMap.name.toUpperCase()) {
+      // Real name from BE — use as-is, supplement icon/color if missing.
+      const def = providerDefaults[id]
+      return {
+        name: fromMap.name,
+        display_name: fromMap.display_name || fromMap.name,
+        icon_name: fromMap.icon_name || (def?.icon ?? ''),
+        color: (fromMap.color && fromMap.color !== '#6366F1') ? fromMap.color : (def?.color ?? '#6366F1'),
+      }
+    }
+    // No real name from BE — fall back to id-based.
+    const def = providerDefaults[id]
+    if (def) {
+      return { name: id, display_name: id, icon_name: def.icon, color: def.color }
+    }
+    return fromMap || { name: id, display_name: id, icon_name: '', color: '#6366F1' }
+  }, [providerMeta, providerDefaults])
 
-  const load = useCallback(async (p: number, q: string, pid: string, prob: boolean, dis: boolean) => {
+  const load = useCallback(async (p: number, q: string, pid: string, prob: boolean, dis: boolean, sc?: string) => {
+    // Generation counter — bumped each call. Old responses discarded.
+    const myGen = ++loadGen.current
+    // Use ref for query — keeps behavior consistent if caller passed stale closure.
+    // Fall back to `q` arg if ref is empty (initial mount).
+    const effectiveQuery = q || searchQueryRef.current
     setLoading(true)
     // BE pagination: FE p (0-indexed) → BE page (1-indexed), 50/page
     const fePerPage = 50
     const bePage = p + 1
-    const [bePage1, pm] = await Promise.all([
-      getAuthFiles({ page: bePage, per_page: fePerPage, query: q || undefined, provider_id: pid, only_problem: prob, only_disabled: dis }),
-      apiFetch('/providers').then(r => r.json()).catch(() => []),
-    ])
-    const pageData = bePage1.keys
-    const totalAll = bePage1.total
-    const totalAllPages = Math.ceil(totalAll / fePerPage)
-    setFiles(pageData)
-    setTotal(totalAll)
-    setTotalPages(totalAllPages)
-    setStats({ total: totalAll, active: pageData.filter(f => f.is_active).length, disabled: pageData.filter(f => !f.is_active).length, providers: null })
-    const m = new Map<string, ProviderInfo>()
-    for (const prov of Array.isArray(pm) ? pm : []) {
-      m.set(prov.id, { name: prov.display_name || prov.name || prov.id, display_name: prov.display_name || prov.name || prov.id, icon_name: prov.icon_name || '', color: prov.color || '#6366F1' })
-    }
-    setProviderMeta(m)
-    setLoading(false)
-  }, [getMeta])
+    try {
+      const [bePage1, pm] = await Promise.all([
+        getAuthFiles({ page: bePage, per_page: fePerPage, query: effectiveQuery || undefined, provider_id: pid, only_problem: prob, only_disabled: dis, status_code: sc }),
+        apiFetch('/providers').then(r => r.json()).catch(() => []),
+      ])
+      // Drop stale response if newer load() has been called.
+      if (myGen !== loadGen.current) return
 
-  // Reset status code filter when leaving problematic mode
-  useEffect(() => { if (!onlyProblem) setStatusCodeFilter('all') }, [onlyProblem])
+      const pageData = bePage1.keys
+      const totalAll = bePage1.total
+      const totalAllPages = Math.ceil(totalAll / fePerPage)
+      setFiles(pageData)
+      setTotal(totalAll)
+      setTotalPages(totalAllPages)
+      setStats({ total: totalAll, active: pageData.filter(f => f.is_active).length, disabled: pageData.filter(f => !f.is_active).length, providers: null })
+      // Clear stale error if load succeeded
+      setError('')
+      const m = new Map<string, ProviderInfo>()
+      for (const prov of Array.isArray(pm) ? pm : []) {
+        m.set(prov.id, { name: prov.display_name || prov.name || prov.id, display_name: prov.display_name || prov.name || prov.id, icon_name: prov.icon_name || '', color: prov.color || '#6366F1' })
+      }
+      setProviderMeta(m)
+    } finally {
+      // Only clear loading if this is still the active load.
+      if (myGen === loadGen.current) setLoading(false)
+    }
+  }, [])
+
+  // Reset status code filter when leaving problematic mode, OR when provider
+  // changes (codes are per-page, the selected code may not exist for new provider).
+  useEffect(() => {
+    setStatusCodeFilter('all')
+  }, [onlyProblem, providerFilter, onlyDisabled])
 
   const reload = useCallback(() => {
-    load(page, searchQuery, providerFilter, onlyProblem, onlyDisabled)
-  }, [page, searchQuery, providerFilter, onlyProblem, onlyDisabled, load])
+    load(page, searchQuery, providerFilter, onlyProblem, onlyDisabled, statusCodeFilter)
+  }, [page, searchQuery, providerFilter, onlyProblem, onlyDisabled, statusCodeFilter, load])
 
   // Single effect: reset page + load in one shot
   useEffect(() => {
+    // Flush pending search debounce so latest input is used immediately
+    // (otherwise filter changes race with 300ms-debounced search updates).
+    if (searchTimer.current) {
+      clearTimeout(searchTimer.current)
+      searchTimer.current = null
+      // Sync query→searchQuery if there's a pending value
+      if (query !== searchQuery) {
+        searchQueryRef.current = query
+        setSearchQuery(query)
+      }
+    }
     setPage(0)
-    load(0, searchQuery, providerFilter, onlyProblem, onlyDisabled)
+    load(0, searchQuery, providerFilter, onlyProblem, onlyDisabled, statusCodeFilter)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, providerFilter, onlyProblem, onlyDisabled])
+  }, [searchQuery, providerFilter, onlyProblem, onlyDisabled, statusCodeFilter])
   useEffect(() => {
-    if (!loading) load(page, searchQuery, providerFilter, onlyProblem, onlyDisabled)
+    if (!loading) load(page, searchQuery, providerFilter, onlyProblem, onlyDisabled, statusCodeFilter)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
@@ -138,6 +205,9 @@ export default function AuthFiles() {
 
   const problemCount = useMemo(() => files.filter(isProblem).length, [files])
   const disabledCount = useMemo(() => files.filter(f => !f.is_active).length, [files])
+  // availableCodes pulled from current page only — limitation: codes from other pages
+  // won't show. Acceptable trade-off; user can browse pages to see all codes.
+  // BE filter still works correctly.
   const availableCodes = useMemo(() => {
     const codes = new Set<number>()
     for (const f of files) {
@@ -288,21 +358,34 @@ export default function AuthFiles() {
     const ids = Array.from(selectedIds)
     if (!ids.length) return
     if (!confirm(`Delete ${ids.length} selected account(s)?`)) return
+    // Show progress + disable re-entry
+    setImportProgress({ current: 0, total: ids.length })
+    setImportMsg(null)
+
+    const BATCH = 10
     let deleted = 0, failed = 0
-    for (const id of ids) {
-      try {
-        const res = await apiFetch('/keys/delete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key_id: id }),
-        })
-        await res.json()
-        deleted++
-      } catch { failed++ }
+    try {
+      // Parallel chunks — limited to BATCH concurrent to avoid DB lock / pool exhaustion.
+      for (let i = 0; i < ids.length; i += BATCH) {
+        const chunk = ids.slice(i, i + BATCH)
+        const results = await Promise.allSettled(chunk.map(id =>
+          apiFetch('/keys/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key_id: id }),
+          }).then(r => r.json()).then(_ => id)
+        ))
+        for (const r of results) {
+          if (r.status === 'fulfilled') deleted++; else failed++
+        }
+        setImportProgress({ current: Math.min(i + BATCH, ids.length), total: ids.length })
+      }
+      setImportMsg({ ok: failed === 0, text: failed ? `Deleted ${deleted}, failed ${failed}` : `Deleted ${deleted} account(s)` })
+      setSelectedIds(new Set())
+      await reload()
+    } finally {
+      setImportProgress(null)
     }
-    setImportMsg({ ok: failed === 0, text: failed ? `Deleted ${deleted}, failed ${failed}` : `Deleted ${deleted} account(s)` })
-    setSelectedIds(new Set())
-    await reload()
   }
 
   const getSecrets = (f: AuthFile) => {
@@ -587,12 +670,73 @@ export default function AuthFiles() {
                     </div>
                     <div className="text-[12px] text-white/70 font-medium truncate mt-0.5" title={f.label}>{f.label || '—'}</div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => downloadJson(f)}
-                      className="opacity-40 hover:opacity-100 transition-all p-1"
-                      style={{ color: sel ? accentColor : '#71717a', textShadow: sel ? `0 0 8px ${accentColor}50` : 'none' }}
-                      title="Download JSON">↓</button>
+                </div>
+
+                {/* STATUS & TOGGLE BAR — active/inactive switch with error counter */}
+                <div className="mx-3 mb-2 px-2.5 py-2 rounded-lg border border-white/[0.05] bg-black/30 flex items-center justify-between gap-2"
+                  style={{ boxShadow: 'inset 0 0 8px rgba(0,0,0,0.15)' }}>
+                  {/* Left: state icon + label + error counter */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    {f.is_active ? (
+                      <svg className="w-3.5 h-3.5 shrink-0 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="w-3.5 h-3.5 shrink-0 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                    <span className={`text-[10px] font-mono font-semibold ${f.is_active ? 'text-emerald-400/90' : 'text-red-400/90'}`}>
+                      {f.is_active ? 'ACTIVE' : 'DISABLED'}
+                    </span>
+                    {(f.consecutive_error_count ?? 0) > 0 && (
+                      <span
+                        className={`px-1.5 py-px text-[9px] rounded font-mono border ${
+                          (f.consecutive_error_count ?? 0) >= 3
+                            ? 'text-red-400/90 bg-red-500/15 border-red-500/40'
+                            : 'text-amber-400/80 bg-amber-500/8 border-amber-500/25'
+                        }`}
+                        title={`${f.consecutive_error_count} consecutive errors — auto-deactivates at 3`}
+                      >
+                        {f.consecutive_error_count}/3
+                      </span>
+                    )}
                   </div>
+                  {/* Right: real toggle switch */}
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      const newState = !f.is_active
+                      if (!confirm(`${newState ? 'Enable' : 'Disable'} ${f.label || f.id}?`)) return
+                      try {
+                        await toggleAuthFile(f.id, newState)
+                        await reload()
+                        setImportMsg({ ok: true, text: `Key ${newState ? 'enabled' : 'disabled'}` })
+                      } catch (err: any) {
+                        setImportMsg({ ok: false, text: `Toggle failed: ${err.message}` })
+                      }
+                    }}
+                    className="relative shrink-0 rounded-full transition-all"
+                    style={{
+                      width: '34px',
+                      height: '18px',
+                      background: f.is_active ? '#22c55e' : '#ef4444',
+                      boxShadow: f.is_active
+                        ? '0 0 8px rgba(34,197,94,0.5)'
+                        : '0 0 8px rgba(239,68,68,0.5)',
+                    }}
+                    title={f.is_active ? 'Click to disable' : 'Click to enable'}
+                  >
+                    <span
+                      className="absolute top-0.5 rounded-full bg-white transition-all"
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        left: f.is_active ? '17px' : '2px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                      }}
+                    />
+                  </button>
                 </div>
 
                 {/* OAUTH DETAILS */}
@@ -706,16 +850,15 @@ export default function AuthFiles() {
             </button>
             {(() => {
               const pages: (number | '...')[] = []
-              const total = totalPages
               const cur = page
-              if (total <= 7) {
-                for (let i = 0; i < total; i++) pages.push(i)
+              if (totalPages <= 7) {
+                for (let i = 0; i < totalPages; i++) pages.push(i)
               } else {
                 pages.push(0)
                 if (cur > 2) pages.push('...')
-                for (let i = Math.max(1, cur - 1); i <= Math.min(total - 2, cur + 1); i++) pages.push(i)
-                if (cur < total - 3) pages.push('...')
-                pages.push(total - 1)
+                for (let i = Math.max(1, cur - 1); i <= Math.min(totalPages - 2, cur + 1); i++) pages.push(i)
+                if (cur < totalPages - 3) pages.push('...')
+                pages.push(totalPages - 1)
               }
               return pages.map((p, idx) =>
                 p === '...' ? (
@@ -737,7 +880,6 @@ export default function AuthFiles() {
               className="h-8 px-2.5 flex items-center justify-center rounded-lg border border-white/[0.06] text-xs text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 disabled:opacity-30 disabled:pointer-events-none transition-all font-mono">
               Next →
             </button>
-            <span className="text-[10px] font-mono text-zinc-600 ml-1">{total} total</span>
           </div>
         )}
       </div>

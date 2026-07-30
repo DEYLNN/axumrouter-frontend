@@ -156,6 +156,7 @@ export interface AuthFile {
   last_error_model?: string | null
   last_error_at?: string | null
   is_problem?: boolean
+  consecutive_error_count?: number
 }
 
 export interface CustomModelRow {
