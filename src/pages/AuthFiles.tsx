@@ -71,40 +71,27 @@ export default function AuthFiles() {
 
   const load = useCallback(async (p: number, q: string, pid: string, prob: boolean, dis: boolean) => {
     setLoading(true)
-    // BE page: always load page 1 (100 keys). FE page p = internal 20/page sub-page.
-    const [bePage, pm] = await Promise.all([
-      getAuthFiles(1),
+    // BE pagination: FE p (0-indexed) → BE page (1-indexed), 50/page
+    const fePerPage = 50
+    const bePage = p + 1
+    const [bePage1, pm] = await Promise.all([
+      getAuthFiles({ page: bePage, per_page: fePerPage, query: q || undefined, provider_id: pid, only_problem: prob, only_disabled: dis }),
       apiFetch('/providers').then(r => r.json()).catch(() => []),
     ])
-    const allKeys = bePage.keys
-    const totalAll = bePage.total
-    // Filter client-side on the 100 loaded keys
-    let filtered = allKeys
-    if (q) {
-      const lq = q.toLowerCase()
-      filtered = filtered.filter(f => f.provider_id.toLowerCase().includes(lq) || (f.label || '').toLowerCase().includes(lq) || f.key_type.toLowerCase().includes(lq))
-    }
-    if (pid !== 'all') filtered = filtered.filter(f => f.provider_id === pid)
-    if (prob) filtered = filtered.filter(f => ((f.error_count ?? 0) > 0 || !!f.last_error_message || !!f.last_error_status))
-    if (dis) filtered = filtered.filter(f => !f.is_active)
-    // Status code sub-filter (only when problematic active)
-    if (prob && statusCodeFilter !== 'all') filtered = filtered.filter(f => f.last_error_status === Number(statusCodeFilter))
-    // FE pagination: 20 per internal page
-    const fePerPage = 20
-    const totalPages = Math.ceil(filtered.length / fePerPage)
-    const pageIdx = Math.min(p, Math.max(0, totalPages - 1))
-    const pageData = filtered.slice(pageIdx * fePerPage, (pageIdx + 1) * fePerPage)
+    const pageData = bePage1.keys
+    const totalAll = bePage1.total
+    const totalAllPages = Math.ceil(totalAll / fePerPage)
     setFiles(pageData)
     setTotal(totalAll)
-    setTotalPages(totalPages)
-    setStats({ total: totalAll, active: allKeys.filter(f => f.is_active).length, disabled: allKeys.filter(f => !f.is_active).length, providers: null })
+    setTotalPages(totalAllPages)
+    setStats({ total: totalAll, active: pageData.filter(f => f.is_active).length, disabled: pageData.filter(f => !f.is_active).length, providers: null })
     const m = new Map<string, ProviderInfo>()
     for (const prov of Array.isArray(pm) ? pm : []) {
       m.set(prov.id, { name: prov.display_name || prov.name || prov.id, display_name: prov.display_name || prov.name || prov.id, icon_name: prov.icon_name || '', color: prov.color || '#6366F1' })
     }
     setProviderMeta(m)
     setLoading(false)
-  }, [getMeta, statusCodeFilter])
+  }, [getMeta])
 
   // Reset status code filter when leaving problematic mode
   useEffect(() => { if (!onlyProblem) setStatusCodeFilter('all') }, [onlyProblem])
@@ -139,7 +126,7 @@ export default function AuthFiles() {
 
   const isProblem = (f: AuthFile) => {
     const oauthBroken = f.key_type?.toLowerCase() === 'oauth' && (!f.has_access || !f.is_active)
-    const hasUsageError = (f.error_count ?? 0) > 0 || !!f.last_error_message || !!f.last_error_status
+    const hasUsageError = !!f.last_error_message || !!f.last_error_status
     return oauthBroken || hasUsageError
   }
 
@@ -545,7 +532,7 @@ export default function AuthFiles() {
             const exp = parseExpiry(f.expires_at)
             const secrets = getSecrets(f)
             const isOAuth = f.key_type?.toLowerCase() === 'oauth'
-            const hasUsageError = (f.error_count ?? 0) > 0 || !!f.last_error_message || !!f.last_error_status
+            const hasUsageError = !!f.last_error_message || !!f.last_error_status
             const accentColor = meta.color || '#6366F1'
 
             return (
@@ -645,7 +632,6 @@ export default function AuthFiles() {
                       <span className="text-[9px] font-mono font-semibold text-red-300/90 uppercase tracking-wider">Last error</span>
                       <span className="text-[9px] font-mono text-red-400/80">
                         {f.last_error_status ? `[${f.last_error_status}]` : 'ERR'}
-                        {f.error_count ? ` · ${f.error_count}x` : ''}
                       </span>
                     </div>
                     {f.last_error_message && (
