@@ -20,6 +20,7 @@ const SCHEMAS: Record<SchemaKey, ImportField[] | string> = {
   'sfp:apikey': 'ocf:apikey',
   'mmx:apikey': 'ocf:apikey',
   'cl:apikey': 'ocf:apikey',
+  'orc:ocf': 'ocf:apikey',
 
   // ── Manual providers (structured JSON key) ──
   'cf:apikey': [

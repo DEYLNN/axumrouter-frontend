@@ -100,12 +100,16 @@ export default function AuthFiles() {
     load(page, searchQuery, providerFilter, onlyProblem, onlyDisabled)
   }, [page, searchQuery, providerFilter, onlyProblem, onlyDisabled, load])
 
+  // Single effect: reset page + load in one shot
   useEffect(() => {
     setPage(0)
+    load(0, searchQuery, providerFilter, onlyProblem, onlyDisabled)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, providerFilter, onlyProblem, onlyDisabled])
   useEffect(() => {
-    load(page, searchQuery, providerFilter, onlyProblem, onlyDisabled)
-  }, [page, searchQuery, providerFilter, onlyProblem, onlyDisabled, load])
+    if (!loading) load(page, searchQuery, providerFilter, onlyProblem, onlyDisabled)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page])
 
   const providerTypes = useMemo(() => {
     if (!stats?.providers) {
