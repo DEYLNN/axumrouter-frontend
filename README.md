@@ -13,7 +13,7 @@ npx vite build     # Production → dist/
 ## Prerequisites
 
 - Node.js >= 18
-- Backend AxumRouter running di `localhost:3000`
+- Backend AxumRouter running di `localhost:7444`
 
 ## Env
 
@@ -24,7 +24,8 @@ Copy `.env.example` ke `.env` — atau biarkan kosong (pake Vite proxy ke backen
 | Doc | Location |
 |-----|----------|
 | **Full Guide** | `docs/GUIDE.md` — setup, config, struktur, deploy |
-| **Project Rules** | `AGENTS.md` — konvensi, api layer |
+| **Project Rules** | `AGENTS.md` — konvensi, API layer, file tree |
+| **Backend Docs** | `../backend/docs/` — PROVIDER_ARCHITECTURE.md, USAGE_TRACKING.md, API_KEY_PROVIDER_GUIDE.md |
 
 ## Project
 

@@ -33,6 +33,8 @@ export default function Settings() {
           mapped[prov] = list.map(m => ({ id: m.id, owned_by: m.owned_by || prov, enabled: m.enabled, context_length: (m as any).context_length }))
         }
         // Alias custom provider models: model prefix → custom_provider_id
+        // Also ensure every provider has an entry (empty array if no models) so UI
+        // never shows the misleading "Loading models..." spinner.
         if (providers) {
           for (const p of providers) {
             if (p.type === 'custom' && p.id.startsWith('custom_')) {
@@ -40,6 +42,10 @@ export default function Settings() {
               if (mapped[prefix] && !mapped[p.id]) {
                 mapped[p.id] = mapped[prefix]
               }
+            }
+            // Fallback: provider with zero models — avoid undefined lookup in UI
+            if (!mapped[p.id]) {
+              mapped[p.id] = []
             }
           }
         }

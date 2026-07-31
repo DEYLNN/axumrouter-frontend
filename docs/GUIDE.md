@@ -10,7 +10,7 @@ Admin dashboard for AxumRouter AI Gateway. React 19 + TypeScript 6 + Vite 8 + Ta
 |------------|---------|-----------|
 | Node.js | 18+ | 22+ |
 | npm | 9+ | 10+ |
-| Backend | running (`localhost:3000`) | — |
+| Backend | running (`localhost:7444`) | — |
 
 ## Setup
 
@@ -33,8 +33,8 @@ cp .env.example .env
 ### `.env`
 
 ```
-VITE_API_BASE=http://localhost:3000/admin/api
-VITE_GATEWAY_BACKEND_URL=http://localhost:3000
+VITE_API_BASE=http://localhost:7444/admin/api
+VITE_GATEWAY_BACKEND_URL=http://localhost:7444
 ```
 
 | Variable | Default | Description |
@@ -48,8 +48,8 @@ Kalo `VITE_API_BASE` dikosongin, Vite proxy redirect `/admin/api` → `localhost
 ### Production mode
 Set `VITE_API_BASE` ke backend URL:
 ```
-VITE_API_BASE=http://152.42.198.51:3000/admin/api
-VITE_GATEWAY_BACKEND_URL=http://152.42.198.51:3000
+VITE_API_BASE=http://152.42.198.51:7444/admin/api
+VITE_GATEWAY_BACKEND_URL=http://152.42.198.51:7444
 ```
 
 ## Commands
@@ -222,11 +222,12 @@ npx vite build
 # 2. Copy hasil build ke backend
 cp -r dist/* ../backend/public/admin/
 
-# 3. Restart backend
-pkill axumrouter && cd ../backend && ./target/release/axumrouter
+# 3. Restart backend (jangan pake pkill — match prod binary juga!)
+# Gunakan systemctl restart axumrouter (prod) atau lsof + kill PID (dev)
+echo "Build selesai. Restart backend manual — jangan pkill axumrouter."
 ```
 
-Akses FE lewat `http://localhost:3000/admin/`.
+Akses FE lewat `http://localhost:7444/admin/`.
 
 ## Troubleshooting
 
