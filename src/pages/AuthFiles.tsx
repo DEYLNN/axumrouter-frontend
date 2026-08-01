@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 
 import { iconUrl, apiFetch } from '../api'
 import { copyToClipboard } from '../utils/clipboard'
-import { getAuthFiles, toggleAuthFile } from '../api/auth-files'
+import { getAuthFiles, toggleAuthFile, bulkEnableKeys } from '../api/auth-files'
 import { getSchema, validateImportItem } from '../api/import-schemas'
 import type { AuthFile } from '../api'
 
@@ -383,6 +383,24 @@ export default function AuthFiles() {
     }
   }
 
+  const enableSelected = async () => {
+    const ids = Array.from(selectedIds)
+    if (!ids.length) return
+    if (!confirm(`Enable ${ids.length} selected account(s)? Error counters will be reset.`)) return
+    setImportProgress({ current: 0, total: ids.length })
+    setImportMsg(null)
+    try {
+      const res = await bulkEnableKeys(ids)
+      setImportMsg({ ok: res.success, text: res.message || `Enabled ${res.enabled} key(s)` })
+      setSelectedIds(new Set())
+      await reload()
+    } catch (err: any) {
+      setImportMsg({ ok: false, text: err.message })
+    } finally {
+      setImportProgress(null)
+    }
+  }
+
   const getSecrets = (f: AuthFile) => {
     const secs: { field: string; preview: string; value: string }[] = []
     let parsed: any = null
@@ -598,6 +616,12 @@ export default function AuthFiles() {
               style={selectedIds.size ? { boxShadow: '0 0 12px rgba(239,68,68,0.1)' } : {}}>
               Delete {selectedIds.size}
             </button>
+            {onlyDisabled && (
+              <button onClick={enableSelected} disabled={!selectedIds.size} className="rounded-full bg-emerald-500/10 px-3 py-1 text-emerald-400/80 border border-emerald-500/20 hover:bg-emerald-500/20 hover:text-emerald-300 disabled:opacity-40 transition-all"
+                style={selectedIds.size ? { boxShadow: '0 0 12px rgba(52,211,153,0.1)' } : {}} title="Enable + reset error counters (backoff, consecutive errors)">
+                Enable {selectedIds.size}
+              </button>
+            )}
           </div>
         </div>
 

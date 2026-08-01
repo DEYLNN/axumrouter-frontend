@@ -55,7 +55,7 @@ export default function Providers() {
       setPrefixCheck('ok')
       await createCustomProvider({
         id: `custom_${form.prefix}`, name: form.name, prefix: form.prefix,
-        base_url: form.base_url.replace(/\/v1\/?$/, ''), validate_url: form.validate_url || undefined,
+        base_url: form.base_url.trim().replace(/\/+$/, ''), validate_url: form.validate_url?.trim() || undefined,
         color: form.color, timeout_secs: form.timeout_secs,
         models: form.model_id ? [{ model_id: form.model_id, ctx: form.ctx }] : [],
       })

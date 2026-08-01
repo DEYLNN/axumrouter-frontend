@@ -34,3 +34,8 @@ export const toggleAuthFile = (keyId: string, isActive: boolean) =>
   fetcher<{ success: boolean; message: string }>(`/keys/toggle`, {
     method: 'POST', body: JSON.stringify({ key_id: keyId, is_active: isActive }),
   })
+
+export const bulkEnableKeys = (keyIds: string[]) =>
+  fetcher<{ success: boolean; enabled: number; failed: number; message: string }>(`/keys/bulk-enable`, {
+    method: 'POST', body: JSON.stringify({ key_ids: keyIds }),
+  })

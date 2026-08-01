@@ -157,6 +157,7 @@ export default function ProviderDetail() {
                 className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-colors">+ Add Model</button>
           </div>
         </div>
+        <div className="max-h-80 overflow-y-auto">
         <div className="divide-y divide-white/[0.04]">
           {data.models.map(m => (
             <div key={m.id} className="px-5 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors group">
@@ -231,6 +232,7 @@ export default function ProviderDetail() {
               </div>
             </div>
           ))}
+          </div>
         </div>
       </div>
 
@@ -251,11 +253,17 @@ export default function ProviderDetail() {
         {data.keys.length === 0 ? (
           <div className="px-5 py-8 text-center text-[10px] font-mono text-slate-600">No keys configured</div>
         ) : (
+          <div className="max-h-80 overflow-y-auto">
           <div className="divide-y divide-white/[0.04]">
             {data.keys.map(k => (
               <div key={k.id} className="px-5 py-3 flex items-center justify-between group">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
+                    {k.is_locked ? (
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" style={{ boxShadow: '0 0 5px rgba(239,68,68,0.7)' }} title={`Locked${k.locked_reason ? ': ' + k.locked_reason : ''}`} />
+                    ) : (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" style={{ boxShadow: '0 0 5px rgba(16,185,129,0.7)' }} title="Active" />
+                    )}
                     <span className="text-xs font-mono text-slate-200 truncate">{k.label || k.id}</span>
                     {k.is_locked && Math.max(0, k.locked_remaining - tick) > 0 && (
                       <span className="inline-flex items-center gap-1 text-[8px] font-mono px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse" title={k.locked_reason || ''}>
@@ -305,6 +313,7 @@ export default function ProviderDetail() {
                 </div>
               </div>
             ))}
+          </div>
           </div>
         )}
         {/* Add Key */}
