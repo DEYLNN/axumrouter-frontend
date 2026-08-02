@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 
 import { iconUrl, apiFetch } from '../api'
 import { copyToClipboard } from '../utils/clipboard'
-import { getAuthFiles, toggleAuthFile, bulkEnableKeys } from '../api/auth-files'
+import { getAuthFiles, toggleAuthFile, bulkEnableKeys, getKeysStats, dedupeKeys } from '../api/auth-files'
 import { getSchema, validateImportItem } from '../api/import-schemas'
 import type { AuthFile } from '../api'
 
@@ -18,6 +18,7 @@ interface Stats {
   active: number
   disabled: number
   providers: { provider_id: string; count: number }[] | null
+  duplicates: number
 }
 
 function fmtDate(v?: string) { return v ? new Date(v).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : '-' }
@@ -117,9 +118,12 @@ export default function AuthFiles() {
     const fePerPage = 50
     const bePage = p + 1
     try {
-      const [bePage1, pm] = await Promise.all([
+      const [bePage1, pm, ks] = await Promise.all([
         getAuthFiles({ page: bePage, per_page: fePerPage, query: effectiveQuery || undefined, provider_id: pid, only_problem: prob, only_disabled: dis, status_code: sc }),
         apiFetch('/providers').then(r => r.json()).catch(() => []),
+        // Stats endpoint — counts ALL keys per provider (independent of pagination).
+        // FE passes same filter knobs as keys list so counts match what's visible.
+        getKeysStats({ provider_id: pid, only_problem: prob, only_disabled: dis }),
       ])
       // Drop stale response if newer load() has been called.
       if (myGen !== loadGen.current) return
@@ -129,7 +133,13 @@ export default function AuthFiles() {
       const totalAllPages = Math.ceil(totalAll / fePerPage)
       setFiles(pageData)
       setTotalPages(totalAllPages)
-      setStats({ total: totalAll, active: pageData.filter(f => f.is_active).length, disabled: pageData.filter(f => !f.is_active).length, providers: null })
+      setStats({
+        total: totalAll,
+        active: ks.active,
+        disabled: ks.disabled,
+        providers: ks.providers,
+        duplicates: ks.duplicates,
+      })
       const m = new Map<string, ProviderInfo>()
       for (const prov of Array.isArray(pm) ? pm : []) {
         m.set(prov.id, { name: prov.display_name || prov.name || prov.id, display_name: prov.display_name || prov.name || prov.id, icon_name: prov.icon_name || '', color: prov.color || '#6366F1' })
@@ -401,6 +411,30 @@ export default function AuthFiles() {
     }
   }
 
+  const runDedupe = async () => {
+    // Scope to current provider filter so user can dedupe single provider or all.
+    const pid = providerFilter === 'all' ? undefined : providerFilter
+    const scopeLabel = pid ? `provider '${pid}'` : 'all providers'
+    const expected = pid ? 'for this provider only' : 'across all providers'
+    if (!confirm(`Deduplicate API keys (same provider_id + key_value)?\n\nScope: ${scopeLabel} — ${expected}.\nOAuth tokens are left untouched.\nNewest entries will be removed; oldest kept.`)) return
+    setImportMsg(null)
+    setImportProgress({ current: 0, total: 1 })
+    try {
+      const res = await dedupeKeys(pid)
+      setImportProgress(null)
+      setImportMsg({
+        ok: res.removed > 0,
+        text: res.removed > 0
+          ? `Dedupe: removed ${res.removed} duplicate(s) across ${res.groups} group(s), kept ${res.kept} oldest.`
+          : `Dedupe: no duplicates found. ${res.kept} unique key(s) remain.`,
+      })
+      await reload()
+    } catch (err: any) {
+      setImportProgress(null)
+      setImportMsg({ ok: false, text: err.message })
+    }
+  }
+
   const getSecrets = (f: AuthFile) => {
     const secs: { field: string; preview: string; value: string }[] = []
     let parsed: any = null
@@ -490,7 +524,7 @@ export default function AuthFiles() {
             style={{ boxShadow: '0 0 12px rgba(6,182,212,0.08)' }}>
             <div className="flex items-center gap-2 mb-1.5">
               <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-              <span>Importing... {importProgress.current}/{importProgress.total}</span>
+              <span>Progress… {importProgress.current}/{importProgress.total}</span>
             </div>
             <div className="w-full h-1 rounded-full bg-cyan-500/10 overflow-hidden">
               <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-cyan-300 transition-all duration-200"
@@ -507,12 +541,12 @@ export default function AuthFiles() {
               className="flex-1 min-w-[200px] h-9 bg-black/50 border border-white/[0.06] rounded-lg px-3 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/40 transition-all font-mono"
               style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }} />
             
-            {/* Provider dropdown */}
-            <div className="relative">
+            {/* Provider dropdown — full-width block, dropdown panel matches */}
+            <div className="relative w-full">
               <button
                 type="button"
                 onClick={() => setProviderOpen(v => !v)}
-                className="flex items-center gap-2 h-9 bg-black/50 border border-white/[0.06] rounded-lg px-3 text-xs text-zinc-300 hover:border-cyan-500/30 transition-all min-w-[180px] text-left font-mono"
+                className="flex w-full items-center gap-2 h-9 bg-black/50 border border-white/[0.06] rounded-lg px-3 text-xs text-zinc-300 hover:border-cyan-500/30 transition-all text-left font-mono"
               >
                 {providerFilter !== 'all' && (
                   <div className="w-4 h-4 rounded shrink-0 overflow-hidden bg-black/60 border flex items-center justify-center"
@@ -622,6 +656,30 @@ export default function AuthFiles() {
                 Enable {selectedIds.size}
               </button>
             )}
+          </div>
+
+          {/* Dedupe row — minimal, sits under the provider dropdown. */}
+          <div className="relative flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 transition-colors hover:bg-white/[0.04] hover:border-white/[0.1]">
+            <span className="text-xs font-medium text-orange-300 shrink-0">Remove Duplicate keys</span>
+            <span className="text-zinc-600">·</span>
+            <span className="flex-1 min-w-0 text-xs text-zinc-500 truncate">
+              keep oldest of{' '}
+              <code className="px-1 py-px rounded bg-white/[0.05] text-zinc-400 font-mono text-[10.5px]">provider_id + key_value</code>
+            </span>
+            <span className="hidden sm:inline-flex items-center rounded-md bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-mono text-zinc-500 border border-white/[0.06]">
+              {providerFilter === 'all' ? 'all' : providerFilter}
+            </span>
+            <span className={`inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 rounded-md text-[11px] font-mono font-medium border ${
+              (stats?.duplicates ?? 0) > 0
+                ? 'bg-orange-500/10 text-orange-300 border-orange-500/25'
+                : 'bg-white/[0.04] text-zinc-500 border-white/[0.06]'
+            }`}>
+              {stats?.duplicates ?? 0}
+            </span>
+            <button onClick={runDedupe}
+              className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 rounded-md bg-orange-500/90 hover:bg-orange-500 text-white text-xs font-medium active:scale-95 transition-all">
+              Run
+            </button>
           </div>
         </div>
 

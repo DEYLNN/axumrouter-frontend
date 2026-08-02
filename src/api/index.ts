@@ -20,4 +20,4 @@ export { startOAuth, exchangeOAuth } from './oauth'
 export { getDatabaseInfo, exportDatabase, importDatabase } from './database'
 export { getUsageStats, getUsageKeys, getLogs, clearLogs } from './usage'
 // Auth-files
-export { getAuthFiles } from './auth-files'
+export { getAuthFiles, getKeysStats, dedupeKeys } from './auth-files'
