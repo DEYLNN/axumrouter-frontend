@@ -54,24 +54,29 @@ export default function Settings() {
     }
     fetchModels()
   }, [providers])
-  const fetchGw = () => { apiFetch('/gateway_keys').then(r => r.json()).then(setGwKeys).catch(() => {}) }
+  const fetchGw = () => { apiFetch('/gateway_keys').then(r => r.ok ? r.json() : Promise.reject(r.status)).then(setGwKeys).catch((e) => console.error('[fetchGw] failed:', e)) }
   useEffect(() => { fetchGw() }, [])
 
   useEffect(() => {
-    Promise.all([
-      apiFetch('/models/disabled').then(r => r.json()).catch(() => []),
-      apiFetch('/models/blocked').then(r => r.json()).catch(() => []),
-    ]).then(([, blocked]) => {
+    if (Object.keys(models).length === 0) return
+    let cancelled = false
+    apiFetch('/models/blocked').then(r => r.json()).catch(() => []).then(blocked => {
+      if (cancelled) return
       let total = 0, dCount = 0
       for (const list of Object.values(models)) {
         for (const m of list) { total++; if (!m.enabled) dCount++ }
       }
       setStats({ totalModels: total, disabledModels: dCount, blockedModels: Array.isArray(blocked) ? blocked.length : 0 })
     })
+    return () => { cancelled = true }
   }, [models])
 
   const toggleModel = async (modelId: string, enabled: boolean) => {
+    // Snapshot previous state per-provider so rollback restores exactly what was there,
+    // not the optimistic `enabled` value (matters under rapid double-click).
+    const prevState: Record<string, ToggleModel[]> = {}
     setModels(prev => {
+      for (const [prov, list] of Object.entries(prev)) prevState[prov] = list
       const next: Record<string, ToggleModel[]> = {}
       for (const [prov, list] of Object.entries(prev)) {
         const idx = list.findIndex(m => m.id === modelId)
@@ -94,17 +99,8 @@ export default function Settings() {
         return next
       })
     } catch (err) {
-      // Surface failure so the toggle can be diagnosed from DevTools console.
-      // Roll back the optimistic update since the DB row was not changed.
       console.error('[toggleModel] failed:', modelId, enabled, err)
-      setModels(prev => {
-        const next = { ...prev }
-        for (const [prov, list] of Object.entries(next)) {
-          const idx = list.findIndex(m => m.id === modelId)
-          if (idx > -1) { const nl = [...list]; nl[idx] = { ...nl[idx], enabled: !enabled, toggling: false }; next[prov] = nl; break }
-        }
-        return next
-      })
+      setModels(prevState)
     }
   }
 

@@ -27,6 +27,9 @@ export default function GatewayKeysSection({ keys, onRefresh }: Props) {
   const [editMaxTokens, setEditMaxTokens] = useState('')
   const [editActive, setEditActive] = useState(true)
   const [allModels, setAllModels] = useState<Record<string, {id:string;enabled:boolean}[]>>({})
+  const [editModelList, setEditModelList] = useState<string[]>([])
+  const [editAllModels, setEditAllModels] = useState<Record<string, {id:string;enabled:boolean}[]>>({})
+  const [editShowPicker, setEditShowPicker] = useState(false)
 
   const createKey = async () => {
     setCreating(true)
@@ -49,6 +52,7 @@ export default function GatewayKeysSection({ keys, onRefresh }: Props) {
       body: JSON.stringify({
         label: editLabel || null,
         access_type: editAccess,
+        allowed_models: editAccess === 'full' ? [] : editModelList,
         max_tokens: editMaxTokens ? parseInt(editMaxTokens) : 0,
         is_active: editActive,
       }),
@@ -224,6 +228,27 @@ export default function GatewayKeysSection({ keys, onRefresh }: Props) {
                             style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }} />
                         </div>
                       </div>
+                      {editAccess !== 'full' && (
+                        <div className="mb-3">
+                          <div className="text-[8px] font-mono text-slate-500 mb-1 uppercase">Models</div>
+                          <button onClick={() => { apiFetch('/models/all').then(r => r.json()).then(data => { setEditAllModels(data); setEditShowPicker(true) }).catch(() => {}) }}
+                            className="w-full bg-black/50 border border-white/[0.08] rounded-lg px-3 py-2 text-[11px] font-mono text-left hover:border-cyan-500/40 transition-all"
+                            style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
+                            {editModelList.length === 0 ? <span className="text-slate-600">Select models...</span> : <span className="text-cyan-400">{editModelList.length} selected</span>}
+                          </button>
+                          {editModelList.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {editModelList.slice(0, 3).map(mid => (
+                                <span key={mid} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono text-cyan-300 bg-cyan-500/10 border border-cyan-500/15">
+                                  {mid.slice(0,18)}{mid.length>18?'…':''}
+                                  <button onClick={() => setEditModelList(prev => prev.filter(m => m !== mid))} className="text-cyan-500/70 hover:text-red-400 ml-0.5">×</button>
+                                </span>
+                              ))}
+                              {editModelList.length > 3 && <span className="text-[9px] font-mono text-slate-500">+{editModelList.length-3} more</span>}
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <div className="flex items-center justify-between">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input type="checkbox" checked={editActive} onChange={e => setEditActive(e.target.checked)}
@@ -239,7 +264,7 @@ export default function GatewayKeysSection({ keys, onRefresh }: Props) {
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => { setEditingKey(k.id === editingKey ? '' : k.id); setEditLabel(k.label || ''); setEditAccess(k.access_type || 'full'); setEditMaxTokens(k.max_tokens > 0 ? String(k.max_tokens) : ''); setEditActive(k.is_active === 1) }}
+                  <button onClick={() => { setEditingKey(k.id === editingKey ? '' : k.id); setEditLabel(k.label || ''); setEditAccess(k.access_type || 'full'); setEditMaxTokens(k.max_tokens > 0 ? String(k.max_tokens) : ''); setEditActive(k.is_active === 1); setEditModelList(k.allowed_models || []) }}
                     className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all shrink-0 border ${
                       k.id === editingKey ? 'text-cyan-300 bg-cyan-500/10 border-cyan-500/20' : 'text-slate-600 hover:text-cyan-300 hover:bg-cyan-500/10 border-transparent hover:border-cyan-500/20'
                     } opacity-50 group-hover:opacity-100`}
@@ -273,6 +298,13 @@ export default function GatewayKeysSection({ keys, onRefresh }: Props) {
         allModels={allModels}
         selected={modelList}
         onToggle={(mid: string) => setModelList(prev => prev.includes(mid) ? prev.filter(m => m !== mid) : [...prev, mid])}
+      />
+      <ModelPickerModal
+        open={editShowPicker}
+        onClose={() => setEditShowPicker(false)}
+        allModels={editAllModels}
+        selected={editModelList}
+        onToggle={(mid: string) => setEditModelList(prev => prev.includes(mid) ? prev.filter(m => m !== mid) : [...prev, mid])}
       />
     </div>
   )
