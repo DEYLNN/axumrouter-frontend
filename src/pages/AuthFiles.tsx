@@ -26,8 +26,12 @@ function fmtDate(v?: string) { return v ? new Date(v).toLocaleString('id-ID', { 
 function parseExpiry(e: string) {
   if (!e || !e.trim()) return { label: '∞', expired: false, infinite: true, seconds: Infinity }
   if (e === 'expired') return { label: 'Expired', expired: true, infinite: false, seconds: 0 }
-  const t = Date.parse(e.replace('Z', '+00:00'))
-  if (isNaN(t)) return { label: e, expired: false, infinite: false, seconds: 0 }
+  const raw = e.trim()
+  const numeric = Number(raw)
+  const t = Number.isFinite(numeric) && numeric > 0
+    ? (numeric < 10_000_000_000 ? numeric * 1000 : numeric)
+    : Date.parse(raw.replace('Z', '+00:00'))
+  if (!Number.isFinite(t) || isNaN(t)) return { label: e, expired: false, infinite: false, seconds: 0 }
   const s = Math.max(0, Math.floor((t - Date.now()) / 1000))
   if (s <= 0) return { label: 'Expired', expired: true, infinite: false, seconds: 0 }
   const d = Math.floor(s / 86400)
