@@ -57,6 +57,9 @@ export const toggleAuthFile = (keyId: string, isActive: boolean) =>
     method: 'POST', body: JSON.stringify({ key_id: keyId, is_active: isActive }),
   })
 
+export const refreshAuthFile = (keyId: string) =>
+  fetcher<{ ok: boolean; expires_at?: number; error?: string }>(`/oauth/gb/refresh/${encodeURIComponent(keyId)}`, { method: 'POST' })
+
 export const bulkEnableKeys = (keyIds: string[]) =>
   fetcher<{ success: boolean; enabled: number; failed: number; message: string }>(`/keys/bulk-enable`, {
     method: 'POST', body: JSON.stringify({ key_ids: keyIds }),

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 
 import { iconUrl, apiFetch } from '../api'
 import { copyToClipboard } from '../utils/clipboard'
-import { getAuthFiles, toggleAuthFile, bulkEnableKeys, getKeysStats, dedupeKeys } from '../api/auth-files'
+import { getAuthFiles, toggleAuthFile, bulkEnableKeys, getKeysStats, dedupeKeys, refreshAuthFile } from '../api/auth-files'
 import { getSchema, validateImportItem } from '../api/import-schemas'
 import type { AuthFile } from '../api'
 
@@ -21,7 +21,16 @@ interface Stats {
   duplicates: number
 }
 
-function fmtDate(v?: string) { return v ? new Date(v).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : '-' }
+function fmtDate(v?: string) {
+  if (!v) return '-'
+  const raw = v.trim()
+  const numeric = Number(raw)
+  const ms = Number.isFinite(numeric) && numeric > 0
+    ? (numeric < 10_000_000_000 ? numeric * 1000 : numeric)
+    : Date.parse(raw.replace('Z', '+00:00'))
+  if (!Number.isFinite(ms)) return '-'
+  return new Date(ms).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
+}
 
 function parseExpiry(e: string) {
   if (!e || !e.trim()) return { label: '∞', expired: false, infinite: true, seconds: Infinity }
@@ -76,7 +85,6 @@ export default function AuthFiles() {
     ocf: { icon: 'ocf.webp', color: '#E87040' },
     cf:  { icon: 'cf.png',  color: '#F38020' },
     cl:  { icon: 'cl.png',  color: '#5B9BD5' },
-    fb:  { icon: 'fb.png',  color: '#4F7CFF' },
     kc:  { icon: 'kc.png',  color: '#FF6B35' },
   }
 
@@ -333,6 +341,7 @@ export default function AuthFiles() {
             if (item.email) oauthFields.email = item.email
             if (item.orgId) oauthFields.orgId = item.orgId
             if (item.refresh_token) oauthFields.refresh_token = item.refresh_token
+            if (item.expires_at) oauthFields.expires_at = item.expires_at
             kv = JSON.stringify(oauthFields)
           }
           if (!kv) kv = '{}'
@@ -897,6 +906,7 @@ export default function AuthFiles() {
 
                 {/* ACTIONS */}
                 <div className="mx-3 mb-3 grid grid-cols-2 gap-1.5">
+                  {isOAuth && f.has_refresh && f.provider_id === 'gb' && <button onClick={async () => { try { const r = await refreshAuthFile(f.id); if (!r.ok) throw new Error(r.error || 'Refresh failed'); setImportMsg({ ok: true, text: 'Token refreshed' }); await reload() } catch (e: any) { setImportMsg({ ok: false, text: e.message }) } }} className="col-span-2 text-[10px] py-1.5 rounded-lg border border-purple-500/25 text-purple-300 hover:bg-purple-500/10 transition-all font-mono">Refresh token</button>}
                   <button onClick={() => downloadJson(f)}
                     className="text-[10px] py-1.5 rounded-lg border border-white/[0.06] text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-all font-mono"
                     style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)' }}>

@@ -20,6 +20,7 @@ const SCHEMAS: Record<SchemaKey, ImportField[] | string> = {
   'sfp:apikey': 'ocf:apikey',
   'mmx:apikey': 'ocf:apikey',
   'cl:apikey': 'ocf:apikey',
+  'bb:apikey': 'ocf:apikey',
   'orc:ocf': 'ocf:apikey',
 
   // ── Manual providers (structured JSON key) ──
@@ -32,13 +33,13 @@ const SCHEMAS: Record<SchemaKey, ImportField[] | string> = {
   ],
 
   // ── OAuth providers ──
-  'fb:oauth': [
+  'gb:oauth': [
     { key: 'provider_id', label: 'Provider ID', required: true },
     { key: 'key_type', label: 'Key Type', required: true, allowed: ['oauth'] },
-    { key: 'email', label: 'Email', required: true },
     { key: 'access_token', label: 'Access Token', required: true, minLength: 1 },
+    { key: 'email', label: 'Email', required: false },
     { key: 'refresh_token', label: 'Refresh Token', required: false },
-    { key: 'expires_in', label: 'Expires In (seconds)', required: false },
+    { key: 'expires_at', label: 'Expires At (epoch)', required: false },
   ],
   'kc:oauth': [
     { key: 'provider_id', label: 'Provider ID', required: true },
