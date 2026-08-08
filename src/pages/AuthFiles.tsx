@@ -352,6 +352,7 @@ export default function AuthFiles() {
               provider_id: pid,
               key_value: kv,
               label: item.label || item.email || '',
+              key_type: kt,
             }),
           })
           imported++
