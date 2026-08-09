@@ -201,7 +201,7 @@ export default function ProviderDetail() {
                 <button onClick={() => ctx.handleToggle(m.id, m.blocked)}
                   className={`w-7 h-7 flex items-center justify-center rounded-md transition-all ${
                     ctx.toggling === m.id ? 'text-amber-400 bg-amber-500/10' :
-                    m.blocked ? 'text-slate-600 hover:text-amber-400 hover:bg-amber-500/10' :
+                    m.blocked ? 'text-red-400 bg-red-500/10 hover:text-emerald-400 hover:bg-emerald-500/10' :
                     'text-slate-600 hover:text-amber-400 hover:bg-amber-500/10'
                   }`} title={m.blocked ? "Unblock" : "Block"}>
                   {ctx.toggling === m.id ? (
@@ -210,8 +210,8 @@ export default function ProviderDetail() {
                     </svg>
                   ) : (
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      {m.blocked ? <path d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                        : <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />}
+                      {m.blocked ? <path d="M8 11V7a4 4 0 018 0v2M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                        : <path d="M16 11V7a4 4 0 00-8 0v1m-2 3h12v10H6V11zm6 4v2" />}
                     </svg>
                   )}
                 </button>
