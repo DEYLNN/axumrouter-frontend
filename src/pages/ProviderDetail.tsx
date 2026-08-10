@@ -19,6 +19,7 @@ export default function ProviderDetail() {
   const [newModel, setNewModel] = useState({ model_id: '', ctx: 256000 })
   const [customModels, setCustomModels] = useState<string[]>([])
   const [cmKey, setCmKey] = useState(0)
+  const [modelError, setModelError] = useState('')
 
   useEffect(() => { ctx.load() }, [ctx.load])
 
@@ -375,8 +376,9 @@ export default function ProviderDetail() {
       )}
 
       {/* Add Model Modal */}
-      <Modal open={showAddModel} onClose={() => setShowAddModel(false)}>
+      <Modal open={showAddModel} onClose={() => { setShowAddModel(false); setModelError('') }}>
         <h2 className="text-sm font-bold text-slate-200 mb-4">Add Model</h2>
+        {modelError && <div className="mb-3 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-[10px] font-mono text-red-400">{modelError}</div>}
         <div className="space-y-3">
           <div>
             <label className="text-[10px] font-mono text-slate-500 mb-1 block">Model ID</label>
@@ -395,7 +397,12 @@ export default function ProviderDetail() {
             className="px-3 py-1.5 text-[10px] font-mono text-slate-500 hover:text-slate-300">Cancel</button>
           <button onClick={async () => {
             if (!id || !newModel.model_id) return
-            await addCustomModelForProvider(id, newModel)
+            setModelError('')
+            const result = await addCustomModelForProvider(id, newModel)
+            if (!result.ok) {
+              setModelError(result.error === 'duplicate_model' ? 'Model already exists' : (result.message || 'Failed to add model'))
+              return
+            }
             setShowAddModel(false)
             setNewModel({ model_id: '', ctx: 256000 })
             setCmKey(k => k + 1)

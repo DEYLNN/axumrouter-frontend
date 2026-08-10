@@ -26,7 +26,7 @@ export function testModel(providerId: string, model: string): Promise<TestResult
 // Custom Models — per-provider user-added model entries (runtime merge)
 export const listCustomModels = (id: string) => fetcher<CustomModelRow[]>(`/providers/${id}/custom-models`)
 export const addCustomModelForProvider = (id: string, model: { model_id: string; ctx?: number; vision?: boolean; tools?: boolean }) =>
-  fetcher<{ ok: boolean }>(`/providers/${id}/custom-models`, {
+  fetcher<{ ok: boolean; error?: string; message?: string }>(`/providers/${id}/custom-models`, {
     method: 'POST', body: JSON.stringify(model),
   })
 export const removeCustomModelForProvider = (id: string, modelId: string) =>
