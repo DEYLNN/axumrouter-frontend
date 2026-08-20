@@ -16,6 +16,7 @@ interface OAuthConnectModalProps {
 export default function OAuthConnectModal({ open, provider, onClose, onSuccess }: OAuthConnectModalProps) {
   const [step, setStep] = useState<'loading'|'waiting'|'input'|'success'|'error'>('loading')
   const [authUrl, setAuthUrl] = useState('')
+  const [oauthState, setOauthState] = useState('')
   const [callbackUrl, setCallbackUrl] = useState('')
   const [deviceData, setDeviceData] = useState<any>(null)
   const [error, setError] = useState('')
@@ -49,6 +50,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
           const d = await r.json()
           if (!r.ok) throw new Error(d.error || 'Failed')
           setAuthUrl(d.url)
+          setOauthState(d.id || new URL(d.url).searchParams.get('state') || '')
           popupRef.current = window.open(d.url, 'oauth_popup', 'width=600,height=700')
           if (popupRef.current) { setStep('waiting') } else { setStep('input') }
         }
@@ -97,14 +99,16 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
     const handler = async (e: MessageEvent) => {
       if (processed.current) return
       const data = e.data?.type === 'oauth_callback' ? e.data.data : e.data
-      const code = data?.code || new URLSearchParams(e.data?.url?.split('?')[1] || '').get('code')
+      const callback = e.data?.url ? new URL(e.data.url) : null
+      const code = data?.code || callback?.searchParams.get('code')
+      const state = data?.state || callback?.searchParams.get('state') || oauthState
       if (!code) return
       processed.current = true
       try {
         const r = await apiFetch(`/oauth/${provider!.id}/exchange`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code, state }),
         })
         if (!r.ok) {
           const err = await r.json().catch(() => ({ error: 'Exchange failed' }))
@@ -115,7 +119,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
-  }, [step, isDeviceCode, provider, provider?.id])
+  }, [step, isDeviceCode, provider, provider?.id, oauthState])
 
   // Manual submit
   const handleManual = async () => {
@@ -124,12 +128,15 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
       if (!raw) throw new Error('No URL/code pasted')
 
       let code: string | null = null
+      let state = oauthState
 
       // Case 1: full URL → extract ?code=
       if (raw.includes('://') || raw.startsWith('http')) {
         try {
           const u = new URL(raw)
           code = u.searchParams.get('code')
+          state = u.searchParams.get('state') || oauthState
+          setOauthState(state)
         } catch { /* fall through to raw code */ }
       }
 
@@ -145,7 +152,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
       const r = await apiFetch(`/oauth/${provider!.id}/exchange`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, state }),
       })
       if (!r.ok) {
         const err = await r.json().catch(() => ({ error: 'Exchange failed' }))
