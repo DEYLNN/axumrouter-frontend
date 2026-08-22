@@ -7,6 +7,7 @@ import Providers from './pages/Providers'
 import ProviderDetail from './pages/ProviderDetail'
 import Settings from './pages/Settings'
 import Usage from './pages/Usage'
+import Quota from './pages/Quota'
 import AuthFiles from './pages/AuthFiles'
 import Logs from './pages/Logs'
 import ProxyPool from './pages/ProxyPool'
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/admin/providers/:id" element={<ProviderDetail />} />
             <Route path="/admin/settings" element={<Settings />} />
             <Route path="/admin/usage" element={<Usage />} />
+            <Route path="/admin/quota" element={<Quota />} />
             <Route path="/admin/auth-files" element={<AuthFiles />} />
             <Route path="/admin/logs" element={<Logs />} />
             <Route path="/admin/proxy-pool" element={<ProxyPool />} />

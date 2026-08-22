@@ -7,7 +7,7 @@ export { API_BASE, fetcher, apiFetch, iconUrl } from './client'
 export type {
   SettingsData, ProviderMeta, ProviderDetail, ModelInfo, KeyInfo,
   ApiResponse, GatewayKey, DatabaseInfo, TestResult,
-  RateLimit, ValidateModelsResponse, LogEntry, AuthFile,
+  RateLimit, OAuthKey, QuotaData, ValidateModelsResponse, LogEntry, AuthFile,
 } from './types'
 
 // Domain functions
@@ -18,6 +18,6 @@ export { getKeys, addKey, deleteKey } from './keys'
 export { getGatewayKeys, createGatewayKey, deleteGatewayKey, updateGatewayKey } from './gateway'
 export { startOAuth, exchangeOAuth } from './oauth'
 export { getDatabaseInfo, exportDatabase, importDatabase } from './database'
-export { getUsageStats, getUsageKeys, getLogs, clearLogs } from './usage'
+export { getUsageStats, getUsageKeys, getLogs, clearLogs, getOAuthKeys, getUsageQuota, refreshUsageKey } from './usage'
 // Auth-files
 export { getAuthFiles, getKeysStats, dedupeKeys } from './auth-files'

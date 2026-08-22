@@ -117,6 +117,22 @@ export interface RateLimit {
   reset_at: string | null
 }
 
+export interface OAuthKey {
+  id: string
+  provider_id: string
+  label: string | null
+}
+
+export interface QuotaData {
+  provider_id: string | null
+  error: string | null
+  expires_at: string | null
+  last_refresh: string | null
+  key_plan: string | null
+  rate_limits: RateLimit[]
+  reset_credits: { available_count: number; applicable_available_count: number }
+}
+
 export interface ExportResult {
   tables: Record<string, any[]>
   meta: { exported_at: string; version: string }
