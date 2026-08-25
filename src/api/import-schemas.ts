@@ -48,6 +48,14 @@ const SCHEMAS: Record<SchemaKey, ImportField[] | string> = {
     { key: 'access_token', label: 'Access Token', required: true, minLength: 1 },
     { key: 'orgId', label: 'Org ID', required: false },
   ],
+  'cbai:oauth': [
+    { key: 'provider_id', label: 'Provider ID', required: true },
+    { key: 'key_type', label: 'Key Type', required: true, allowed: ['oauth'] },
+    { key: 'access_token', label: 'Access Token', required: true, minLength: 1 },
+    { key: 'email', label: 'Email', required: false },
+    { key: 'refresh_token', label: 'Refresh Token', required: false },
+    { key: 'expires_at', label: 'Expires At (epoch)', required: false },
+  ],
 }
 
 /** Resolve schema: follow alias strings, return ImportField[] or null if unknown */
