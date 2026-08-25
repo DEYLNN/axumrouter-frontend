@@ -33,10 +33,10 @@ function quotaColor(remaining: number) {
   return { text: 'text-red-500', bar: 'bg-red-500', track: 'bg-red-500/10' }
 }
 
-function ProviderLogo({ provider, color }: { provider: string; color?: string }) {
+function ProviderLogo({ provider, iconName, color }: { provider: string; iconName?: string; color?: string }) {
   const fallback = color || '#6b7280'
   return <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg p-1.5" style={{ backgroundColor: `${fallback}18` }}>
-    <img src={`/providers/${provider}.png`} alt="" className="h-full w-full rounded object-contain" onError={event => { event.currentTarget.src = '/providers/custom-provider.jpg' }} />
+    <img src={iconUrl(iconName || `${provider}.png`)} alt="" className="h-full w-full rounded object-contain" onError={event => { event.currentTarget.src = '/providers/custom-provider.jpg' }} />
   </div>
 }
 
@@ -55,7 +55,7 @@ function QuotaRow({ quota }: { quota: RateLimit }) {
       <div className={`h-full rounded-full ${colors.bar}`} style={{ width: `${remaining}%` }} />
     </div>}
     <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-      <span>{unlimited ? 'No usage limit' : `${quota.used.toLocaleString()} / ${quota.limit.toLocaleString()} requests`}</span>
+      <span>{unlimited ? 'No usage limit' : `${quota.used.toLocaleString()} / ${quota.limit.toLocaleString()} ${['Bonus Pack 1', 'Daily', 'Weekly', 'Monthly'].some(label => quota.name.startsWith(label)) ? 'credits' : 'requests'}`}</span>
       {countdown && <span>Reset in {countdown}</span>}
     </div>
     {quota.reset_at && <div className="text-xs text-slate-600">Reset at {formatDate(quota.reset_at)}</div>}
@@ -165,11 +165,11 @@ export default function Quota() {
         const quota = quotas[key.id]
         const provider = providers[key.provider_id]
         const plan = quota?.key_plan
-        const canRefresh = key.provider_id === 'cx'
+        const canRefresh = key.provider_id === 'cx' || key.provider_id === 'cbai'
         return <article key={key.id} className="flex flex-col gap-4 rounded-xl border border-white/10 bg-slate-900/60 p-4 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
-              <ProviderLogo provider={key.provider_id} color={provider?.color} />
+              <ProviderLogo provider={key.provider_id} iconName={provider?.icon_name} color={provider?.color} />
               <div className="min-w-0">
                 <h2 className="truncate font-semibold text-slate-100">{provider?.display_name || key.provider_id}</h2>
                 <div className="mt-1 flex flex-wrap items-center gap-2">
