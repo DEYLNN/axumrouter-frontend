@@ -21,6 +21,7 @@ const SCHEMAS: Record<SchemaKey, ImportField[] | string> = {
   'mmx:apikey': 'ocf:apikey',
   'cl:apikey': 'ocf:apikey',
   'infx:apikey': 'ocf:apikey',
+  'fsn:apikey': 'ocf:apikey',
   'bb:apikey': 'ocf:apikey',
   'orc:ocf': 'ocf:apikey',
 
