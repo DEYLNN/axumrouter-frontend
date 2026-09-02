@@ -907,7 +907,7 @@ export default function AuthFiles() {
 
                 {/* ACTIONS */}
                 <div className="mx-3 mb-3 grid grid-cols-2 gap-1.5">
-                  {isOAuth && f.has_refresh && f.provider_id === 'gb' && <button onClick={async () => { try { const r = await refreshAuthFile(f.id); if (!r.ok) throw new Error(r.error || 'Refresh failed'); setImportMsg({ ok: true, text: 'Token refreshed' }); await reload() } catch (e: any) { setImportMsg({ ok: false, text: e.message }) } }} className="col-span-2 text-[10px] py-1.5 rounded-lg border border-purple-500/25 text-purple-300 hover:bg-purple-500/10 transition-all font-mono">Refresh token</button>}
+                  {isOAuth && f.has_refresh && (f.provider_id === 'gb' || f.provider_id === 'cx') && <button onClick={async () => { try { const r = await refreshAuthFile(f.id, f.provider_id); if (!r.ok) throw new Error(r.error || 'Refresh failed'); setImportMsg({ ok: true, text: 'Token refreshed' }); await reload() } catch (e: any) { setImportMsg({ ok: false, text: e.message }) } }} className="col-span-2 text-[10px] py-1.5 rounded-lg border border-purple-500/25 text-purple-300 hover:bg-purple-500/10 transition-all font-mono">Refresh token</button>}
                   <button onClick={() => downloadJson(f)}
                     className="text-[10px] py-1.5 rounded-lg border border-white/[0.06] text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-all font-mono"
                     style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)' }}>
