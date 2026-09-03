@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { getSettings } from '../api'
 import { getProviders } from '../api/providers'
 import { apiFetch } from '../api/client'
-import type { SettingsData, ProviderMeta } from '../api'
+import type { SettingsData } from '../api'
 
 interface Stats {
   db_size: string
@@ -13,12 +13,11 @@ interface Stats {
 
 export default function Dashboard() {
   const [settings, setSettings] = useState<SettingsData | null>(null)
-  const [providers, setProviders] = useState<ProviderMeta[]>([])
   const [stats, setStats] = useState<Stats>({ db_size: '—', total_keys: 0, total_usage: 0, provider_count: 0 })
 
   useEffect(() => {
     getSettings().then(s => setSettings(s)).catch(() => {})
-    getProviders().then(p => { setProviders(p); setStats(s => ({ ...s, provider_count: p.length })) }).catch(() => {})
+    getProviders().then(p => setStats(s => ({ ...s, provider_count: p.length }))).catch(() => {})
   }, [])
 
   useEffect(() => {
