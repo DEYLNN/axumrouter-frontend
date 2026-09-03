@@ -1,15 +1,51 @@
 import { useEffect, useState } from 'react'
 import { getSettings } from '../api'
-import type { SettingsData } from '../api'
+import { getProviders } from '../api/providers'
+import { apiFetch } from '../api/client'
+import type { SettingsData, ProviderMeta } from '../api'
+
+interface Stats {
+  db_size: string
+  total_keys: number
+  total_usage: number
+  provider_count: number
+}
 
 export default function Dashboard() {
   const [settings, setSettings] = useState<SettingsData | null>(null)
+  const [providers, setProviders] = useState<ProviderMeta[]>([])
+  const [stats, setStats] = useState<Stats>({ db_size: '—', total_keys: 0, total_usage: 0, provider_count: 0 })
 
   useEffect(() => {
     getSettings().then(s => setSettings(s)).catch(() => {})
+    getProviders().then(p => { setProviders(p); setStats(s => ({ ...s, provider_count: p.length })) }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    Promise.all([
+      apiFetch('/database').then(r => r.json()).catch(() => ({})),
+      apiFetch('/keys/stats').then(r => r.json()).catch(() => ({})),
+      apiFetch('/usage/stats').then(r => r.json()).catch(() => ({})),
+    ]).then(([db, keyStats, usageStats]) => {
+      setStats(s => ({
+        ...s,
+        db_size: db.size_mb ? `${db.size_mb.toFixed(1)} MB` : '—',
+        total_keys: keyStats.total || 0,
+        total_usage: usageStats.total_requests || 0,
+      }))
+    }).catch(() => {})
   }, [])
 
   const baseUrl = settings?.public_url || import.meta.env.VITE_GATEWAY_BACKEND_URL || '—'
+
+  const statCards = [
+    { label: 'PROVIDERS', value: stats.provider_count, color: 'cyan' },
+    { label: 'API KEYS', value: stats.total_keys, color: 'purple' },
+    { label: 'REQUESTS', value: stats.total_usage, color: 'emerald' },
+    { label: 'DB SIZE', value: stats.db_size, color: 'amber' },
+  ]
+
+  const colors: Record<string, string> = { cyan: '6,182,212', purple: '168,85,247', emerald: '52,211,153', amber: '245,158,11' }
 
   return (
     <div className="relative">
@@ -22,7 +58,20 @@ export default function Dashboard() {
           <p className="text-[10px] font-mono text-slate-500 mt-0.5">Gateway overview</p>
         </div>
 
-        {/* Base URL card */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {statCards.map(s => (
+            <div key={s.label}
+              className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl p-4 text-center"
+              style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
+              <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider mb-2">{s.label}</div>
+              <div className="text-lg font-mono font-bold text-slate-200"
+                style={{ textShadow: `0 0 10px rgba(${colors[s.color]},0.3)` }}>
+                {s.value}
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden"
           style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
           <div className="px-5 py-3 border-b border-white/[0.04]">
@@ -37,7 +86,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick links */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { label: 'ENDPOINT', path: '/admin/endpoint', desc: 'Gateway URL & keys' },
