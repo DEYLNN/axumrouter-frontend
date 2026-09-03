@@ -10,6 +10,10 @@ export const addKey = (providerId: string, keyValue: string, label: string) =>
   fetcher<{ success: boolean; message: string }>('/keys', {
     method: 'POST', body: JSON.stringify({ provider_id: providerId, key_value: keyValue, label }),
   })
+export const bulkAddKeys = (providerId: string, keys: string[], label?: string) =>
+  fetcher<{ added: number; duplicates: number; total: number; message: string }>('/keys/bulk-add', {
+    method: 'POST', body: JSON.stringify({ provider_id: providerId, keys, label }),
+  })
 export const toggleKey = (keyId: string, isActive: boolean) =>
   fetcher<{ success: boolean; message: string }>('/keys/toggle', {
     method: 'POST', body: JSON.stringify({ key_id: keyId, is_active: isActive }),

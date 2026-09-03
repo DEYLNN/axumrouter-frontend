@@ -452,6 +452,86 @@ export default function Endpoint() {
             </div>
           </div>
         </div>
+
+        {/* KEY_INJECTION */}
+        <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden"
+          style={{ boxShadow: 'inset 0 1px 0 rgba(236,72,153,0.06), 0 0 20px rgba(236,72,153,0.03)' }}>
+          <div className="px-5 py-3 border-b border-white/[0.04] flex items-center justify-between">
+            <h2 className="text-xs font-mono font-bold text-pink-400 tracking-wider"
+              style={{ textShadow: '0 0 10px rgba(236,72,153,0.3)' }}>KEY_INJECTION</h2>
+            <span className="text-[10px] font-mono text-slate-500">POST /admin/api/keys/bulk-add</span>
+          </div>
+          <div className="p-5 space-y-3">
+            <div>
+              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Endpoint</span>
+              <code className="block mt-1 text-[11px] font-mono text-slate-200 bg-black/40 rounded-lg px-3 py-2 border border-white/[0.06] break-all"
+                style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
+                {gatewayUrl ? gatewayUrl.replace(/\/v1$/, '') : 'http://IP:PORT'}/admin/api/keys/bulk-add
+              </code>
+            </div>
+            <div>
+              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">curl</span>
+              <code className="block mt-1 text-[11px] font-mono text-pink-300 bg-black/40 rounded-lg px-3 py-2 border border-white/[0.06] whitespace-pre-wrap break-all"
+                style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
+{`curl -X POST {base}/admin/api/keys/bulk-add \\
+  -H "Authorization: Bearer $ADMIN_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"provider_id":"sop","keys":["sk-xxx","sk-yyy"]}'`}
+              </code>
+            </div>
+            <div>
+              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Response</span>
+              <code className="block mt-1 text-[11px] font-mono text-emerald-300 bg-black/40 rounded-lg px-3 py-2 border border-white/[0.06] whitespace-pre-wrap break-all"
+                style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
+{`{"added":2,"duplicates":0,"total":2,"message":"2 added, 0 duplicates skipped"}`}
+              </code>
+            </div>
+            <p className="text-[10px] font-mono text-slate-600">
+              Accepts JSON array or <code className="text-slate-500">{"{keys:[...]}"}</code> object. Skips duplicates.
+            </p>
+            <p className="text-[10px] font-mono text-slate-500">
+              Admin token: <code className="text-slate-400">curl -X POST {gatewayUrl ? gatewayUrl.replace(/\/v1$/, '') : '{base}'}/admin/api/login -d '&#123;"password":"PASSWORD"&#125;'</code>
+            </p>
+            <div className="border-t border-white/[0.04] pt-3 mt-3">
+              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Count keys</span>
+              <code className="block mt-1 text-[11px] font-mono text-cyan-300 bg-black/40 rounded-lg px-3 py-2 border border-white/[0.06] whitespace-pre-wrap break-all"
+                style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
+{`curl -H "Authorization: Bearer $ADMIN_TOKEN" \\
+  {base}/admin/api/keys/count?provider_id=sop`}
+              </code>
+              <code className="block mt-1 text-[11px] font-mono text-emerald-300 bg-black/40 rounded-lg px-3 py-2 border border-white/[0.06] whitespace-pre-wrap break-all"
+                style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
+{`{"provider_id":"sop","total":5,"active":5,"disabled":0}`}
+              </code>
+            </div>
+            <div className="border-t border-white/[0.04] pt-3">
+              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Delete keys</span>
+              <code className="block mt-1 text-[11px] font-mono text-red-300 bg-black/40 rounded-lg px-3 py-2 border border-white/[0.06] whitespace-pre-wrap break-all"
+                style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
+{`# delete all
+curl -X POST {base}/admin/api/keys/bulk-delete \\
+  -H "Authorization: Bearer $ADMIN_TOKEN" \\
+  -d '{"provider_id":"sop","action":"all"}'
+
+# delete by key_value
+curl -X POST {base}/admin/api/keys/bulk-delete \\
+  -H "Authorization: Bearer $ADMIN_TOKEN" \\
+  -d '{"provider_id":"sop","action":"by_key","key_value":"sk-xxx"}'`}
+              </code>
+              <code className="block mt-1 text-[11px] font-mono text-emerald-300 bg-black/40 rounded-lg px-3 py-2 border border-white/[0.06] whitespace-pre-wrap break-all"
+                style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
+{`{"deleted":2,"message":"Deleted 2 key(s) from sop"}`}
+              </code>
+            </div>
+            <div className="border-t border-white/[0.04] pt-3">
+              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Docs</span>
+              <code className="block mt-1 text-[11px] font-mono text-slate-400 bg-black/40 rounded-lg px-3 py-2 border border-white/[0.06] break-all"
+                style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }}>
+                {gatewayUrl ? gatewayUrl.replace(/\/v1$/, '') : 'http://IP:PORT'}/admin/api/docs/key-injection
+              </code>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
