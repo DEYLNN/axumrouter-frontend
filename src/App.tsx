@@ -13,6 +13,7 @@ import Logs from './pages/Logs'
 import ProxyPool from './pages/ProxyPool'
 import Playground from './pages/Playground'
 import Sources from './pages/Sources'
+import Combos from './pages/Combos'
 import Login from './pages/Login'
 
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/admin/proxy-pool" element={<ProxyPool />} />
             <Route path="/admin/playground" element={<Playground />} />
             <Route path="/admin/sources" element={<Sources />} />
+            <Route path="/admin/combos" element={<Combos />} />
           </Route>
         </Route>
       </Routes>

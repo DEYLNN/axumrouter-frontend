@@ -16,7 +16,15 @@ interface Props {
 export default function ModelsSection({ providers, models, onToggleModel }: Props) {
   const [search, setSearch] = useState('')
 
-  const grouped = providers?.reduce((acc, p) => {
+  // Inject combo as a pseudo-provider if combo models exist
+  const comboModels = models['combo']
+  const comboProvider: ProviderMeta | null = comboModels && comboModels.length > 0
+    ? { id: 'combo', name: 'combo', display_name: 'Combos', type: 'apikey', color: '#a855f7', icon_name: '', total_keys: 1, active_keys: 1, locked_keys: 0, model_count: comboModels.length, oauth_flow: null }
+    : null
+
+  const allProviders = comboProvider ? [...(providers ?? []), comboProvider] : (providers ?? [])
+
+  const grouped = allProviders?.reduce((acc, p) => {
     const cat = (p.type || 'apikey') as Category
     if (!acc[cat]) acc[cat] = []
     acc[cat].push(p)
@@ -50,7 +58,7 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
               <div className="h-px flex-1 bg-white/[0.04]" />
             </div>
             <div className="space-y-3">
-              {provs.filter(p => p.total_keys > 0).map(p => {
+              {provs.filter(p => p.id === 'combo' || p.total_keys > 0).map(p => {
                 const pm = models[p.id]
                 const filtered = pm ? filter(pm) : null
                 const hasMatch = !search || pm?.some(m => m.id.toLowerCase().includes(search.toLowerCase()))
@@ -61,7 +69,9 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
                           style={{ background: `${p.color}15`, border: `1px solid ${p.color}25` }}>
-                          {p.icon_name ? <img src={iconUrl(p.icon_name)} alt="" className="w-4 h-4 object-contain" /> : <span className="text-[9px] font-bold" style={{ color: p.color }}>{p.id.charAt(0).toUpperCase()}</span>}
+                          {p.id === 'combo' ? (
+                            <span className="text-[10px] font-bold text-purple-400">⚡</span>
+                          ) : p.icon_name ? <img src={iconUrl(p.icon_name)} alt="" className="w-4 h-4 object-contain" /> : <span className="text-[9px] font-bold" style={{ color: p.color }}>{p.id.charAt(0).toUpperCase()}</span>}
                         </div>
                         <div className="min-w-0">
                           <div className="text-[11px] font-semibold text-slate-200 truncate">{p.display_name}</div>

@@ -17,6 +17,7 @@ const sections = [
       { path: '/admin/usage', label: 'Usage', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
       { path: '/admin/quota', label: 'Quota', icon: 'M4 19h16M4 15h16M4 11h16M4 7h16' },
       { path: '/admin/logs', label: 'Logs', icon: 'M4 16v4h4l10-10-4-4L4 16zm14-10l-4-4 2-2a1 1 0 011.414 0l2.586 2.586A1 1 0 0120 4l-2 2z' },
+      { path: '/admin/combos', label: 'Combos', icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4' },
     ],
   },
   {
