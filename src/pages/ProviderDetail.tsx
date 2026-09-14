@@ -287,18 +287,6 @@ export default function ProviderDetail() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 ml-3">
-                  <button onClick={() => ctx.copy(k.id)}
-                    className={`w-7 h-7 flex items-center justify-center rounded-md ${
-                      ctx.copiedId === k.id ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-600 hover:text-cyan-400 hover:bg-cyan-500/10'
-                    }`}>
-                    {ctx.copiedId === k.id ? (
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>
-                    ) : (
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                      </svg>
-                    )}
-                  </button>
                   <button onClick={() => ctx.handleDeleteKey(k.id)} disabled={ctx.deletingKey === k.id}
                     className="w-7 h-7 flex items-center justify-center rounded-md text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-40">
                     {ctx.deletingKey === k.id ? (

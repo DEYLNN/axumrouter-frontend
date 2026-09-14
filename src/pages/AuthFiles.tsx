@@ -68,6 +68,7 @@ export default function AuthFiles() {
   const [importProgress, setImportProgress] = useState<{ current: number; total: number } | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [providerOpen, setProviderOpen] = useState(false)
+  const [providerSearch, setProviderSearch] = useState('')
   const [providerMeta, setProviderMeta] = useState<Map<string, ProviderInfo>>(new Map())
   const [stats, setStats] = useState<Stats | null>(null)
   const [page, setPage] = useState(0)
@@ -373,6 +374,22 @@ export default function AuthFiles() {
     e.target.value = ''
   }
 
+  const downloadSelected = () => {
+    const selected = paginated.filter(f => selectedIds.has(f.id))
+    const items = selected.map(f => ({
+      provider_id: f.provider_id,
+      key_type: f.key_type || 'apikey',
+      label: f.label || '',
+      key_value: f.key_value,
+    }))
+    const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `auth-files-${items.length}-selected.json`
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
+
   const deleteSelected = async () => {
     const ids = Array.from(selectedIds)
     if (!ids.length) return
@@ -556,7 +573,7 @@ export default function AuthFiles() {
               style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }} />
             
             {/* Provider dropdown — full-width block, dropdown panel matches */}
-            <div className="relative w-full">
+            <div className="relative z-10 w-full">
               <button
                 type="button"
                 onClick={() => setProviderOpen(v => !v)}
@@ -586,9 +603,16 @@ export default function AuthFiles() {
 
               {providerOpen && (
                 <>
-                  <div className="fixed inset-0 z-10" onClick={() => setProviderOpen(false)} />
-                  <div className="absolute left-0 right-0 z-20 mt-1.5 rounded-xl border border-white/[0.06] bg-[#0a0f1e]/95 backdrop-blur-xl shadow-2xl py-1 max-h-72 overflow-y-auto"
+                  <div className="fixed inset-0 z-[100]" onClick={() => setProviderOpen(false)} />
+                  <div className="absolute left-0 right-0 z-[101] mt-1.5 rounded-xl border border-white/[0.06] bg-[#0a0f1e]/95 backdrop-blur-xl shadow-2xl py-1 max-h-80 overflow-hidden flex flex-col"
                     style={{ boxShadow: '0 0 30px rgba(6,182,212,0.06), 0 0 60px rgba(0,0,0,0.4)' }}>
+                    <div className="px-2 py-1.5 border-b border-white/[0.04] shrink-0">
+                      <input type="text" value={providerSearch} onChange={e => setProviderSearch(e.target.value)}
+                        placeholder="Search provider..."
+                        autoFocus
+                        className="w-full bg-black/40 border border-white/[0.06] rounded-md px-2.5 py-1.5 text-[11px] font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/40 transition-all" />
+                    </div>
+                    <div className="overflow-y-auto">
                     <button
                       onClick={() => { setProviderFilter('all'); setProviderOpen(false) }}
                       className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors font-mono ${providerFilter === 'all' ? 'text-cyan-300 bg-cyan-500/8' : 'text-zinc-400 hover:bg-white/[0.03] hover:text-zinc-200'}`}
@@ -600,7 +624,9 @@ export default function AuthFiles() {
                       <span className="text-zinc-600">{stats?.total ?? files.length}</span>
                       {providerFilter === 'all' && <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
                     </button>
-                    {providerTypes.map(p => {
+                    {providerTypes
+                      .filter(p => !providerSearch || p.name.toLowerCase().includes(providerSearch.toLowerCase()) || p.id.toLowerCase().includes(providerSearch.toLowerCase()))
+                      .map(p => {
                       const fm = getMeta(p.id)
                       return (
                         <button
@@ -622,6 +648,7 @@ export default function AuthFiles() {
                         </button>
                       )
                     })}
+                    </div>
                   </div>
                 </>
               )}
@@ -663,6 +690,11 @@ export default function AuthFiles() {
             <button onClick={deleteSelected} disabled={!selectedIds.size} className="rounded-full bg-red-500/10 px-3 py-1 text-red-400/80 border border-red-500/20 hover:bg-red-500/20 hover:text-red-300 disabled:opacity-40 transition-all"
               style={selectedIds.size ? { boxShadow: '0 0 12px rgba(239,68,68,0.1)' } : {}}>
               Delete {selectedIds.size}
+            </button>
+            <button onClick={downloadSelected} disabled={!selectedIds.size} className="rounded-full bg-cyan-500/10 px-3 py-1 text-cyan-400/80 border border-cyan-500/20 hover:bg-cyan-500/20 hover:text-cyan-300 disabled:opacity-40 transition-all"
+              style={selectedIds.size ? { boxShadow: '0 0 12px rgba(6,182,212,0.1)' } : {}}
+              title="Download selected as JSON array">
+              ⬇ Download {selectedIds.size}
             </button>
             {onlyDisabled && (
               <button onClick={enableSelected} disabled={!selectedIds.size} className="rounded-full bg-emerald-500/10 px-3 py-1 text-emerald-400/80 border border-emerald-500/20 hover:bg-emerald-500/20 hover:text-emerald-300 disabled:opacity-40 transition-all"
