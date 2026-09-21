@@ -10,12 +10,51 @@ const chartBars = [
 
 const chartDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
+/* ─── Icons ─── */
+const ICONS = {
+  requests: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+  tokens: 'M13 10V3L4 14h7v7l9-11h-7z',
+  clock: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+}
+
+const ICON_BG: Record<string, string> = {
+  requests: 'var(--primary)',
+  tokens: 'var(--accent)',
+  clock: 'var(--warning)',
+}
+
+function StatIcon({ name }: { name: keyof typeof ICONS }) {
+  return (
+    <div
+      className="w-10 h-10 border-2 border-line rounded flex items-center justify-center shrink-0"
+      style={{ background: ICON_BG[name] }}
+    >
+      <svg className="w-5 h-5 text-on-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path d={ICONS[name]} />
+      </svg>
+    </div>
+  )
+}
+
+/** "1s ago" / "5m ago" / "2h ago" / "3d ago" — DB stores UTC */
+function timeAgo(dt: string): string {
+  const t = new Date(dt.replace(' ', 'T') + 'Z')
+  const diff = Math.floor((Date.now() - t.getTime()) / 1000)
+  if (diff < 0) return 'just now'
+  if (diff < 60) return `${diff}s ago`
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  return `${Math.floor(diff / 86400)}d ago`
+}
+
 export default function Dashboard() {
   const [settings, setSettings] = useState<SettingsData | null>(null)
-  const [totalKeys, setTotalKeys] = useState(0)
   const [providerCount, setProviderCount] = useState(0)
+  const [totalRequests, setTotalRequests] = useState(0)
   const [totalTokens, setTotalTokens] = useState(0)
-  const [todayCount, setTodayCount] = useState(0)
+  const [todayRequests, setTodayRequests] = useState(0)
+  const [todayTokens, setTodayTokens] = useState(0)
+  const [lastRequestAgo, setLastRequestAgo] = useState('—')
 
   useEffect(() => {
     getSettings().then(s => setSettings(s)).catch(() => {})
@@ -24,22 +63,37 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      apiFetch('/keys/stats').then(r => r.json()).catch(() => ({})),
       apiFetch('/usage/stats').then(r => r.json()).catch(() => ({})),
       apiFetch('/logs?limit=200').then(r => r.json()).catch(() => ({})),
-    ]).then(([keyStats, usageStats, logsData]) => {
-      setTotalKeys(keyStats.total || 0)
+    ]).then(([usageStats, logsData]) => {
+      setTotalRequests(usageStats.total_requests || 0)
       const tokens = usageStats.total_tokens
         || (usageStats.total_prompt_tokens || 0) + (usageStats.total_completion_tokens || 0)
       setTotalTokens(tokens)
-      const today = new Date().toISOString().slice(0, 10)
-      const logs: Array<{ created_at: string }> = logsData.logs || []
-      setTodayCount(logs.filter(l => l.created_at.startsWith(today)).length)
+
+      const today = new Date().toISOString().slice(0, 10) // UTC, matches DB
+      const logs: Array<{ created_at: string; total_tokens: number }> = logsData.logs || []
+      const todayLogs = logs.filter(l => l.created_at.startsWith(today))
+      setTodayRequests(todayLogs.length)
+      setTodayTokens(todayLogs.reduce((s, l) => s + (l.total_tokens || 0), 0))
+
+      if (logs.length > 0) setLastRequestAgo(timeAgo(logs[0].created_at))
     }).catch(() => {})
   }, [])
 
-  const baseUrl = settings?.public_url || import.meta.env.VITE_GATEWAY_BACKEND_URL || '—'
+  // refresh "time ago" every 15s
+  useEffect(() => {
+    const id = setInterval(async () => {
+      try {
+        const r = await apiFetch('/logs?limit=1')
+        const d = await r.json()
+        if (d.logs?.length) setLastRequestAgo(timeAgo(d.logs[0].created_at))
+      } catch { /* ignore */ }
+    }, 15000)
+    return () => clearInterval(id)
+  }, [])
 
+  const baseUrl = settings?.public_url || import.meta.env.VITE_GATEWAY_BACKEND_URL || '—'
   const fmt = (n: number) => n.toLocaleString('en-US')
 
   return (
@@ -51,26 +105,41 @@ export default function Dashboard() {
           <p className="mono-brutal text-xs text-subtext mt-1 uppercase">System overview & statistics</p>
         </div>
 
-        {/* STAT CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Card 1 — API Keys / Providers */}
+        {/* STAT CARDS — 3 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Card 1 — Requests */}
           <div className="brutal-card p-6">
-            <p className="mono-brutal text-xs text-subtext uppercase">API Keys / Providers</p>
-            <p className="text-3xl font-black heading-brutal text-ink mt-3">
-              {fmt(totalKeys)} / {fmt(providerCount)}
-            </p>
+            <div className="flex items-center gap-3 mb-4">
+              <StatIcon name="requests" />
+              <p className="mono-brutal text-xs text-subtext uppercase">Requests</p>
+            </div>
+            <p className="text-3xl font-black heading-brutal text-ink">{fmt(totalRequests)}</p>
+            <div className="border-t-2 border-line mt-4 pt-3">
+              <p className="text-xs mono-brutal text-subtext uppercase">Today: {todayRequests} requests</p>
+            </div>
           </div>
 
           {/* Card 2 — Total Tokens */}
           <div className="brutal-card p-6">
-            <p className="mono-brutal text-xs text-subtext uppercase">Total Tokens</p>
-            <p className="text-3xl font-black heading-brutal text-ink mt-3">
-              {fmt(totalTokens)}
-            </p>
+            <div className="flex items-center gap-3 mb-4">
+              <StatIcon name="tokens" />
+              <p className="mono-brutal text-xs text-subtext uppercase">Total Tokens</p>
+            </div>
+            <p className="text-3xl font-black heading-brutal text-ink">{fmt(totalTokens)}</p>
             <div className="border-t-2 border-line mt-4 pt-3">
-              <p className="text-xs mono-brutal text-subtext uppercase">
-                Today: {todayCount} requests
-              </p>
+              <p className="text-xs mono-brutal text-subtext uppercase">Today: {fmt(todayTokens)} tokens</p>
+            </div>
+          </div>
+
+          {/* Card 3 — Last Request */}
+          <div className="brutal-card p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <StatIcon name="clock" />
+              <p className="mono-brutal text-xs text-subtext uppercase">Last Request</p>
+            </div>
+            <p className="text-3xl font-black heading-brutal text-ink">{lastRequestAgo}</p>
+            <div className="border-t-2 border-line mt-4 pt-3">
+              <p className="text-xs mono-brutal text-subtext uppercase">{providerCount} providers active</p>
             </div>
           </div>
         </div>
