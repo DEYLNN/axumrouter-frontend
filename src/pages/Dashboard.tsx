@@ -228,10 +228,12 @@ export default function Dashboard() {
               <StatIcon name="tokens" />
               <p className="mono-brutal text-xs text-subtext uppercase">Total Tokens</p>
             </div>
-            <p className="text-3xl font-black heading-brutal text-ink">{compact(totals.tokens)}</p>
+            <p className="text-2xl sm:text-3xl font-black heading-brutal text-ink tabular-nums break-all">
+              {fmt(totals.tokens)}
+            </p>
             <div className="border-t-2 border-line mt-4 pt-3">
               <p className="text-xs mono-brutal text-subtext uppercase">
-                Today: {compact(todayTokens)} tokens
+                Today: {fmt(todayTokens)} tokens
               </p>
             </div>
           </div>
