@@ -45,20 +45,23 @@ function QuotaRow({ quota }: { quota: RateLimit }) {
   const remaining = unlimited ? 100 : Math.max(0, Math.min(100, Math.round((quota.remaining / quota.limit) * 100)))
   const colors = quotaColor(remaining)
   const countdown = formatCountdown(quota.reset_at)
+  const isCredit = ['Bonus Pack', 'Daily', 'Weekly', 'Monthly'].some(label => quota.name.startsWith(label))
 
   return <div className="space-y-2">
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="font-bold text-[#111111]">{quota.name}</span>
-      <span className={`font-bold ${colors.text}`}>{unlimited ? 'Unlimited' : `${remaining}%`}</span>
+    <div className="flex items-center justify-between gap-3">
+      <span className="min-w-0 flex-1 truncate text-sm font-bold text-[#111111]" title={quota.name}>{quota.name}</span>
+      <span className={`shrink-0 rounded-md border-2 border-[#111111] px-1.5 py-0.5 text-[10px] font-bold leading-none mono-brutal ${colors.bar} text-[#111111]`}>
+        {unlimited ? '∞' : `${remaining}%`}
+      </span>
     </div>
-    {!unlimited && <div className={`h-2 overflow-hidden rounded-full border-2 border-[#111111] ${colors.track}`}>
-      <div className={`h-full rounded-full ${colors.bar}`} style={{ width: `${remaining}%` }} />
+    {!unlimited && <div className={`h-2.5 overflow-hidden rounded-full border-2 border-[#111111] ${colors.track}`}>
+      <div className={`h-full rounded-full ${colors.bar} transition-all`} style={{ width: `${remaining}%` }} />
     </div>}
-    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500 mono-brutal">
-      <span>{unlimited ? 'No usage limit' : `${quota.used.toLocaleString()} / ${quota.limit.toLocaleString()} ${['Bonus Pack 1', 'Daily', 'Weekly', 'Monthly'].some(label => quota.name.startsWith(label)) ? 'credits' : 'requests'}`}</span>
-      {countdown && <span>Reset in {countdown}</span>}
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px] text-gray-500 mono-brutal">
+      <span>{unlimited ? 'No usage limit' : `${quota.used.toLocaleString()} / ${quota.limit.toLocaleString()} ${isCredit ? 'credits' : 'requests'}`}</span>
+      {countdown && <span className="shrink-0">Reset in {countdown}</span>}
     </div>
-    {quota.reset_at && <div className="text-xs text-gray-400 mono-brutal">Reset at {formatDate(quota.reset_at)}</div>}
+    {quota.reset_at && <div className="text-[10px] text-gray-400 mono-brutal">Reset at {formatDate(quota.reset_at)}</div>}
   </div>
 }
 
@@ -166,14 +169,21 @@ export default function Quota() {
         const plan = quota?.key_plan
         const canRefresh = key.provider_id === 'cx' || key.provider_id === 'cbai'
         return <article key={key.id} className="brutal-card p-4">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 pb-4">
             <div className="flex min-w-0 items-center gap-3">
               <ProviderLogo provider={key.provider_id} iconName={provider?.icon_name} color={provider?.color} />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <h2 className="truncate font-bold text-[#111111]">{provider?.display_name || key.provider_id}</h2>
-                <div className="mt-1 flex flex-wrap items-center gap-2">
-                  <span className="truncate text-xs text-gray-500 mono-brutal">{key.label || 'OAuth account'}</span>
-                  {plan && <span className="status-pill bg-[#c8a2ff] text-[#111111]">{plan}</span>}
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  <span className="truncate max-w-[150px] text-[11px] text-gray-500 mono-brutal">{key.label || 'OAuth account'}</span>
+                  {plan && (
+                    <span
+                      className="inline-flex shrink-0 items-center rounded-md border-2 border-[#111111] bg-[#c8a2ff] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none text-[#111111] mono-brutal"
+                      title={plan}
+                    >
+                      {plan}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
