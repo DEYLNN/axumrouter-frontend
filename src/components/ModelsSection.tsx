@@ -15,6 +15,7 @@ interface Props {
 
 export default function ModelsSection({ providers, models, onToggleModel }: Props) {
   const [search, setSearch] = useState('')
+  const [status, setStatus] = useState<'all' | 'active' | 'disabled'>('all')
 
   // Inject combo as a pseudo-provider if combo models exist
   const comboModels = models['combo']
@@ -32,20 +33,40 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
   }, {} as Record<Category, ProviderMeta[]>) ?? {} as Record<Category, ProviderMeta[]>
 
   const filter = (list: ToggleModel[]) => {
-    if (!search) return list
-    const q = search.toLowerCase()
-    return list.filter(m => m.id.toLowerCase().includes(q))
+    let out = list
+    if (status === 'active') out = out.filter(m => m.enabled)
+    else if (status === 'disabled') out = out.filter(m => !m.enabled)
+    if (search) {
+      const q = search.toLowerCase()
+      out = out.filter(m => m.id.toLowerCase().includes(q))
+    }
+    return out
   }
+
+  const activeCount = Object.values(models).flat().filter(m => m.enabled).length
+  const disabledCount = Object.values(models).flat().filter(m => !m.enabled).length
+
+  const chip = (key: 'all' | 'active' | 'disabled', label: string, count?: number) => (
+    <button key={key} onClick={() => setStatus(key)}
+      className={`brutal-btn px-3 py-1 text-[10px] font-mono uppercase tracking-wider ${status === key ? 'bg-primary text-white' : 'bg-surface text-subtext hover:text-ink'}`}>
+      {label}{count !== undefined ? ` ${count}` : ''}
+    </button>
+  )
 
   return (
     <div className="brutal-card overflow-hidden">
       <div className="px-5 py-4 border-b-2 border-line">
         <h2 className="heading-brutal text-lg uppercase tracking-tight">MODELS</h2>
       </div>
-      <div className="px-5 py-3 border-b-2 border-line">
+      <div className="px-5 py-3 border-b-2 border-line space-y-3">
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search models..."
           className="w-full px-4 py-2 border-2 border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
+        <div className="flex items-center gap-2">
+          {chip('all', 'All')}
+          {chip('active', 'Active', activeCount)}
+          {chip('disabled', 'Disabled', disabledCount)}
+        </div>
       </div>
       <div className="p-5 space-y-6">
         {Object.entries(grouped).map(([cat, provs]) => (
@@ -59,8 +80,10 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
               {provs.filter(p => p.id === 'combo' || p.total_keys > 0).map(p => {
                 const pm = models[p.id]
                 const filtered = pm ? filter(pm) : null
-                const hasMatch = !search || pm?.some(m => m.id.toLowerCase().includes(search.toLowerCase()))
-                if (search && !hasMatch && (!filtered || filtered.length === 0)) return null
+                // Hide provider entirely when a filter is active and nothing matches.
+                const filtering = !!search || status !== 'all'
+                if (filtering && filtered !== null && filtered.length === 0) return null
+                if (filtering && filtered === null && search) return null
                 return (
                   <div key={p.id} className="brutal-card overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-3">
