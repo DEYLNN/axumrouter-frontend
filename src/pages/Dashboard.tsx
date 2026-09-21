@@ -296,10 +296,9 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-3">
                 {topProviders.map(p => {
-                  const max = topProviders[0].count || 1
                   const total = p.count || 1
-                  const okPct = (p.ok / max) * 100
-                  const errPct = (p.err / max) * 100
+                  const okPct = (p.ok / total) * 100
+                  const errPct = (p.err / total) * 100
                   const pInfo = providers[p.id]
                   return (
                     <div key={p.id}>
@@ -319,11 +318,17 @@ export default function Dashboard() {
                         </div>
                         <span className="mono-brutal text-[10px] text-subtext shrink-0 tabular-nums flex items-center gap-1.5">
                           {fmt(p.count)}
-                          {p.err > 0 && (
-                            <span className="text-danger-text border border-danger-text rounded px-1 py-px leading-none">
-                              {Math.round((p.err / total) * 100)}%
-                            </span>
-                          )}
+                          <span
+                            className={`border rounded px-1 py-px leading-none ${
+                              okPct >= 95
+                                ? 'text-success-text border-success-text'
+                                : okPct >= 50
+                                  ? 'text-warning-text border-warning-text'
+                                  : 'text-danger-text border-danger-text'
+                            }`}
+                          >
+                            {Math.round(okPct)}%
+                          </span>
                         </span>
                       </div>
                       {/* stacked success/error bar */}
