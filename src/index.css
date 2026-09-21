@@ -1,19 +1,184 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@500;600;700&family=Space+Mono&display=swap');
 @import "tailwindcss";
 
+:root {
+  --canvas: #fdf9f0;
+  --ink: #111111;
+  --primary: #ff3d81;
+  --success: #3ddc97;
+  --warning: #ffd23f;
+  --accent: #c8a2ff;
+  --danger: #ff6b5e;
+}
+
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
+  background-color: var(--canvas);
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.font-mono {
-  font-family: 'JetBrains Mono', monospace;
+.font-mono,
+.mono-brutal {
+  font-family: 'Space Mono', monospace;
 }
 
-/* Nav/sidebar titles — modern geometric UI face */
+/* Backwards-compat alias used across the app */
 .font-nav {
-  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Neubrutal heading */
+.heading-brutal {
+  font-family: 'Archivo Black', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+}
+
+/* Subtle dot grid over the cream canvas */
+.grid-pattern {
+  background-image: radial-gradient(var(--ink) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.05;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Core components */
+.brutal-card {
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 3px 3px 0px 0px var(--ink);
+  transition: all 0.1s ease;
+}
+
+@media (min-width: 640px) {
+  .brutal-card {
+    box-shadow: 5px 5px 0px 0px var(--ink);
+  }
+}
+
+@media (min-width: 1024px) {
+  .brutal-card {
+    box-shadow: 6px 6px 0px 0px var(--ink);
+  }
+}
+
+.brutal-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px 0px var(--ink);
+}
+
+@media (min-width: 640px) {
+  .brutal-card:hover {
+    box-shadow: 8px 8px 0px 0px var(--ink);
+  }
+}
+
+@media (min-width: 1024px) {
+  .brutal-card:hover {
+    box-shadow: 9px 9px 0px 0px var(--ink);
+  }
+}
+
+.brutal-btn {
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 2px 2px 0px 0px var(--ink);
+  transition: all 0.1s ease;
+  cursor: pointer;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .brutal-btn {
+    box-shadow: 3px 3px 0px 0px var(--ink);
+  }
+}
+
+@media (min-width: 1024px) {
+  .brutal-btn {
+    box-shadow: 4px 4px 0px 0px var(--ink);
+  }
+}
+
+.brutal-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px 0px var(--ink);
+}
+
+@media (min-width: 640px) {
+  .brutal-btn:hover {
+    box-shadow: 4px 4px 0px 0px var(--ink);
+  }
+}
+
+@media (min-width: 1024px) {
+  .brutal-btn:hover {
+    box-shadow: 5px 5px 0px 0px var(--ink);
+  }
+}
+
+.brutal-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px 0px var(--ink);
+}
+
+.status-pill {
+  border: 2px solid var(--ink);
+  border-radius: 9999px;
+  padding: 2px 12px;
+  box-shadow: 2px 2px 0px 0px var(--ink);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .status-pill {
+    box-shadow: 3px 3px 0px 0px var(--ink);
+  }
+}
+
+@media (min-width: 1024px) {
+  .status-pill {
+    box-shadow: 4px 4px 0px 0px var(--ink);
+  }
+}
+
+.nav-item-active {
+  background: var(--primary);
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0px 0px var(--ink);
+  color: white !important;
+}
+
+@media (min-width: 640px) {
+  .nav-item-active {
+    box-shadow: 3px 3px 0px 0px var(--ink);
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav-item-active {
+    box-shadow: 4px 4px 0px 0px var(--ink);
+  }
+}
+
+.sidebar-link {
+  transition: all 0.1s ease;
+}
+
+.sidebar-link:hover:not(.nav-item-active) {
+  transform: translateX(4px);
 }
 
 /* Hide scrollbar for mobile nav */
@@ -34,9 +199,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--ink);
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: var(--primary);
 }

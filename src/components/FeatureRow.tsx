@@ -12,19 +12,17 @@ export default function FeatureRow({ name, desc, value, onToggle, levels }: Feat
   // If it has levels (caveman: off/lite/full/ultra)
   if (levels) {
     return (
-      <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white/5 transition-colors">
+      <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#fdf9f0] transition-colors">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-semibold text-gray-300">{name}</span>
-            <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
-              isEnabled
-                ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
-                : 'bg-gray-500/20 text-gray-500 border-gray-500/30'
+            <span className="text-xs font-bold text-[#111111]">{name}</span>
+            <span className={`text-[9px] mono-brutal px-2 py-0.5 rounded-full border-2 border-[#111111] font-bold ${
+              isEnabled ? 'bg-[#c8a2ff] text-[#111111]' : 'bg-[#f0f0f0] text-gray-500'
             }`}>
               {isEnabled ? value.toUpperCase() : 'OFF'}
             </span>
           </div>
-          <p className="text-[10px] font-mono text-gray-600 mt-0.5">{desc}</p>
+          <p className="text-[10px] mono-brutal text-gray-500 mt-0.5">{desc}</p>
         </div>
         <div id="caveman-group" className="flex gap-1 ml-3 flex-shrink-0">
           {levels.map(lv => {
@@ -33,10 +31,10 @@ export default function FeatureRow({ name, desc, value, onToggle, levels }: Feat
               <button
                 key={lv.key}
                 onClick={() => onToggle(name, lv.key)}
-                className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-[10px] mono-brutal font-bold transition-all border-2 border-[#111111] ${
                   active
-                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30'
-                    : 'bg-black/30 text-gray-500 border border-slate-700 hover:border-purple-500/30 hover:text-gray-300'
+                    ? 'bg-[#c8a2ff] text-[#111111]'
+                    : 'bg-white text-gray-500 hover:bg-[#f0f0f0] hover:text-[#111111]'
                 }`}
               >
                 {lv.label}
@@ -50,26 +48,24 @@ export default function FeatureRow({ name, desc, value, onToggle, levels }: Feat
 
   // Simple ON/OFF toggle
   return (
-    <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white/5 transition-colors">
+    <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#fdf9f0] transition-colors">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-semibold text-gray-300">{name}</span>
-          <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
-            isEnabled
-              ? 'bg-green-500/20 text-green-300 border-green-500/40'
-              : 'bg-gray-500/20 text-gray-500 border-gray-500/30'
+          <span className="text-xs font-bold text-[#111111]">{name}</span>
+          <span className={`text-[9px] mono-brutal px-2 py-0.5 rounded-full border-2 border-[#111111] font-bold ${
+            isEnabled ? 'bg-[#3ddc97] text-[#111111]' : 'bg-[#f0f0f0] text-gray-500'
           }`}>
             {isEnabled ? 'ENABLED' : 'DISABLED'}
           </span>
         </div>
-        <p className="text-[10px] font-mono text-gray-600 mt-0.5">{desc}</p>
+        <p className="text-[10px] mono-brutal text-gray-500 mt-0.5">{desc}</p>
       </div>
       <button
         onClick={() => onToggle(name, isEnabled ? 'false' : 'true')}
-        className={`px-3 py-1.5 rounded text-[10px] font-mono font-bold transition-all flex-shrink-0 ml-3 ${
+        className={`brutal-btn px-3 py-1.5 text-[10px] font-bold transition-all flex-shrink-0 ml-3 ${
           isEnabled
-            ? 'bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30'
-            : 'bg-green-500/20 text-green-300 border border-green-500/40 hover:bg-green-500/30'
+            ? 'bg-[#ff6b5e] text-white'
+            : 'bg-[#3ddc97] text-[#111111]'
         }`}
       >
         {isEnabled ? 'DISABLE' : 'ENABLE'}

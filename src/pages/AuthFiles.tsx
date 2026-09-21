@@ -292,7 +292,7 @@ export default function AuthFiles() {
         provider_id: 'mst',
         key_type: 'apikey',
         label: 'my-key',
-        apiKey: 'sk-xxxxxxxxxxxxxxxxxxxxxxxx',
+        apiKey: '«redacted»',
       }],
     }
     const json = JSON.stringify(templates[type], null, 2)
@@ -499,7 +499,6 @@ export default function AuthFiles() {
     }
     return secs
   }
-
   return (
     <div className="relative">
       <div className="px-2 md:px-4 py-6 space-y-5">
@@ -507,87 +506,78 @@ export default function AuthFiles() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="text-left">
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 bg-clip-text text-transparent"
-                style={{ textShadow: '0 0 30px rgba(6,182,212,0.3)' }}>
-                AUTH FILES
-              </h1>
-              <span className="rounded-full bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-mono text-cyan-400">{stats?.total ?? files.length}</span>
+              <h1 className="heading-brutal text-3xl uppercase tracking-tight">AUTH FILES</h1>
+              <span className="status-pill bg-[#ff3d81] text-white">{stats?.total ?? files.length}</span>
             </div>
-            <p className="text-xs text-zinc-500 mt-0.5 font-mono">Provider credentials · {stats?.active ?? files.filter(f => f.is_active).length} active</p>
+            <p className="text-lg font-medium text-gray-600 mt-0.5">Provider credentials · {stats?.active ?? files.filter(f => f.is_active).length} active</p>
           </div>
           <div className="flex gap-1.5">
-            <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-cyan-500/25 bg-cyan-500/5 px-2 sm:px-4 text-xs text-cyan-300 hover:bg-cyan-500/15 hover:border-cyan-500/40 transition-all font-mono"
-              style={{ textShadow: '0 0 10px rgba(6,182,212,0.2)' }}>
+            <label className="brutal-btn inline-flex h-9 cursor-pointer items-center gap-1.5 bg-[#3ddc97] text-[#111111] px-2 sm:px-4 text-xs font-bold">
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M12 4v16m8-8H4"/></svg>
               <span className="sm:hidden">Upload</span>
               <span className="hidden sm:inline">Upload JSON</span>
               <input type="file" accept=".json" multiple className="hidden" onChange={handleImport} />
             </label>
             <button onClick={() => downloadTemplate('oauth')}
-              className="h-9 flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-2 sm:px-3 text-[10px] text-zinc-400 hover:text-purple-300 hover:border-purple-500/30 transition-all font-mono"
+              className="brutal-btn h-9 flex items-center gap-1.5 bg-white text-[#111111] px-2 sm:px-3 text-xs font-bold"
               title="Download OAuth template">
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
               <span className="sm:hidden">OAUTH</span>
               <span className="hidden sm:inline">OAuth</span>
             </button>
             <button onClick={() => downloadTemplate('apikey')}
-              className="h-9 flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-2 sm:px-3 text-[10px] text-zinc-400 hover:text-amber-300 hover:border-amber-500/30 transition-all font-mono"
+              className="brutal-btn h-9 flex items-center gap-1.5 bg-white text-[#111111] px-2 sm:px-3 text-xs font-bold"
               title="Download API Key template">
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
               <span className="sm:hidden">APIKEY</span>
               <span className="hidden sm:inline">API Key</span>
             </button>
-            <button onClick={reload} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/[0.08] text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-all font-mono text-sm shrink-0" disabled={loading}>
+            <button onClick={reload} className="brutal-btn h-9 w-9 flex items-center justify-center bg-white text-[#111111] text-sm font-bold shrink-0" disabled={loading}>
               {loading ? '⏳' : '↻'}
             </button>
           </div>
         </div>
 
         {importMsg && (
-          <div className={`rounded-xl px-4 py-2.5 text-xs font-mono border ${importMsg.ok ? 'bg-emerald-500/8 text-emerald-300 border-emerald-500/25' : 'bg-red-500/8 text-red-300 border-red-500/25'}`}
-            style={importMsg.ok ? { boxShadow: '0 0 15px rgba(52,211,153,0.1)' } : { boxShadow: '0 0 15px rgba(239,68,68,0.1)' }}>
+          <div className={`brutal-card px-4 py-2.5 text-xs mono-brutal font-bold ${importMsg.ok ? 'border-[#3ddc97] text-[#3ddc97]' : 'border-[#ff6b5e] text-[#ff6b5e]'}`}>
             {importMsg.text}
           </div>
         )}
 
         {importProgress && (
-          <div className="rounded-xl px-4 py-2.5 text-xs font-mono border bg-cyan-500/5 text-cyan-300 border-cyan-500/20"
-            style={{ boxShadow: '0 0 12px rgba(6,182,212,0.08)' }}>
+          <div className="brutal-card px-4 py-2.5 text-xs mono-brutal">
             <div className="flex items-center gap-2 mb-1.5">
               <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-              <span>Progress… {importProgress.current}/{importProgress.total}</span>
+              <span className="font-bold text-[#111111]">Progress… {importProgress.current}/{importProgress.total}</span>
             </div>
-            <div className="w-full h-1 rounded-full bg-cyan-500/10 overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-cyan-300 transition-all duration-200"
+            <div className="w-full h-2 rounded-full bg-[#f0f0f0] border-2 border-[#111111] overflow-hidden">
+              <div className="h-full rounded-full bg-[#ff3d81] transition-all duration-200"
                 style={{ width: `${(importProgress.current / importProgress.total) * 100}%` }} />
             </div>
           </div>
         )}
 
         {/* FILTERS */}
-        <div className="rounded-xl border border-white/[0.06] bg-[#0a0f1e]/80 backdrop-blur-xl p-4 space-y-3"
-          style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
+        <div className="brutal-card p-4 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <input value={query} onChange={e => onSearchChange(e.target.value)} placeholder="Filter by name, type, provider..."
-              className="flex-1 min-w-[200px] h-9 bg-black/50 border border-white/[0.06] rounded-lg px-3 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/40 transition-all font-mono"
-              style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }} />
+              className="flex-1 min-w-[200px] h-9 px-3 border-2 border-[#111111] rounded-lg text-xs mono-brutal bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
             
             {/* Provider dropdown — full-width block, dropdown panel matches */}
             <div className="relative z-10 w-full">
               <button
                 type="button"
                 onClick={() => setProviderOpen(v => !v)}
-                className="flex w-full items-center gap-2 h-9 bg-black/50 border border-white/[0.06] rounded-lg px-3 text-xs text-zinc-300 hover:border-cyan-500/30 transition-all text-left font-mono"
+                className="brutal-btn flex w-full items-center gap-2 h-9 bg-white text-[#111111] px-3 text-xs font-bold text-left"
               >
                 {providerFilter !== 'all' && (
-                  <div className="w-4 h-4 rounded shrink-0 overflow-hidden bg-black/60 border flex items-center justify-center"
-                  style={{ borderColor: `${(getMeta(providerFilter)).color}50`, boxShadow: `0 0 6px ${(getMeta(providerFilter)).color}30` }}>
+                  <div className="w-4 h-4 rounded shrink-0 overflow-hidden bg-[#f0f0f0] border-2 border-[#111111] flex items-center justify-center">
                     {(() => {
                       const fm = getMeta(providerFilter)
                       return fm.icon_name ? (
                         <img src={iconUrl(fm.icon_name)} alt="" className="w-full h-full object-contain" />
                       ) : (
-                        <span className="font-mono text-[8px] text-zinc-400">{fm.name[0]}</span>
+                        <span className="mono-brutal text-[8px] text-gray-500 font-bold">{fm.name[0]}</span>
                       )
                     })()}
                   </div>
@@ -595,34 +585,33 @@ export default function AuthFiles() {
                 <span className="flex-1 truncate">
                   {providerFilter === 'all' ? 'All providers' : getMeta(providerFilter).name}
                 </span>
-                <span className="text-zinc-600 text-[10px]">
+                <span className="text-gray-400 text-[10px] mono-brutal">
                   {providerFilter === 'all' ? (stats?.total ?? files.length) : providerTypes.find(p => p.id === providerFilter)?.count || 0}
                 </span>
-                <svg className={`w-3.5 h-3.5 text-zinc-500 transition-transform ${providerOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M6 9l6 6 6-6"/></svg>
+                <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${providerOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M6 9l6 6 6-6"/></svg>
               </button>
 
               {providerOpen && (
                 <>
                   <div className="fixed inset-0 z-[100]" onClick={() => setProviderOpen(false)} />
-                  <div className="absolute left-0 right-0 z-[101] mt-1.5 rounded-xl border border-white/[0.06] bg-[#0a0f1e]/95 backdrop-blur-xl shadow-2xl py-1 max-h-80 overflow-hidden flex flex-col"
-                    style={{ boxShadow: '0 0 30px rgba(6,182,212,0.06), 0 0 60px rgba(0,0,0,0.4)' }}>
-                    <div className="px-2 py-1.5 border-b border-white/[0.04] shrink-0">
+                  <div className="absolute left-0 right-0 z-[101] mt-1.5 brutal-card py-1 max-h-80 overflow-hidden flex flex-col">
+                    <div className="px-2 py-1.5 border-b-2 border-[#111111] shrink-0">
                       <input type="text" value={providerSearch} onChange={e => setProviderSearch(e.target.value)}
                         placeholder="Search provider..."
                         autoFocus
-                        className="w-full bg-black/40 border border-white/[0.06] rounded-md px-2.5 py-1.5 text-[11px] font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/40 transition-all" />
+                        className="w-full px-2.5 py-1.5 border-2 border-[#111111] rounded-md text-[11px] mono-brutal bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
                     </div>
                     <div className="overflow-y-auto">
                     <button
                       onClick={() => { setProviderFilter('all'); setProviderOpen(false) }}
-                      className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors font-mono ${providerFilter === 'all' ? 'text-cyan-300 bg-cyan-500/8' : 'text-zinc-400 hover:bg-white/[0.03] hover:text-zinc-200'}`}
+                      className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors mono-brutal font-bold ${providerFilter === 'all' ? 'text-[#ff3d81] bg-[#ff3d81]/10' : 'text-gray-600 hover:bg-[#fdf9f0] hover:text-[#111111]'}`}
                     >
-                      <div className="w-5 h-5 rounded bg-black/40 border border-white/[0.05] flex items-center justify-center">
-                        <svg className="w-3 h-3 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                      <div className="w-5 h-5 rounded bg-[#f0f0f0] border-2 border-[#111111] flex items-center justify-center">
+                        <svg className="w-3 h-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                       </div>
                       <span className="flex-1 text-left">All providers</span>
-                      <span className="text-zinc-600">{stats?.total ?? files.length}</span>
-                      {providerFilter === 'all' && <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
+                      <span className="text-gray-400">{stats?.total ?? files.length}</span>
+                      {providerFilter === 'all' && <svg className="w-3.5 h-3.5 text-[#ff3d81]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
                     </button>
                     {providerTypes
                       .filter(p => !providerSearch || p.name.toLowerCase().includes(providerSearch.toLowerCase()) || p.id.toLowerCase().includes(providerSearch.toLowerCase()))
@@ -632,19 +621,18 @@ export default function AuthFiles() {
                         <button
                           key={p.id}
                           onClick={() => { setProviderFilter(p.id); setProviderOpen(false) }}
-                          className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors font-mono ${providerFilter === p.id ? 'text-cyan-300 bg-cyan-500/8' : 'text-zinc-400 hover:bg-white/[0.03] hover:text-zinc-200'}`}
+                          className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors mono-brutal font-bold ${providerFilter === p.id ? 'text-[#ff3d81] bg-[#ff3d81]/10' : 'text-gray-600 hover:bg-[#fdf9f0] hover:text-[#111111]'}`}
                         >
-                          <div className="w-5 h-5 rounded shrink-0 overflow-hidden bg-black/40 border flex items-center justify-center"
-                            style={{ borderColor: fm.color ? `${fm.color}50` : 'rgba(255,255,255,0.04)', boxShadow: providerFilter === p.id ? `0 0 8px ${fm.color}30` : 'none' }}>
+                          <div className="w-5 h-5 rounded shrink-0 overflow-hidden bg-[#f0f0f0] border-2 border-[#111111] flex items-center justify-center">
                             {fm.icon_name ? (
                               <img src={iconUrl(fm.icon_name)} alt="" className="w-full h-full object-contain p-0.5" />
                             ) : (
-                              <span className="font-mono text-[9px] text-zinc-400">{fm.name[0]}</span>
+                              <span className="mono-brutal text-[9px] text-gray-500 font-bold">{fm.name[0]}</span>
                             )}
                           </div>
                           <span className="flex-1 text-left truncate">{p.name}</span>
-                          <span className="text-zinc-600">{p.count}</span>
-                          {providerFilter === p.id && <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
+                          <span className="text-gray-400">{p.count}</span>
+                          {providerFilter === p.id && <svg className="w-3.5 h-3.5 text-[#ff3d81]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
                         </button>
                       )
                     })}
@@ -654,76 +642,69 @@ export default function AuthFiles() {
               )}
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-            <button onClick={() => setOnlyProblem(v => !v)} className={`rounded-full px-3 py-1 transition-all ${onlyProblem ? 'bg-red-500/15 text-red-300 border border-red-500/30' : 'bg-white/[0.03] text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06]'}`}
-              style={onlyProblem ? { boxShadow: '0 0 12px rgba(239,68,68,0.15)' } : {}}>
+          <div className="flex flex-wrap items-center gap-2 text-xs mono-brutal">
+            <button onClick={() => setOnlyProblem(v => !v)} className={`status-pill ${onlyProblem ? 'bg-[#ff6b5e] text-white' : 'bg-white text-gray-500 hover:text-[#111111]'}`}>
               Problematic {problemCount}
             </button>
-            <button onClick={() => setOnlyDisabled(v => !v)} className={`rounded-full px-3 py-1 transition-all ${onlyDisabled ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' : 'bg-white/[0.03] text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06]'}`}
-              style={onlyDisabled ? { boxShadow: '0 0 12px rgba(245,158,11,0.15)' } : {}}>
+            <button onClick={() => setOnlyDisabled(v => !v)} className={`status-pill ${onlyDisabled ? 'bg-[#ffd23f] text-[#111111]' : 'bg-white text-gray-500 hover:text-[#111111]'}`}>
               Disabled {disabledCount}
             </button>
             {onlyProblem && availableCodes.length > 0 && (
               <>
-                <span className="w-px h-5 bg-white/[0.06]" />
+                <span className="w-px h-5 bg-[#111111]" />
                 <button onClick={() => setStatusCodeFilter('all')}
-                  className={`rounded-full px-2.5 py-1 transition-all text-[10px] font-mono ${statusCodeFilter === 'all' ? 'bg-red-500/15 text-red-300 border border-red-500/30' : 'bg-white/[0.03] text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06]'}`}
-                  style={statusCodeFilter === 'all' ? { boxShadow: '0 0 8px rgba(239,68,68,0.12)' } : {}}>
+                  className={`status-pill ${statusCodeFilter === 'all' ? 'bg-[#ff6b5e] text-white' : 'bg-white text-gray-500 hover:text-[#111111]'}`}>
                   All
                 </button>
                 {availableCodes.map(code => (
                   <button key={code} onClick={() => setStatusCodeFilter(String(code))}
-                    className={`rounded-full px-2.5 py-1 transition-all text-[10px] font-mono ${statusCodeFilter === String(code) ? 'bg-red-500/20 text-red-300 border border-red-500/35' : 'bg-white/[0.03] text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06]'}`}
-                    style={statusCodeFilter === String(code) ? { boxShadow: '0 0 10px rgba(239,68,68,0.15)' } : {}}>
+                    className={`status-pill ${statusCodeFilter === String(code) ? 'bg-[#ff6b5e] text-white' : 'bg-white text-gray-500 hover:text-[#111111]'}`}>
                     {code}
                   </button>
                 ))}
               </>
             )}
-            <span className="w-px h-5 bg-white/[0.06]" />
-            <button onClick={selectVisible} disabled={!visibleIds.length} className="rounded-full bg-white/[0.03] px-3 py-1 text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06] disabled:opacity-40 hover:text-cyan-300 transition-all">
+            <span className="w-px h-5 bg-[#111111]" />
+            <button onClick={selectVisible} disabled={!visibleIds.length} className="status-pill bg-white text-gray-500 hover:text-[#111111] disabled:opacity-40">
               Select {paginated.length}
             </button>
-            <button onClick={clearVisible} disabled={!selectedVisible} className="rounded-full bg-white/[0.03] px-3 py-1 text-zinc-500 border border-white/[0.05] hover:bg-white/[0.06] disabled:opacity-40 hover:text-cyan-300 transition-all">
+            <button onClick={clearVisible} disabled={!selectedVisible} className="status-pill bg-white text-gray-500 hover:text-[#111111] disabled:opacity-40">
               Clear {selectedVisible}
             </button>
-            <button onClick={deleteSelected} disabled={!selectedIds.size} className="rounded-full bg-red-500/10 px-3 py-1 text-red-400/80 border border-red-500/20 hover:bg-red-500/20 hover:text-red-300 disabled:opacity-40 transition-all"
-              style={selectedIds.size ? { boxShadow: '0 0 12px rgba(239,68,68,0.1)' } : {}}>
+            <button onClick={deleteSelected} disabled={!selectedIds.size} className="status-pill bg-[#ff6b5e] text-white disabled:opacity-40">
               Delete {selectedIds.size}
             </button>
-            <button onClick={downloadSelected} disabled={!selectedIds.size} className="rounded-full bg-cyan-500/10 px-3 py-1 text-cyan-400/80 border border-cyan-500/20 hover:bg-cyan-500/20 hover:text-cyan-300 disabled:opacity-40 transition-all"
-              style={selectedIds.size ? { boxShadow: '0 0 12px rgba(6,182,212,0.1)' } : {}}
+            <button onClick={downloadSelected} disabled={!selectedIds.size} className="status-pill bg-[#ff3d81] text-white disabled:opacity-40"
               title="Download selected as JSON array">
               ⬇ Download {selectedIds.size}
             </button>
             {onlyDisabled && (
-              <button onClick={enableSelected} disabled={!selectedIds.size} className="rounded-full bg-emerald-500/10 px-3 py-1 text-emerald-400/80 border border-emerald-500/20 hover:bg-emerald-500/20 hover:text-emerald-300 disabled:opacity-40 transition-all"
-                style={selectedIds.size ? { boxShadow: '0 0 12px rgba(52,211,153,0.1)' } : {}} title="Enable + reset error counters (backoff, consecutive errors)">
+              <button onClick={enableSelected} disabled={!selectedIds.size} className="status-pill bg-[#3ddc97] text-[#111111] disabled:opacity-40" title="Enable + reset error counters (backoff, consecutive errors)">
                 Enable {selectedIds.size}
               </button>
             )}
           </div>
 
           {/* Dedupe row — minimal, sits under the provider dropdown. */}
-          <div className="relative flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 transition-colors hover:bg-white/[0.04] hover:border-white/[0.1]">
-            <span className="text-xs font-medium text-orange-300 shrink-0">Remove Duplicate keys</span>
-            <span className="text-zinc-600">·</span>
-            <span className="flex-1 min-w-0 text-xs text-zinc-500 truncate">
+          <div className="relative flex items-center gap-3 rounded-lg border-2 border-[#111111] bg-[#fdf9f0] px-3 py-2.5 transition-colors hover:bg-[#f0f0f0]">
+            <span className="text-xs font-bold text-[#ffd23f] shrink-0">Remove Duplicate keys</span>
+            <span className="text-gray-400">·</span>
+            <span className="flex-1 min-w-0 text-xs text-gray-500 truncate mono-brutal">
               keep oldest of{' '}
-              <code className="px-1 py-px rounded bg-white/[0.05] text-zinc-400 font-mono text-[10.5px]">provider_id + key_value</code>
+              <code className="px-1 py-px rounded bg-[#f0f0f0] text-gray-500 mono-brutal text-[10.5px] border border-[#111111]">provider_id + key_value</code>
             </span>
-            <span className="hidden sm:inline-flex items-center rounded-md bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-mono text-zinc-500 border border-white/[0.06]">
+            <span className="hidden sm:inline-flex items-center rounded-md bg-[#f0f0f0] px-1.5 py-0.5 text-[10px] mono-brutal text-gray-500 border-2 border-[#111111] font-bold">
               {providerFilter === 'all' ? 'all' : providerFilter}
             </span>
-            <span className={`inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 rounded-md text-[11px] font-mono font-medium border ${
+            <span className={`inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 rounded-md text-[11px] mono-brutal font-bold border-2 border-[#111111] ${
               (stats?.duplicates ?? 0) > 0
-                ? 'bg-orange-500/10 text-orange-300 border-orange-500/25'
-                : 'bg-white/[0.04] text-zinc-500 border-white/[0.06]'
+                ? 'bg-[#ffd23f] text-[#111111]'
+                : 'bg-[#f0f0f0] text-gray-500'
             }`}>
               {stats?.duplicates ?? 0}
             </span>
             <button onClick={runDedupe}
-              className="shrink-0 inline-flex items-center gap-1 h-7 px-2.5 rounded-md bg-orange-500/90 hover:bg-orange-500 text-white text-xs font-medium active:scale-95 transition-all">
+              className="brutal-btn shrink-0 inline-flex items-center gap-1 h-7 px-2.5 bg-[#ffd23f] text-[#111111] text-xs font-bold">
               Run
             </button>
           </div>
@@ -732,8 +713,8 @@ export default function AuthFiles() {
         {/* CARDS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {!paginated.length && !loading && (
-            <div className="col-span-full text-center py-20 text-zinc-600 text-sm font-mono">
-              <span className="text-cyan-500/50">◈</span> No auth files match your filter.
+            <div className="col-span-full text-center py-20 text-gray-500 text-sm mono-brutal">
+              <span className="text-[#ff3d81]">◈</span> No auth files match your filter.
             </div>
           )}
           {paginated.map(f => {
@@ -747,77 +728,63 @@ export default function AuthFiles() {
 
             return (
               <div key={f.id}
-                className={`rounded-xl border transition-all duration-150 overflow-hidden ${
-                  sel ? 'bg-gradient-to-b from-cyan-500/[0.04] to-transparent' : 'bg-[#0a0f1e]/60 hover:bg-[#0a0f1e]/80'
-                }`}
-                style={{
-                  borderColor: sel ? `${accentColor}60` : 'rgba(255,255,255,0.05)',
-                  boxShadow: sel
-                    ? `inset 0 0 20px ${accentColor}08, 0 0 15px ${accentColor}15, 0 0 40px ${accentColor}05`
-                    : 'inset 0 1px 0 rgba(255,255,255,0.03)',
-                }}
+                className={`brutal-card transition-all duration-150 overflow-hidden ${sel ? 'ring-2 ring-[#ff3d81]' : ''}`}
               >
                 {/* HEAD */}
                 <div className="p-3 flex items-start gap-3">
                   <label className="mt-1 shrink-0 cursor-pointer">
                     <input type="checkbox" checked={sel} onChange={() => toggle(f.id)}
-                      className="w-3.5 h-3.5 rounded border-white/20 bg-black/40"
-                      style={{ accentColor: accentColor }} />
+                      className="w-3.5 h-3.5 rounded border-2 border-[#111111] bg-white"
+                      style={{ accentColor: '#ff3d81' }} />
                   </label>
-                  <div className="w-9 h-9 rounded-lg shrink-0 overflow-hidden bg-black/50 border flex items-center justify-center"
-                    style={{
-                      borderColor: `${accentColor}40`,
-                      boxShadow: `0 0 8px ${accentColor}15`,
-                    }}>
+                  <div className="w-9 h-9 rounded-lg shrink-0 overflow-hidden bg-[#f0f0f0] border-2 border-[#111111] flex items-center justify-center">
                     {meta.icon_name ? (
                       <img src={iconUrl(meta.icon_name)} alt="" className="w-full h-full object-contain p-1" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; const el = (e.target as HTMLImageElement).nextElementSibling as HTMLElement; if (el) el.style.display = 'flex' }} />
                     ) : null}
                     <div className={`w-full h-full items-center justify-center ${meta.icon_name ? 'hidden' : 'flex'}`}>
-                      <span className="font-mono text-sm font-bold" style={{ color: accentColor }}>{meta.name[0]}</span>
+                      <span className="mono-brutal text-sm font-bold" style={{ color: accentColor }}>{meta.name[0]}</span>
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-sm font-medium truncate max-w-[120px]" style={{ color: sel ? '#e2e8f0' : '#cbd5e1' }}>{meta.name}</span>
-                      <span className={`px-1.5 py-px text-[9px] rounded font-mono border ${
-                        isOAuth ? 'border-purple-400/30 text-purple-300/70 bg-purple-500/6' : 'border-zinc-500/30 text-zinc-400 bg-white/[0.02]'
+                      <span className="text-sm font-bold truncate max-w-[120px] text-[#111111]">{meta.name}</span>
+                      <span className={`status-pill text-[9px] ${
+                        isOAuth ? 'bg-[#c8a2ff] text-[#111111]' : 'bg-[#f0f0f0] text-gray-600'
                       }`}>{isOAuth ? 'OAUTH' : 'API'}</span>
                       {hasUsageError ? (
-                        <span className="px-1.5 py-px text-[9px] rounded font-mono text-red-400/80 bg-red-500/8 border border-red-500/25">error</span>
+                        <span className="status-pill bg-[#ff6b5e] text-white text-[9px]">error</span>
                       ) : (
-                        <span className={`px-1.5 py-px text-[9px] rounded font-mono ${f.is_active ? 'text-emerald-400/70 bg-emerald-500/6 border border-emerald-500/20' : 'text-red-400/60 bg-red-500/6 border border-red-500/20'}`}
-                          style={f.is_active ? { boxShadow: '0 0 6px rgba(52,211,153,0.1)' } : {}}>
+                        <span className={`status-pill text-[9px] ${f.is_active ? 'bg-[#3ddc97] text-[#111111]' : 'bg-[#ff6b5e] text-white'}`}>
                           {f.is_active ? 'active' : 'disabled'}
                         </span>
                       )}
                     </div>
-                    <div className="text-[12px] text-white/70 font-medium truncate mt-0.5" title={f.label}>{f.label || '—'}</div>
+                    <div className="text-[12px] text-gray-600 font-bold truncate mt-0.5" title={f.label}>{f.label || '—'}</div>
                   </div>
                 </div>
 
                 {/* STATUS & TOGGLE BAR — active/inactive switch with error counter */}
-                <div className="mx-3 mb-2 px-2.5 py-2 rounded-lg border border-white/[0.05] bg-black/30 flex items-center justify-between gap-2"
-                  style={{ boxShadow: 'inset 0 0 8px rgba(0,0,0,0.15)' }}>
+                <div className="mx-3 mb-2 px-2.5 py-2 rounded-lg border-2 border-[#111111] bg-[#fdf9f0] flex items-center justify-between gap-2">
                   {/* Left: state icon + label + error counter */}
                   <div className="flex items-center gap-2 min-w-0">
                     {f.is_active ? (
-                      <svg className="w-3.5 h-3.5 shrink-0 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-3.5 h-3.5 shrink-0 text-[#3ddc97]" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                     ) : (
-                      <svg className="w-3.5 h-3.5 shrink-0 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-3.5 h-3.5 shrink-0 text-[#ff6b5e]" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                       </svg>
                     )}
-                    <span className={`text-[10px] font-mono font-semibold ${f.is_active ? 'text-emerald-400/90' : 'text-red-400/90'}`}>
+                    <span className={`text-[10px] mono-brutal font-bold ${f.is_active ? 'text-[#3ddc97]' : 'text-[#ff6b5e]'}`}>
                       {f.is_active ? 'ACTIVE' : 'DISABLED'}
                     </span>
                     {(f.consecutive_error_count ?? 0) > 0 && (
                       <span
-                        className={`px-1.5 py-px text-[9px] rounded font-mono border ${
+                        className={`status-pill text-[9px] ${
                           (f.consecutive_error_count ?? 0) >= 3
-                            ? 'text-red-400/90 bg-red-500/15 border-red-500/40'
-                            : 'text-amber-400/80 bg-amber-500/8 border-amber-500/25'
+                            ? 'bg-[#ff6b5e] text-white'
+                            : 'bg-[#ffd23f] text-[#111111]'
                         }`}
                         title={`${f.consecutive_error_count} consecutive errors — auto-deactivates at 3`}
                       >
@@ -839,24 +806,16 @@ export default function AuthFiles() {
                         setImportMsg({ ok: false, text: `Toggle failed: ${err.message}` })
                       }
                     }}
-                    className="relative shrink-0 rounded-full transition-all"
-                    style={{
-                      width: '34px',
-                      height: '18px',
-                      background: f.is_active ? '#22c55e' : '#ef4444',
-                      boxShadow: f.is_active
-                        ? '0 0 8px rgba(34,197,94,0.5)'
-                        : '0 0 8px rgba(239,68,68,0.5)',
-                    }}
+                    className={`relative shrink-0 rounded-full border-2 border-[#111111] transition-colors ${f.is_active ? 'bg-[#3ddc97]' : 'bg-[#ff6b5e]'}`}
+                    style={{ width: '34px', height: '18px' }}
                     title={f.is_active ? 'Click to disable' : 'Click to enable'}
                   >
                     <span
-                      className="absolute top-0.5 rounded-full bg-white transition-all"
+                      className="absolute top-0 rounded-full bg-white border-2 border-[#111111] transition-all"
                       style={{
                         width: '14px',
                         height: '14px',
                         left: f.is_active ? '17px' : '2px',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
                       }}
                     />
                   </button>
@@ -864,32 +823,29 @@ export default function AuthFiles() {
 
                 {/* OAUTH DETAILS */}
                 {isOAuth && (
-                  <div className="mx-3 mb-2 rounded-lg border border-white/[0.04] bg-black/30 p-2.5 space-y-1.5 text-[11px] font-mono"
-                    style={{ boxShadow: 'inset 0 0 10px rgba(0,0,0,0.2)' }}>
+                  <div className="mx-3 mb-2 rounded-lg border-2 border-[#111111] bg-[#f0f0f0] p-2.5 space-y-1.5 text-[11px] mono-brutal">
                     <div className="flex items-center justify-between">
-                      <span className="text-zinc-500">Token expiry</span>
-                      <span className={`font-mono ${exp.expired ? 'text-red-400' : exp.infinite ? 'text-cyan-400' : 'text-zinc-300'}`}
-                        style={!exp.expired ? { textShadow: '0 0 8px rgba(255,255,255,0.05)' } : {}}>
+                      <span className="text-gray-500 font-bold">Token expiry</span>
+                      <span className={`mono-brutal font-bold ${exp.expired ? 'text-[#ff6b5e]' : exp.infinite ? 'text-[#ff3d81]' : 'text-[#111111]'}`}>
                         {exp.expired ? 'Expired' : exp.infinite ? '∞' : exp.label}
                       </span>
                     </div>
                     {f.email && (
                       <div className="flex items-center justify-between">
-                        <span className="text-zinc-500">Email</span>
-                        <span className="text-zinc-300 truncate max-w-[180px]" title={f.email}>{f.email}</span>
+                        <span className="text-gray-500 font-bold">Email</span>
+                        <span className="text-[#111111] truncate max-w-[180px] font-bold" title={f.email}>{f.email}</span>
                       </div>
                     )}
                     {f.plan && (
                       <div className="flex items-center justify-between">
-                        <span className="text-zinc-500">Plan</span>
-                        <span className="rounded-full bg-emerald-500/12 text-emerald-400 px-2 py-0.5 text-[9px] font-semibold"
-                          style={{ boxShadow: '0 0 6px rgba(52,211,153,0.1)' }}>{f.plan}</span>
+                        <span className="text-gray-500 font-bold">Plan</span>
+                        <span className="status-pill bg-[#3ddc97] text-[#111111] text-[9px]">{f.plan}</span>
                       </div>
                     )}
                     {exp.seconds > 0 && !exp.expired && !exp.infinite && (
                       <div className="flex items-center justify-between">
-                        <span className="text-zinc-500">Expires</span>
-                        <span className="text-zinc-300">{fmtDate(f.expires_at)}</span>
+                        <span className="text-gray-500 font-bold">Expires</span>
+                        <span className="text-[#111111] font-bold">{fmtDate(f.expires_at)}</span>
                       </div>
                     )}
                   </div>
@@ -897,20 +853,19 @@ export default function AuthFiles() {
 
                 {/* LAST ERROR */}
                 {hasUsageError && (
-                  <div className="mx-3 mb-2 rounded-lg border border-red-500/25 bg-red-950/20 p-2.5 space-y-1"
-                    style={{ boxShadow: '0 0 12px rgba(239,68,68,0.08)' }}>
+                  <div className="mx-3 mb-2 rounded-lg border-2 border-[#ff6b5e] bg-[#ff6b5e]/10 p-2.5 space-y-1">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[9px] font-mono font-semibold text-red-300/90 uppercase tracking-wider">Last error</span>
-                      <span className="text-[9px] font-mono text-red-400/80">
+                      <span className="text-[9px] mono-brutal font-bold text-[#ff6b5e] uppercase tracking-wider">Last error</span>
+                      <span className="text-[9px] mono-brutal text-[#ff6b5e] font-bold">
                         {f.last_error_status ? `[${f.last_error_status}]` : 'ERR'}
                       </span>
                     </div>
                     {f.last_error_message && (
-                      <div className="text-[10px] font-mono text-red-300/85 break-words leading-relaxed">
+                      <div className="text-[10px] mono-brutal text-[#ff6b5e] break-words leading-relaxed">
                         {f.last_error_message}
                       </div>
                     )}
-                    <div className="flex items-center justify-between gap-2 text-[9px] font-mono text-red-400/50">
+                    <div className="flex items-center justify-between gap-2 text-[9px] mono-brutal text-gray-400">
                       <span className="truncate" title={f.last_error_model || ''}>{f.last_error_model || '—'}</span>
                       <span className="shrink-0">{f.last_error_at ? fmtDate(f.last_error_at) : ''}</span>
                     </div>
@@ -920,29 +875,27 @@ export default function AuthFiles() {
                 {/* SECRETS */}
                 <div className="mx-3 mb-2 space-y-1">
                   {secrets.map(s => (
-                    <div key={s.field} className="flex items-center justify-between rounded-lg bg-black/40 border border-white/[0.03] px-2.5 py-1.5">
+                    <div key={s.field} className="flex items-center justify-between rounded-lg bg-[#f0f0f0] border-2 border-[#111111] px-2.5 py-1.5">
                       <div className="min-w-0 flex-1">
-                        <div className="text-[9px] font-mono text-zinc-500">{s.field}</div>
-                        <div className="text-[10px] font-mono text-zinc-400 truncate">{s.preview}</div>
+                        <div className="text-[9px] mono-brutal text-gray-500 font-bold">{s.field}</div>
+                        <div className="text-[10px] mono-brutal text-gray-600 truncate">{s.preview}</div>
                       </div>
                       <button onClick={() => copySecret(`${f.id}:${s.field}`, s.value)}
-                        className="shrink-0 ml-2 text-zinc-600 hover:text-cyan-400 transition-colors p-1"
-                        style={copiedKey === `${f.id}:${s.field}` ? { color: accentColor, textShadow: `0 0 8px ${accentColor}50` } : {}}>
+                        className="shrink-0 ml-2 text-gray-400 hover:text-[#ff3d81] transition-colors p-1 font-bold">
                         {copiedKey === `${f.id}:${s.field}` ? '✓' : copiedKey === `${f.id}:${s.field}:err` ? '✗' : '⧉'}
                       </button>
                     </div>
                   ))}
                   {!secrets.length && (
-                    <div className="text-[10px] text-zinc-600 text-center py-2 font-mono">No secret fields</div>
+                    <div className="text-[10px] text-gray-500 text-center py-2 mono-brutal">No secret fields</div>
                   )}
                 </div>
 
                 {/* ACTIONS */}
                 <div className="mx-3 mb-3 grid grid-cols-2 gap-1.5">
-                  {isOAuth && f.has_refresh && (f.provider_id === 'gb' || f.provider_id === 'cx') && <button onClick={async () => { try { const r = await refreshAuthFile(f.id, f.provider_id); if (!r.ok) throw new Error(r.error || 'Refresh failed'); setImportMsg({ ok: true, text: 'Token refreshed' }); await reload() } catch (e: any) { setImportMsg({ ok: false, text: e.message }) } }} className="col-span-2 text-[10px] py-1.5 rounded-lg border border-purple-500/25 text-purple-300 hover:bg-purple-500/10 transition-all font-mono">Refresh token</button>}
+                  {isOAuth && f.has_refresh && (f.provider_id === 'gb' || f.provider_id === 'cx') && <button onClick={async () => { try { const r = await refreshAuthFile(f.id, f.provider_id); if (!r.ok) throw new Error(r.error || 'Refresh failed'); setImportMsg({ ok: true, text: 'Token refreshed' }); await reload() } catch (e: any) { setImportMsg({ ok: false, text: e.message }) } }} className="brutal-btn col-span-2 text-[10px] py-1.5 bg-[#c8a2ff] text-[#111111] font-bold">Refresh token</button>}
                   <button onClick={() => downloadJson(f)}
-                    className="text-[10px] py-1.5 rounded-lg border border-white/[0.06] text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-all font-mono"
-                    style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)' }}>
+                    className="brutal-btn text-[10px] py-1.5 bg-white text-[#111111] font-bold">
                     Download
                   </button>
                   <button onClick={async () => {
@@ -956,7 +909,7 @@ export default function AuthFiles() {
                       await reload()
                     } catch { setImportMsg({ ok: false, text: 'Delete failed' }) }
                   }}
-                    className="text-[10px] py-1.5 rounded-lg border border-red-500/20 text-red-400/70 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/40 transition-all font-mono">
+                    className="brutal-btn text-[10px] py-1.5 bg-[#ff6b5e] text-white font-bold">
                     Delete
                   </button>
                 </div>
@@ -969,7 +922,7 @@ export default function AuthFiles() {
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-1.5 pt-2">
             <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-              className="h-8 px-2.5 flex items-center justify-center rounded-lg border border-white/[0.06] text-xs text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 disabled:opacity-30 disabled:pointer-events-none transition-all font-mono">
+              className="brutal-btn h-8 px-2.5 flex items-center justify-center bg-white text-[#111111] text-xs font-bold disabled:opacity-30 disabled:pointer-events-none">
               ← Prev
             </button>
             {(() => {
@@ -986,22 +939,21 @@ export default function AuthFiles() {
               }
               return pages.map((p, idx) =>
                 p === '...' ? (
-                  <span key={`ellipsis-${idx}`} className="text-zinc-600 text-xs px-1 font-mono">…</span>
+                  <span key={`ellipsis-${idx}`} className="text-gray-400 text-xs px-1 mono-brutal">…</span>
                 ) : (
                   <button key={p} onClick={() => setPage(p)}
-                    className={`h-8 min-w-[2rem] flex items-center justify-center rounded-lg text-xs font-mono transition-all ${
+                    className={`brutal-btn h-8 min-w-[2rem] flex items-center justify-center text-xs font-bold ${
                       p === page
-                        ? 'bg-cyan-500/12 text-cyan-300 border border-cyan-500/30'
-                        : 'text-zinc-500 border border-white/[0.04] hover:text-zinc-300 hover:border-white/[0.1]'
-                    }`}
-                    style={p === page ? { boxShadow: '0 0 10px rgba(6,182,212,0.15)' } : {}}>
+                        ? 'bg-[#ff3d81] text-white'
+                        : 'bg-white text-[#111111]'
+                    }`}>
                     {p + 1}
                   </button>
                 )
               )
             })()}
             <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-              className="h-8 px-2.5 flex items-center justify-center rounded-lg border border-white/[0.06] text-xs text-zinc-400 hover:text-cyan-300 hover:border-cyan-500/30 disabled:opacity-30 disabled:pointer-events-none transition-all font-mono">
+              className="brutal-btn h-8 px-2.5 flex items-center justify-center bg-white text-[#111111] text-xs font-bold disabled:opacity-30 disabled:pointer-events-none">
               Next →
             </button>
           </div>
@@ -1010,3 +962,4 @@ export default function AuthFiles() {
     </div>
   )
 }
+

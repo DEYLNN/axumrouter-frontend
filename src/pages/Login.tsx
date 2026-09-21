@@ -42,44 +42,41 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1220] flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="border border-white/[0.06] rounded-xl bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden"
-          style={{ boxShadow: 'inset 0 1px 0 rgba(6,182,212,0.06), 0 0 20px rgba(6,182,212,0.03)' }}>
-          <div className="px-6 py-5 border-b border-white/[0.04]">
+    <div className="min-h-screen bg-[#fdf9f0] flex items-center justify-center px-4">
+      <div className="grid-pattern" />
+      <div className="w-full max-w-sm relative z-10">
+        <div className="brutal-card overflow-hidden">
+          <div className="px-6 py-5 border-b-2 border-[#111111]">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <span className="text-sm font-semibold text-white tracking-tight">AxumRouter</span>
+              <img
+                src="/logo.png"
+                alt="NuvCode"
+                className="w-8 h-8 rounded-lg border-2 border-[#111111] object-cover bg-white"
+              />
+              <span className="heading-brutal text-lg uppercase tracking-tight">NuvCode</span>
             </div>
           </div>
           <form onSubmit={login} className="px-6 py-6 space-y-4">
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Username</label>
+              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Username</label>
               <input type="text" value={username} onChange={e => { setUsername(e.target.value); if (error) setError('') }}
                 placeholder="Enter username"
                 autoFocus
-                className="w-full bg-black/50 border border-white/[0.08] rounded-lg px-3.5 py-2.5 text-sm font-mono text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/40 transition-all"
-                style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }} />
+                className="w-full px-4 py-2.5 border-2 border-[#111111] rounded-lg font-mono text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] focus:border-[#ff3d81] transition-all" />
             </div>
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
+              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Password</label>
               <input type="password" value={password} onChange={handlePasswordChange}
                 placeholder="Enter admin password"
-                className="w-full bg-black/50 border border-white/[0.08] rounded-lg px-3.5 py-2.5 text-sm font-mono text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/40 transition-all"
-                style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)' }} />
+                className="w-full px-4 py-2.5 border-2 border-[#111111] rounded-lg font-mono text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] focus:border-[#ff3d81] transition-all" />
             </div>
             {error && (
-              <div className="text-[11px] font-mono text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+              <div className="text-sm font-bold text-[#ff6b5e] bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] rounded-lg px-4 py-2.5">
                 {error}
               </div>
             )}
             <button type="submit" disabled={loading || !password}
-              className="w-full py-2.5 rounded-lg text-xs font-mono font-bold text-cyan-400 bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/30 hover:bg-cyan-500/30 disabled:opacity-40 transition-all"
-              style={{ boxShadow: '0 0 12px rgba(6,182,212,0.1)' }}>
+              className="brutal-btn w-full bg-[#ff3d81] text-white px-4 py-2.5 text-sm font-bold uppercase tracking-wider disabled:opacity-40">
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>

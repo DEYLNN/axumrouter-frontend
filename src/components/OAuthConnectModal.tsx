@@ -166,81 +166,80 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
 
   const color = provider.color
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md mx-4 rounded-2xl border border-white/[0.06] bg-[#0a0f1e] backdrop-blur-xl p-6"
-        style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()}>
-        <div className="flex items-center gap-3 mb-5">
-          {provider.icon_name && <img src={iconUrl(provider.icon_name)} alt="" className="w-8 h-8 rounded-lg object-contain" style={{ background: `${color}15`, border: `1px solid ${color}25` }} />}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#111111]/60 p-4" onClick={onClose}>
+      <div className="brutal-card w-full max-w-md" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3 mb-5 border-b-2 border-[#111111] pb-4">
+          {provider.icon_name && <img src={iconUrl(provider.icon_name)} alt="" className="w-8 h-8 rounded-lg object-contain border-2 border-[#111111]" style={{ background: `${color}15` }} />}
           <div>
-            <h2 className="text-sm font-bold text-slate-200">Connect {provider.display_name}</h2>
-            <p className="text-[10px] font-mono text-slate-500">{provider.id} — OAuth</p>
+            <h2 className="heading-brutal text-sm uppercase">Connect {provider.display_name}</h2>
+            <p className="mono-brutal text-[10px] text-gray-500">{provider.id} — OAuth</p>
           </div>
         </div>
 
-        {step === 'loading' && <div className="text-center py-8 text-sm font-mono text-slate-500 animate-pulse">Starting OAuth flow...</div>}
+        {step === 'loading' && <div className="text-center py-8 mono-brutal text-sm text-gray-500 animate-pulse">Starting OAuth flow...</div>}
 
         {step === 'error' && (
           <div className="space-y-4">
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] font-mono text-red-400">{error}</div>
-            <button onClick={onClose} className="w-full py-2.5 rounded-lg text-xs font-mono font-semibold text-slate-400 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15]">Close</button>
+            <div className="p-3 rounded-lg bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] text-[11px] mono-brutal text-[#ff6b5e]">{error}</div>
+            <button onClick={onClose} className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-white bg-[#ff6b5e] hover:bg-[#ff6b5e]/80">Close</button>
           </div>
         )}
 
         {step === 'success' && (
           <div className="text-center py-8 space-y-4">
-            <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-              <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            <div className="w-12 h-12 mx-auto rounded-full bg-[#3ddc97]/10 border-2 border-[#3ddc97] flex items-center justify-center">
+              <svg className="w-6 h-6 text-[#3ddc97]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
             </div>
-            <p className="text-sm font-mono text-slate-300">Connected successfully!</p>
-            <button onClick={onClose} className="w-full py-2.5 rounded-lg text-xs font-mono font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20">Done</button>
+            <p className="mono-brutal text-sm text-[#111111]">Connected successfully!</p>
+            <button onClick={onClose} className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-[#111111] bg-[#3ddc97] hover:bg-[#3ddc97]/80">Done</button>
           </div>
         )}
 
         {step === 'waiting' && !isDeviceCode && (
           <div className="space-y-4">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
-              <div className="w-4 h-4 border-2 border-cyan-400/40 border-t-cyan-400 rounded-full animate-spin" />
-              <span className="text-xs font-mono text-slate-400">Waiting for authorization...</span>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#c8a2ff]/10 border-2 border-[#c8a2ff]">
+              <div className="w-4 h-4 border-2 border-[#c8a2ff]/40 border-t-[#c8a2ff] rounded-full animate-spin" />
+              <span className="mono-brutal text-xs text-[#111111]">Waiting for authorization...</span>
             </div>
             <div className="flex items-center gap-3 my-1">
-              <div className="flex-1 h-px bg-white/[0.06]" />
-              <span className="text-[9px] font-mono text-slate-600 tracking-wider">OR PASTE URL</span>
-              <div className="flex-1 h-px bg-white/[0.06]" />
+              <div className="flex-1 h-px bg-[#111111]/10" />
+              <span className="mono-brutal text-[9px] text-gray-500 tracking-wider">OR PASTE URL</span>
+              <div className="flex-1 h-px bg-[#111111]/10" />
             </div>
             <input type="text" value={callbackUrl} onChange={e => setCallbackUrl(e.target.value)}
               placeholder="Paste callback URL here..."
-              className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-500/40" />
+              className="w-full bg-white border-2 border-[#111111] rounded-lg px-3 py-2 text-xs mono-brutal text-[#111111] placeholder-gray-400 focus:outline-none focus:border-[#c8a2ff]" />
             <button onClick={handleManual} disabled={!callbackUrl}
-              className="w-full py-2.5 rounded-lg text-xs font-mono font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 disabled:opacity-30">Connect</button>
+              className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-white bg-[#ff3d81] hover:bg-[#ff3d81]/80 disabled:opacity-30">Connect</button>
           </div>
         )}
 
         {step === 'input' && !isDeviceCode && (
           <div className="space-y-4">
-            <div className="p-3 rounded-lg bg-black/40 border border-white/[0.06]">
-              <p className="text-[10px] font-mono text-slate-500 mb-1">Auth URL</p>
-              <code className="text-[10px] font-mono text-slate-300 break-all">{authUrl}</code>
+            <div className="p-3 rounded-lg bg-[#f0f0f0] border-2 border-[#111111]">
+              <p className="mono-brutal text-[10px] text-gray-500 mb-1">Auth URL</p>
+              <code className="mono-brutal text-[10px] text-[#111111] break-all">{authUrl}</code>
             </div>
             <input type="text" value={callbackUrl} onChange={e => setCallbackUrl(e.target.value)}
               placeholder="Paste callback URL here..."
-              className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-500/40" />
+              className="w-full bg-white border-2 border-[#111111] rounded-lg px-3 py-2 text-xs mono-brutal text-[#111111] placeholder-gray-400 focus:outline-none focus:border-[#c8a2ff]" />
             <button onClick={handleManual} disabled={!callbackUrl}
-              className="w-full py-2.5 rounded-lg text-xs font-mono font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 disabled:opacity-30">Connect</button>
+              className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-white bg-[#ff3d81] hover:bg-[#ff3d81]/80 disabled:opacity-30">Connect</button>
           </div>
         )}
 
         {step === 'waiting' && isDeviceCode && deviceData && (
           <div className="space-y-4 text-center">
-            <div className="w-12 h-12 mx-auto border-2 border-cyan-400/40 border-t-cyan-400 rounded-full animate-spin" />
-            <p className="text-sm font-mono text-slate-300">Waiting for device authorization</p>
-            <p className="text-[10px] font-mono text-slate-500">Complete authorization in the opened tab, then return here.</p>
+            <div className="w-12 h-12 mx-auto border-2 border-[#c8a2ff]/40 border-t-[#c8a2ff] rounded-full animate-spin" />
+            <p className="mono-brutal text-sm text-[#111111]">Waiting for device authorization</p>
+            <p className="mono-brutal text-[10px] text-gray-500">Complete authorization in the opened tab, then return here.</p>
             {deviceData.user_code && (
-              <div className="p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
-                <p className="text-[9px] font-mono text-slate-500 mb-1">Your code</p>
-                <code className="text-lg font-bold tracking-[0.2em] text-cyan-300">{deviceData.user_code}</code>
+              <div className="p-3 rounded-lg bg-[#c8a2ff]/10 border-2 border-[#c8a2ff]">
+                <p className="mono-brutal text-[9px] text-gray-500 mb-1">Your code</p>
+                <code className="mono-brutal text-lg font-bold tracking-[0.2em] text-[#c8a2ff]">{deviceData.user_code}</code>
               </div>
             )}
-            {polling && <p className="text-[9px] font-mono text-slate-600 animate-pulse">Polling...</p>}
+            {polling && <p className="mono-brutal text-[9px] text-gray-500 animate-pulse">Polling...</p>}
           </div>
         )}
       </div>

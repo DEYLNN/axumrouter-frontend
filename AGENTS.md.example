@@ -1,4 +1,4 @@
-# AGENTS.md — AxumRouter Frontend
+# AGENTS.md — JevCode Frontend
 
 ## Golden Rule
 **Analisa dulu, edit setelah paham.** Sebelum ubah apapun, baca & pahami kode yang ada — struktur, aliran data, konteks.
@@ -17,7 +17,7 @@
 4. Baru edit
 
 ## Project
-AxumRouter Frontend — admin dashboard untuk AI Gateway.
+JevCode Frontend — admin dashboard untuk AI Gateway.
 Git repo: `DEYLNN/axumrouter-frontend`
 
 ## Workspace

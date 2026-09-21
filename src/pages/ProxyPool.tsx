@@ -1,8 +1,8 @@
 export default function ProxyPool() {
   return (
-    <div>
-      <h1 className="text-lg font-bold text-white tracking-tight">PROXYPOOL</h1>
-      <p className="text-xs font-mono text-gray-500 mt-2">Coming soon...</p>
+    <div className="space-y-6">
+      <h1 className="heading-brutal text-3xl uppercase tracking-tight">PROXY POOL</h1>
+      <p className="text-lg font-medium text-gray-600">Coming soon...</p>
     </div>
   )
 }

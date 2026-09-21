@@ -1,8 +1,8 @@
-# AxumRouter Frontend — Guide
+# JevCode Frontend — Guide
 
 ## Overview
 
-Admin dashboard for AxumRouter AI Gateway. React 19 + TypeScript 6 + Vite 8 + TailwindCSS 4.
+Admin dashboard for JevCode AI Gateway. React 19 + TypeScript 6 + Vite 8 + TailwindCSS 4.
 
 ## System Requirements
 

@@ -23,10 +23,9 @@ function timeAgo(dateStr: string): string {
 
 function Card({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#0a0f1e]/60 p-4 transition-all hover:border-white/[0.12]"
-      style={{ boxShadow: `inset 0 1px 0 ${color}15, 0 0 20px ${color}05` }}>
-      <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider mb-1">{label}</div>
-      <div className="text-xl font-bold font-mono" style={{ color }}>{value}</div>
+    <div className="brutal-card p-4">
+      <div className="text-[10px] mono-brutal text-gray-500 uppercase tracking-wider mb-1">{label}</div>
+      <div className="text-xl font-bold mono-brutal" style={{ color }}>{value}</div>
     </div>
   )
 }
@@ -89,28 +88,25 @@ export default function Usage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 bg-clip-text text-transparent"
-            style={{ textShadow: '0 0 30px rgba(6,182,212,0.3)' }}>
-            USAGE
-          </h1>
-          <p className="text-[10px] font-mono text-slate-500 mt-0.5">{total} total requests · live</p>
+          <h1 className="heading-brutal text-3xl uppercase tracking-tight">USAGE</h1>
+          <p className="text-lg font-medium text-gray-600">{total} total requests · live</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card label="Total Requests" value={stats ? fmt(stats.total_requests) : '-'} color="#94A3B8" />
-        <Card label="Input Tokens" value={stats ? fmt(stats.total_prompt_tokens) : '-'} color="#38BDF8" />
-        <Card label="Output Tokens" value={stats ? fmt(stats.total_completion_tokens) : '-'} color="#22D3EE" />
-        <Card label="Total Tokens" value={stats ? fmt(stats.total_tokens) : '-'} color="#A78BFA" />
+        <Card label="Total Requests" value={stats ? fmt(stats.total_requests) : '-'} color="#111111" />
+        <Card label="Input Tokens" value={stats ? fmt(stats.total_prompt_tokens) : '-'} color="#ff3d81" />
+        <Card label="Output Tokens" value={stats ? fmt(stats.total_completion_tokens) : '-'} color="#3ddc97" />
+        <Card label="Total Tokens" value={stats ? fmt(stats.total_tokens) : '-'} color="#c8a2ff" />
       </div>
 
       <div>
-        <h2 className="text-sm font-semibold text-slate-300 mb-3">Per Key</h2>
+        <h2 className="text-sm font-bold text-[#111111] mb-3">Per Key</h2>
         {keyStats.length > 0 ? (
-        <div className="rounded-xl border border-white/[0.06] bg-[#0a0f1e]/60 overflow-hidden">
+        <div className="brutal-card overflow-hidden">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-white/[0.04] text-[9px] font-mono text-slate-600 uppercase tracking-wider">
+                <tr className="border-b-2 border-[#111111] text-[9px] mono-brutal text-gray-500 uppercase tracking-wider">
                   <th className="px-4 py-3">Key</th>
                   <th className="px-4 py-3 text-right">Requests</th>
                   <th className="px-4 py-3 text-right">IN</th>
@@ -120,21 +116,21 @@ export default function Usage() {
               </thead>
               <tbody>
                 {keyStats.map(k => (
-                  <tr key={k.gateway_key_id} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-all">
+                  <tr key={k.gateway_key_id} className="border-b-2 border-[#111111] hover:bg-[#fdf9f0] transition-all">
                     <td className="px-4 py-3">
-                      <div className="text-[11px] font-mono font-semibold text-slate-200">{k.label || 'unnamed'}</div>
+                      <div className="text-[11px] mono-brutal font-bold text-[#111111]">{k.label || 'unnamed'}</div>
                     </td>
-                    <td className="px-4 py-3 text-right text-[10px] font-mono text-slate-300">{k.requests}</td>
-                    <td className="px-4 py-3 text-right text-[10px] font-mono text-sky-400">{fmt(k.prompt_tokens)}</td>
-                    <td className="px-4 py-3 text-right text-[10px] font-mono text-cyan-400">{fmt(k.completion_tokens)}</td>
-                    <td className="px-4 py-3 text-right text-[10px] font-mono text-purple-400">{fmt(k.total_tokens)}</td>
+                    <td className="px-4 py-3 text-right text-[10px] mono-brutal text-[#111111]">{k.requests}</td>
+                    <td className="px-4 py-3 text-right text-[10px] mono-brutal text-[#ff3d81]">{fmt(k.prompt_tokens)}</td>
+                    <td className="px-4 py-3 text-right text-[10px] mono-brutal text-[#3ddc97]">{fmt(k.completion_tokens)}</td>
+                    <td className="px-4 py-3 text-right text-[10px] mono-brutal text-[#c8a2ff]">{fmt(k.total_tokens)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-white/[0.08] py-8 text-center text-[10px] font-mono text-slate-600">
+        <div className="brutal-card border-dashed py-8 text-center text-xs mono-brutal text-gray-500">
           No per-key data yet. Make a request through any gateway key.
         </div>
       )}
@@ -142,14 +138,14 @@ export default function Usage() {
       </div>
 
       <div>
-        <h2 className="text-sm font-semibold text-slate-300 mb-3">
+        <h2 className="text-sm font-bold text-[#111111] mb-3">
           Recent Requests
-          <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" style={{ boxShadow: '0 0 4px rgba(52,211,153,0.5)' }} />
+          <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-[#3ddc97] border border-[#111111]" />
         </h2>
 
-        <div className="rounded-xl border border-white/[0.06] overflow-hidden">
-          <div className="bg-[#0a0f1e]/80 px-4 py-2 border-b border-white/[0.06]">
-            <div className="grid grid-cols-[1fr_auto_auto] gap-4 text-[10px] font-mono text-slate-600 uppercase tracking-wider">
+        <div className="brutal-card overflow-hidden">
+          <div className="px-4 py-2 border-b-2 border-[#111111] bg-[#f0f0f0]">
+            <div className="grid grid-cols-[1fr_auto_auto] gap-4 text-[10px] mono-brutal text-gray-500 uppercase tracking-wider font-bold">
               <span>Model</span>
               <span className="text-right">In / Out</span>
               <span className="text-right w-16">When</span>
@@ -159,26 +155,25 @@ export default function Usage() {
           <div className="max-h-[400px] overflow-y-auto scrollbar-thin">
             {logs.length === 0 ? (
               <div className="py-12 text-center">
-                <div className="text-xs font-mono text-slate-600">No requests yet</div>
+                <div className="text-xs mono-brutal text-gray-500">No requests yet</div>
               </div>
             ) : (
               logs.map((l, i) => {
                 const ok = l.status === 'success' || l.status === 'streaming'
                 return (
                   <div key={l.id}
-                    className={`px-4 py-2.5 border-b border-white/[0.04] transition-all hover:bg-[#0a0f1e]/80 ${i === 0 ? '' : ''}`}>
+                    className={`px-4 py-2.5 border-b-2 border-[#111111] transition-all hover:bg-[#fdf9f0] ${i === 0 ? '' : ''}`}>
                     <div className="grid grid-cols-[1fr_auto_auto] gap-4 items-center">
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${ok ? 'bg-emerald-500' : 'bg-red-500'}`}
-                          style={ok ? { boxShadow: '0 0 4px rgba(52,211,153,0.5)' } : {}} />
-                        <code className="text-xs font-mono text-slate-300 truncate">{l.model_id}</code>
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 border border-[#111111] ${ok ? 'bg-[#3ddc97]' : 'bg-[#ff6b5e]'}`} />
+                        <code className="text-xs mono-brutal text-[#111111] truncate font-bold">{l.model_id}</code>
                       </div>
-                      <div className="text-right whitespace-nowrap font-mono text-xs">
-                        <span className="text-cyan-400">{fmt(l.prompt_tokens)}↑</span>
+                      <div className="text-right whitespace-nowrap mono-brutal text-xs">
+                        <span className="text-[#ff3d81]">{fmt(l.prompt_tokens)}↑</span>
                         {' '}
-                        <span className="text-teal-400">{fmt(l.completion_tokens)}↓</span>
+                        <span className="text-[#3ddc97]">{fmt(l.completion_tokens)}↓</span>
                       </div>
-                      <div className="text-right w-16 font-mono text-[10px] text-slate-500">
+                      <div className="text-right w-16 mono-brutal text-[10px] text-gray-500">
                         {timeAgo(l.created_at)}
                       </div>
                     </div>

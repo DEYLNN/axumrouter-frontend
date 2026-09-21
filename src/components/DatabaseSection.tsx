@@ -40,39 +40,37 @@ export default function DatabaseSection({ dbInfo, stats, onDbReload }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-amber-500/20 bg-[#0a0f1e]/60 backdrop-blur-xl overflow-hidden"
-      style={{ boxShadow: 'inset 0 1px 0 rgba(245,158,11,0.1)' }}>
-      <div className="px-5 py-4 border-b border-amber-500/10">
-        <h2 className="text-xs font-mono font-bold text-amber-400 tracking-wider"
-          style={{ textShadow: '0 0 10px rgba(245,158,11,0.3)' }}>DATABASE</h2>
+    <div className="brutal-card overflow-hidden">
+      <div className="px-5 py-4 border-b-2 border-[#111111]">
+        <h2 className="heading-brutal text-lg uppercase tracking-tight">DATABASE</h2>
       </div>
-      <div className="p-5 text-[11px] font-mono space-y-3">
-        <div className="text-xs text-slate-400">sqlite:data/axumrouter.db</div>
+      <div className="p-5 text-sm space-y-3">
+        <div className="text-sm font-medium text-gray-700">sqlite:data/axumrouter.db</div>
         {dbInfo && (
           <div className="space-y-1.5">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-slate-500">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
               <span>{dbInfo.size_mb.toFixed(1)} MB</span><span>·</span>
               <span>{dbInfo.total_rows} rows</span><span>·</span>
               <span>{dbInfo.tables.length} tables</span>
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-slate-600">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
               <span>{stats.totalModels} models</span><span>·</span>
-              <span className="text-red-400/60">{stats.disabledModels} disabled</span><span>·</span>
-              <span className="text-amber-400/60">{stats.blockedModels} blocked</span>
+              <span className="text-[#ff6b5e]">{stats.disabledModels} disabled</span><span>·</span>
+              <span className="text-[#ffd23f]">{stats.blockedModels} blocked</span>
             </div>
           </div>
         )}
         <div className="flex items-center gap-2 pt-2">
           <button onClick={handleExport} disabled={exporting}
-            className="px-3 py-1.5 rounded-md text-[9px] font-mono text-slate-400 hover:text-amber-300 bg-white/[0.04] hover:bg-amber-500/10 border border-white/[0.06] hover:border-amber-500/30 transition-all disabled:opacity-40">
+            className="brutal-btn bg-[#ff3d81] text-white px-4 py-2 text-sm">
             {exporting ? 'Exporting...' : 'Export DB'}
           </button>
           <button onClick={() => importRef.current?.click()}
-            className="px-3 py-1.5 rounded-md text-[9px] font-mono text-slate-400 hover:text-amber-300 bg-white/[0.04] hover:bg-amber-500/10 border border-white/[0.06] hover:border-amber-500/30 transition-all">
+            className="brutal-btn bg-white text-[#111111] px-4 py-2 text-sm">
             Import DB
           </button>
           <input type="file" accept=".json" ref={importRef} onChange={handleImport} className="hidden" />
-          {importStatus && <span className="text-[9px] font-mono text-slate-500">{importStatus}</span>}
+          {importStatus && <span className="text-xs text-gray-600">{importStatus}</span>}
         </div>
       </div>
     </div>

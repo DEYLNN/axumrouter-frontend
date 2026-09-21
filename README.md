@@ -1,6 +1,6 @@
-# AxumRouter Frontend
+# JevCode Frontend
 
-Admin dashboard for AxumRouter AI Gateway. React 19 + TypeScript 6 + Vite 8 + TailwindCSS 4.
+Admin dashboard for JevCode AI Gateway. React 19 + TypeScript 6 + Vite 8 + TailwindCSS 4.
 
 ## Quick Start
 
@@ -13,7 +13,7 @@ npx vite build     # Production → dist/
 ## Prerequisites
 
 - Node.js >= 18
-- Backend AxumRouter running di `localhost:7444`
+- Backend JevCode running di `localhost:7444`
 
 ## Env
 

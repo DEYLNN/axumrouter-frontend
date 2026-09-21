@@ -110,8 +110,8 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 bg-clip-text text-transparent"
-        style={{ textShadow: '0 0 30px rgba(6,182,212,0.3)' }}>CONFIG</h1>
+      <h1 className="heading-brutal text-3xl uppercase tracking-tight">CONFIG</h1>
+      <p className="text-lg font-medium text-gray-600">Gateway configuration</p>
       <DatabaseSection dbInfo={dbInfo} stats={stats} onDbReload={reloadDb} />
       <ModelsSection providers={providers} models={models} onToggleModel={toggleModel} />
       <GatewayKeysSection keys={gwKeys} onRefresh={fetchGw} />
