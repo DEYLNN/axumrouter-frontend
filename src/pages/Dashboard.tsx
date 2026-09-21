@@ -4,7 +4,7 @@ import { getProviders } from '../api/providers'
 import type { SettingsData } from '../api'
 import { iconUrl } from '../api/client'
 import LineChart, { compact } from '../components/LineChart'
-import { useLiveUsage, useNow, timeAgo, bucket, utcToday } from '../hooks/useLiveUsage'
+import { useLiveUsage, useNow, timeAgo, bucket } from '../hooks/useLiveUsage'
 
 const ICONS = {
   requests: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
@@ -44,9 +44,12 @@ function windowLabels(count: number, minutes: number): string[] {
 export default function Dashboard() {
   const [settings, setSettings] = useState<SettingsData | null>(null)
   const [providerCount, setProviderCount] = useState(0)
-  const [providers, setProviders] = useState<Record<string, { name: string; icon: string; color: string }>>({})
+  const [provMeta, setProvMeta] = useState<Record<string, { name: string; icon: string; color: string }>>({})
 
-  const { events, totals, ready, connected } = useLiveUsage(200)
+  const {
+    events, totals, ready, connected,
+    providers: providerStats, models: modelStats, today: todayStat, latency: latencyStat,
+  } = useLiveUsage(15)
   const now = useNow(1000)
 
   useEffect(() => {
@@ -61,74 +64,59 @@ export default function Dashboard() {
           color: prov.color || 'var(--primary)',
         }
       }
-      setProviders(map)
+      setProvMeta(map)
     }).catch(() => {})
   }, [])
 
-  const today = utcToday()
-  const todayEvents = useMemo(() => events.filter(e => e.created_at.startsWith(today)), [events, today])
+  /* Today (UTC) comes from the backend rollup — the event window only covers 15 min */
+  const todayRequests = todayStat?.requests ?? 0
+  const todayTokens = todayStat?.total_tokens ?? 0
 
-  const todayRequests = useMemo(() => {
-    // seeded window may be shorter than a day — show the larger of the two
-    return Math.max(todayEvents.length, 0)
-  }, [todayEvents])
-
-  const todayTokens = useMemo(
-    () => todayEvents.reduce((s, e) => s + (e.total_tokens || 0), 0),
-    [todayEvents],
-  )
-
+  /* Success/error totals — all-time, summed across providers */
   const successCount = useMemo(
-    () => events.filter(e => e.status === 'success' || e.status === 'streaming').length,
-    [events],
+    () => providerStats.reduce((s, p) => s + p.success, 0),
+    [providerStats],
   )
-  const errorCount = useMemo(() => events.filter(e => e.status === 'error').length, [events])
+  const errorCount = useMemo(
+    () => providerStats.reduce((s, p) => s + p.errors, 0),
+    [providerStats],
+  )
 
   const lastRequestAgo = events.length > 0 ? timeAgo(events[0].created_at, now) : '—'
 
-  /* Top providers by request count (with success/error split) */
-  const topProviders = useMemo(() => {
-    const m = new Map<string, { count: number; ok: number; err: number }>()
-    for (const e of events) {
-      const p = e.provider_id || 'unknown'
-      const cur = m.get(p) || { count: 0, ok: 0, err: 0 }
-      cur.count++
-      if (e.status === 'error') cur.err++
-      else cur.ok++
-      m.set(p, cur)
-    }
-    return [...m.entries()]
-      .map(([id, v]) => ({ id, ...v }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5)
-  }, [events])
+  /* Top providers — all-time rollup from /usage/by-provider */
+  const topProviders = useMemo(
+    () =>
+      providerStats
+        .map(p => ({
+          id: p.provider_id,
+          count: p.requests,
+          ok: p.success,
+          err: p.errors,
+        }))
+        .slice(0, 5),
+    [providerStats],
+  )
 
-  /* Top models — composite score from tokens, requests, speed, success */
+  /* Top models — all-time rollup from /usage/by-model, ranked by composite score */
   const topModels = useMemo(() => {
-    const m = new Map<string, { count: number; ok: number; err: number; tokens: number; latencySum: number; latencyCount: number }>()
-    for (const e of events) {
-      const id = e.model_id || 'unknown'
-      const cur = m.get(id) || { count: 0, ok: 0, err: 0, tokens: 0, latencySum: 0, latencyCount: 0 }
-      cur.count++
-      if (e.status === 'error') cur.err++
-      else cur.ok++
-      cur.tokens += e.total_tokens || 0
-      if (e.latency_ms > 0) {
-        cur.latencySum += e.latency_ms
-        cur.latencyCount++
+    const arr = modelStats.map(m => {
+      const slash = m.model_id.indexOf('/')
+      const pid = slash > 0 ? m.model_id.slice(0, slash) : m.provider_id
+      const bare = slash > 0 ? m.model_id.slice(slash + 1) : m.model_id
+      const tps = m.avg_latency_ms > 0 ? m.total_tokens / (m.avg_latency_ms / 1000) : 0
+      const successRate = m.requests > 0 ? m.success / m.requests : 0
+      return {
+        id: m.model_id,
+        pid,
+        bare,
+        count: m.requests,
+        tokens: m.total_tokens,
+        avgLatency: m.avg_latency_ms,
+        tps: Math.round(tps),
+        successRate,
       }
-      m.set(id, cur)
-    }
-    const arr = [...m.entries()].map(([id, v]) => {
-      const slash = id.indexOf('/')
-      const pid = slash > 0 ? id.slice(0, slash) : ''
-      const bare = slash > 0 ? id.slice(slash + 1) : id
-      const avgLatency = v.latencyCount > 0 ? v.latencySum / v.latencyCount : 0
-      const tps = avgLatency > 0 ? (v.tokens / (avgLatency / 1000)) : 0
-      const successRate = v.count > 0 ? v.ok / v.count : 0
-      return { id, pid, bare, ...v, avgLatency: Math.round(avgLatency), tps: Math.round(tps), successRate }
     })
-    // normalize each metric to 0-1, then composite
     const maxTokens = Math.max(1, ...arr.map(a => a.tokens))
     const maxCount = Math.max(1, ...arr.map(a => a.count))
     const maxTps = Math.max(1, ...arr.map(a => a.tps))
@@ -139,25 +127,25 @@ export default function Dashboard() {
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 5)
-  }, [events])
+  }, [modelStats])
 
-  /* Latency stats */
-  const latencyStats = useMemo(() => {
-    const lats = events.map(e => e.latency_ms).filter(l => l > 0).sort((a, b) => a - b)
-    if (lats.length === 0) return { avg: 0, p95: 0, min: 0, max: 0, count: 0 }
-    const sum = lats.reduce((a, b) => a + b, 0)
-    const p95Idx = Math.min(lats.length - 1, Math.floor(lats.length * 0.95))
-    return {
-      avg: Math.round(sum / lats.length),
-      p95: lats[p95Idx],
-      min: lats[0],
-      max: lats[lats.length - 1],
-      count: lats.length,
-    }
-  }, [events])
+  /* Latency — all-time percentiles from /usage/latency */
+  const latencyStats = useMemo(
+    () =>
+      latencyStat
+        ? {
+            avg: latencyStat.avg_ms,
+            p95: latencyStat.p95_ms,
+            min: latencyStat.min_ms,
+            max: latencyStat.max_ms,
+            count: latencyStat.samples,
+          }
+        : { avg: 0, p95: 0, min: 0, max: 0, count: 0 },
+    [latencyStat],
+  )
 
-  /* Charts — 30 one-minute buckets = last 30 minutes */
-  const BUCKETS = 30
+  /* Charts — 15 one-minute buckets = last 15 minutes */
+  const BUCKETS = 15
   const requestSeries = useMemo(() => bucket(events, () => 1, now, BUCKETS, 1), [events, now])
   const promptSeries = useMemo(() => bucket(events, e => e.prompt_tokens || 0, now, BUCKETS, 1), [events, now])
   const completionSeries = useMemo(() => bucket(events, e => e.completion_tokens || 0, now, BUCKETS, 1), [events, now])
@@ -258,7 +246,7 @@ export default function Dashboard() {
             <div className="flex items-start justify-between mb-5 gap-4">
               <div>
                 <h2 className="heading-brutal text-2xl text-ink">Requests Volume</h2>
-                <p className="mono-brutal text-xs text-subtext uppercase">Last 30 minutes · live</p>
+                <p className="mono-brutal text-xs text-subtext uppercase">Last 15 minutes · live</p>
               </div>
               <div className="text-right shrink-0">
                 <p className="mono-brutal text-2xl font-black text-ink">
@@ -280,7 +268,7 @@ export default function Dashboard() {
           <div className="brutal-card p-6 flex flex-col">
             <div className="mb-5">
               <h2 className="heading-brutal text-xl text-ink">Token Flow</h2>
-              <p className="mono-brutal text-xs text-subtext uppercase">Last 30 minutes · live</p>
+              <p className="mono-brutal text-xs text-subtext uppercase">Last 15 minutes · live</p>
             </div>
 
             <LineChart
@@ -337,7 +325,7 @@ export default function Dashboard() {
                     const total = p.count || 1
                     const okPct = (p.ok / total) * 100
                     const errPct = (p.err / total) * 100
-                    const pInfo = providers[p.id]
+                    const pInfo = provMeta[p.id]
                     return (
                       <div key={p.id}>
                         <div className="flex items-center justify-between gap-2 mb-1">
@@ -402,7 +390,7 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-3">
                 {topModels.map((m, i) => {
-                  const pInfo = providers[m.pid]
+                  const pInfo = provMeta[m.pid]
                   const maxScore = topModels[0].score || 1
                   const pct = (m.score / maxScore) * 100
                   const okPct = Math.round(m.successRate * 100)
@@ -483,7 +471,7 @@ export default function Dashboard() {
                     height={110}
                     fmt={n => fmt(n)}
                     legendFmt={() => `avg ${fmt(latencyStats.avg)}ms`}
-                    xLabels={['-30m', '-15m', 'now']}
+                    xLabels={['-15m', '-8m', 'now']}
                   />
                 </div>
 

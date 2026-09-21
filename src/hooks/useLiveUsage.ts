@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { API_BASE, apiFetch, getToken } from '../api/client'
 
 /** One usage row — matches backend `UsageLogRow`. */
@@ -20,7 +20,59 @@ export interface LiveTotals {
   tokens: number
 }
 
-const MAX_EVENTS = 500
+/** All-time rollup per provider — `/usage/by-provider`. */
+export interface ProviderStat {
+  provider_id: string
+  requests: number
+  success: number
+  errors: number
+  prompt_tokens: number
+  completion_tokens: number
+  total_tokens: number
+  avg_latency_ms: number
+}
+
+/** All-time rollup per model — `/usage/by-model`. */
+export interface ModelStat {
+  model_id: string
+  provider_id: string
+  requests: number
+  success: number
+  errors: number
+  prompt_tokens: number
+  completion_tokens: number
+  total_tokens: number
+  avg_latency_ms: number
+}
+
+/** Today's (UTC) rollup — `/usage/today`. */
+export interface TodayStat {
+  requests: number
+  prompt_tokens: number
+  completion_tokens: number
+  total_tokens: number
+}
+
+/** All-time latency percentiles — `/usage/latency`. */
+export interface LatencyStat {
+  samples: number
+  avg_ms: number
+  p95_ms: number
+  min_ms: number
+  max_ms: number
+}
+
+/** Aggregates are only refetched at most this often (SSE can fire rapidly). */
+const AGG_MIN_INTERVAL_MS = 5000
+
+/** Hard cap on rows kept in memory (charts only need the recent window). */
+const MAX_EVENTS = 3000
+/** Backend clamps `/logs?limit=` to 200 per page. */
+const PAGE_SIZE = 200
+/** Stop paginating once we're past this many minutes back. */
+const SEED_WINDOW_MIN = 15
+/** Safety net so a runaway loop can't hammer the API. */
+const MAX_PAGES = 25
 
 /** Parse a DB timestamp (UTC, "YYYY-MM-DD HH:MM:SS") into epoch ms. */
 export function parseUtc(dt: string): number {
@@ -33,30 +85,92 @@ export function utcToday(): string {
 }
 
 /**
- * Live usage feed.
- * Seeds from `/usage/stats` + `/logs` once, then subscribes to the backend
- * SSE stream so counters and charts update the moment a request lands.
+ * Page backwards through `/logs` until rows fall outside the seed window.
+ * The backend clamps each page to 200 rows, so this is the only way to get
+ * a complete picture when traffic runs into the thousands per window.
  */
-export function useLiveUsage(seedLimit = 200) {
+async function fetchWindow(minutes: number): Promise<UsageEvent[]> {
+  const cutoff = Date.now() - minutes * 60_000
+  const all: UsageEvent[] = []
+  const seenIds = new Set<string>()
+
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    let data: { logs?: UsageEvent[] } = {}
+    try {
+      const res = await apiFetch(`/logs?limit=${PAGE_SIZE}&page=${page}`)
+      data = await res.json()
+    } catch {
+      break
+    }
+    const rows = data.logs || []
+    if (rows.length === 0) break
+
+    for (const r of rows) {
+      if (seenIds.has(r.id)) continue
+      seenIds.add(r.id)
+      all.push(r)
+    }
+
+    // stop once the oldest row on this page predates the window
+    const oldest = rows[rows.length - 1]
+    if (parseUtc(oldest.created_at) < cutoff) break
+    if (rows.length < PAGE_SIZE) break
+  }
+
+  return all
+}
+
+/**
+ * Live usage feed.
+ * Seeds from `/usage/stats` + a paginated `/logs` scan covering the recent
+ * window, then subscribes to the backend SSE stream so counters and charts
+ * update the moment a request lands.
+ */
+export function useLiveUsage(windowMinutes = SEED_WINDOW_MIN) {
   const [events, setEvents] = useState<UsageEvent[]>([])
   const [totals, setTotals] = useState<LiveTotals>({ requests: 0, tokens: 0 })
   const [ready, setReady] = useState(false)
   const [connected, setConnected] = useState(false)
 
+  /* All-time aggregates (not derived from the 15-min event window) */
+  const [providers, setProviders] = useState<ProviderStat[]>([])
+  const [models, setModels] = useState<ModelStat[]>([])
+  const [today, setToday] = useState<TodayStat | null>(null)
+  const [latency, setLatency] = useState<LatencyStat | null>(null)
+
   const seen = useRef<Set<string>>(new Set())
   const alive = useRef(true)
+  const lastAgg = useRef(0)
+
+  /** Pull all four all-time rollups in one go. */
+  const loadAggregates = useCallback(async () => {
+    lastAgg.current = Date.now()
+    const get = (path: string) =>
+      apiFetch(path)
+        .then(r => r.json())
+        .catch(() => null)
+    const [p, m, t, l] = await Promise.all([
+      get('/usage/by-provider'),
+      get('/usage/by-model'),
+      get('/usage/today'),
+      get('/usage/latency'),
+    ])
+    if (p) setProviders(p)
+    if (m) setModels(m)
+    if (t) setToday(t)
+    if (l) setLatency(l)
+  }, [])
 
   /* 1 — initial seed */
   useEffect(() => {
     let cancelled = false
     Promise.all([
       apiFetch('/usage/stats').then(r => r.json()).catch(() => ({})),
-      apiFetch(`/logs?limit=${seedLimit}`).then(r => r.json()).catch(() => ({})),
-    ]).then(([stats, logs]) => {
+      fetchWindow(windowMinutes),
+    ]).then(([stats, rows]) => {
       if (cancelled) return
-      const rows: UsageEvent[] = logs?.logs || []
       rows.forEach(r => seen.current.add(r.id))
-      setEvents(rows)
+      setEvents(rows.slice(0, MAX_EVENTS))
       setTotals({
         requests: stats?.total_requests || 0,
         tokens:
@@ -65,10 +179,11 @@ export function useLiveUsage(seedLimit = 200) {
       })
       setReady(true)
     })
+    loadAggregates()
     return () => {
       cancelled = true
     }
-  }, [seedLimit])
+  }, [windowMinutes, loadAggregates])
 
   /* 2 — SSE subscription */
   useEffect(() => {
@@ -115,6 +230,10 @@ export function useLiveUsage(seedLimit = 200) {
                 requests: t.requests + 1,
                 tokens: t.tokens + (ev.total_tokens || 0),
               }))
+              // keep the all-time rollups fresh without hammering the API
+              if (Date.now() - lastAgg.current > AGG_MIN_INTERVAL_MS) {
+                loadAggregates()
+              }
             } catch {
               /* malformed frame — skip */
             }
@@ -136,9 +255,9 @@ export function useLiveUsage(seedLimit = 200) {
       if (retry) clearTimeout(retry)
       ctrl.abort()
     }
-  }, [ready])
+  }, [ready, loadAggregates])
 
-  return { events, totals, ready, connected }
+  return { events, totals, ready, connected, providers, models, today, latency, refresh: loadAggregates }
 }
 
 /** Ticking clock for "x ago" labels — re-renders once per second. */
