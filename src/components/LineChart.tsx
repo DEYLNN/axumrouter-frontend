@@ -14,6 +14,8 @@ interface Props {
   height?: number
   /** Format the y-axis max label (e.g. compact numbers). */
   fmt?: (n: number) => string
+  /** Format the legend total. Defaults to `fmt` if omitted. */
+  legendFmt?: (n: number) => string
   /** x labels, evenly spaced; first and last are always drawn. */
   xLabels?: string[]
 }
@@ -48,7 +50,8 @@ function toPath(values: number[], max: number, h: number): string {
     .join(' ')
 }
 
-export default function LineChart({ series, height = 200, fmt = compact, xLabels }: Props) {
+export default function LineChart({ series, height = 200, fmt = compact, legendFmt, xLabels }: Props) {
+  const lfmt = legendFmt || fmt
   const h = height - PAD_T - PAD_B
   const peak = Math.max(1, ...series.flatMap(s => s.values))
   // round the axis up to a friendly number
@@ -65,7 +68,7 @@ export default function LineChart({ series, height = 200, fmt = compact, xLabels
           <div key={s.label} className="flex items-center gap-1.5">
             <span className="w-3 h-3 border border-line shrink-0" style={{ background: s.color }} />
             <span className="mono-brutal text-[10px] uppercase text-subtext">{s.label}</span>
-            <span className="mono-brutal text-[10px] font-bold text-ink">{fmt(s.values.reduce((a, b) => a + b, 0))}</span>
+            <span className="mono-brutal text-[10px] font-bold text-ink">{lfmt(s.values.reduce((a, b) => a + b, 0))}</span>
           </div>
         ))}
       </div>

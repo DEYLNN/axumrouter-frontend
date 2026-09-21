@@ -126,10 +126,10 @@ export default function Dashboard() {
               <StatIcon name="tokens" />
               <p className="mono-brutal text-xs text-subtext uppercase">Total Tokens</p>
             </div>
-            <p className="text-3xl font-black heading-brutal text-ink">{fmt(totals.tokens)}</p>
+            <p className="text-3xl font-black heading-brutal text-ink">{compact(totals.tokens)}</p>
             <div className="border-t-2 border-line mt-4 pt-3">
               <p className="text-xs mono-brutal text-subtext uppercase">
-                Today: {fmt(todayTokens)} tokens
+                Today: {compact(todayTokens)} tokens
               </p>
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function Dashboard() {
               </div>
               <div className="text-right shrink-0">
                 <p className="mono-brutal text-2xl font-black text-ink">
-                  {compact(requestSeries.reduce((a, b) => a + b, 0))}
+                  {fmt(requestSeries.reduce((a, b) => a + b, 0))}
                 </p>
                 <p className="mono-brutal text-[10px] uppercase text-subtext">in window</p>
               </div>
@@ -167,6 +167,7 @@ export default function Dashboard() {
             <LineChart
               series={[{ values: requestSeries, color: 'var(--primary)', label: 'Requests' }]}
               height={240}
+              legendFmt={n => n.toLocaleString('en-US')}
               xLabels={reqLabels}
             />
           </div>
