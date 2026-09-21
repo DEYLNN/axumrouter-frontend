@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getSettings } from '../api'
 import { getProviders } from '../api/providers'
 import type { SettingsData } from '../api'
+import { iconUrl } from '../api/client'
 import LineChart, { compact } from '../components/LineChart'
 import { useLiveUsage, useNow, timeAgo, bucket, utcToday } from '../hooks/useLiveUsage'
 
@@ -43,13 +44,25 @@ function windowLabels(count: number, minutes: number): string[] {
 export default function Dashboard() {
   const [settings, setSettings] = useState<SettingsData | null>(null)
   const [providerCount, setProviderCount] = useState(0)
+  const [providers, setProviders] = useState<Record<string, { name: string; icon: string; color: string }>>({})
 
   const { events, totals, ready, connected } = useLiveUsage(200)
   const now = useNow(1000)
 
   useEffect(() => {
     getSettings().then(s => setSettings(s)).catch(() => {})
-    getProviders().then(p => setProviderCount(p.length)).catch(() => {})
+    getProviders().then(p => {
+      setProviderCount(p.length)
+      const map: Record<string, { name: string; icon: string; color: string }> = {}
+      for (const prov of p) {
+        map[prov.id] = {
+          name: prov.display_name || prov.name || prov.id,
+          icon: prov.icon_name ? iconUrl(prov.icon_name) : '',
+          color: prov.color || 'var(--primary)',
+        }
+      }
+      setProviders(map)
+    }).catch(() => {})
   }, [])
 
   const today = utcToday()
@@ -72,6 +85,60 @@ export default function Dashboard() {
   const errorCount = useMemo(() => events.filter(e => e.status === 'error').length, [events])
 
   const lastRequestAgo = events.length > 0 ? timeAgo(events[0].created_at, now) : '—'
+
+  /* Top providers by request count (with success/error split) */
+  const topProviders = useMemo(() => {
+    const m = new Map<string, { count: number; ok: number; err: number }>()
+    for (const e of events) {
+      const p = e.provider_id || 'unknown'
+      const cur = m.get(p) || { count: 0, ok: 0, err: 0 }
+      cur.count++
+      if (e.status === 'error') cur.err++
+      else cur.ok++
+      m.set(p, cur)
+    }
+    return [...m.entries()]
+      .map(([id, v]) => ({ id, ...v }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+  }, [events])
+
+  /* Top models by request count */
+  const topModels = useMemo(() => {
+    const m = new Map<string, { count: number; tokens: number }>()
+    for (const e of events) {
+      const id = e.model_id || 'unknown'
+      const cur = m.get(id) || { count: 0, tokens: 0 }
+      cur.count++
+      cur.tokens += e.total_tokens || 0
+      m.set(id, cur)
+    }
+    return [...m.entries()]
+      .map(([id, v]) => {
+        // model ids are usually "provider/model" — split off the provider prefix
+        const slash = id.indexOf('/')
+        const pid = slash > 0 ? id.slice(0, slash) : ''
+        const bare = slash > 0 ? id.slice(slash + 1) : id
+        return { id, pid, bare, ...v }
+      })
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+  }, [events])
+
+  /* Latency stats */
+  const latencyStats = useMemo(() => {
+    const lats = events.map(e => e.latency_ms).filter(l => l > 0).sort((a, b) => a - b)
+    if (lats.length === 0) return { avg: 0, p95: 0, min: 0, max: 0, count: 0 }
+    const sum = lats.reduce((a, b) => a + b, 0)
+    const p95Idx = Math.min(lats.length - 1, Math.floor(lats.length * 0.95))
+    return {
+      avg: Math.round(sum / lats.length),
+      p95: lats[p95Idx],
+      min: lats[0],
+      max: lats[lats.length - 1],
+      count: lats.length,
+    }
+  }, [events])
 
   /* Charts — 30 one-minute buckets = last 30 minutes */
   const BUCKETS = 30
@@ -216,29 +283,138 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* QUICK LINKS */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {[
-            { label: 'ENDPOINT', path: '/admin/endpoint', desc: 'Gateway URL & keys', bg: 'var(--primary)' },
-            { label: 'PROVIDERS', path: '/admin/providers', desc: 'Manage LLM providers', bg: 'var(--accent)' },
-            { label: 'SETTINGS', path: '/admin/settings', desc: 'Global configuration', bg: 'var(--warning)' },
-          ].map(c => (
-            <a key={c.path} href={c.path} className="brutal-card p-5 block group">
-              <div className="flex items-center justify-between">
-                <div
-                  className="w-9 h-9 border-2 border-line rounded flex items-center justify-center"
-                  style={{ background: c.bg }}
-                >
-                  <svg className="w-4 h-4 text-on-accent" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path d="M13 7l5 5-5 5M6 7l5 5-5 5" />
-                  </svg>
-                </div>
-                <span className="mono-brutal text-[10px] text-subtext/70 uppercase group-hover:text-ink transition-colors">OPEN →</span>
+        {/* INSIGHTS — top providers / top models / latency */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Top Providers */}
+          <div className="brutal-card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="heading-brutal text-lg text-ink">Top Providers</h2>
+              <span className="mono-brutal text-[10px] uppercase text-subtext">by requests</span>
+            </div>
+            {topProviders.length === 0 ? (
+              <p className="mono-brutal text-xs text-subtext">No traffic yet</p>
+            ) : (
+              <div className="space-y-3">
+                {topProviders.map(p => {
+                  const max = topProviders[0].count || 1
+                  const total = p.count || 1
+                  const okPct = (p.ok / max) * 100
+                  const errPct = (p.err / max) * 100
+                  const pInfo = providers[p.id]
+                  return (
+                    <div key={p.id}>
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {pInfo?.icon ? (
+                            <img src={pInfo.icon} alt="" className="w-4 h-4 rounded-sm object-contain shrink-0" />
+                          ) : (
+                            <span
+                              className="w-4 h-4 rounded-sm border border-line shrink-0"
+                              style={{ background: pInfo?.color || 'var(--muted)' }}
+                            />
+                          )}
+                          <span className="mono-brutal text-xs font-bold text-ink truncate">
+                            {pInfo?.name || p.id}
+                          </span>
+                        </div>
+                        <span className="mono-brutal text-[10px] text-subtext shrink-0 tabular-nums flex items-center gap-1.5">
+                          {fmt(p.count)}
+                          {p.err > 0 && (
+                            <span className="text-danger-text border border-danger-text rounded px-1 py-px leading-none">
+                              {Math.round((p.err / total) * 100)}%
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      {/* stacked success/error bar */}
+                      <div className="flex h-2.5 border-2 border-line rounded-sm overflow-hidden bg-canvas">
+                        <div className="h-full bg-success" style={{ width: `${okPct}%` }} />
+                        <div className="h-full bg-danger" style={{ width: `${errPct}%` }} />
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
-              <div className="heading-brutal text-base text-ink mt-4">{c.label}</div>
-              <div className="text-xs font-semibold text-subtext mt-1">{c.desc}</div>
-            </a>
-          ))}
+            )}
+          </div>
+
+          {/* Top Models */}
+          <div className="brutal-card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="heading-brutal text-lg text-ink">Top Models</h2>
+              <span className="mono-brutal text-[10px] uppercase text-subtext">req · tok</span>
+            </div>
+            {topModels.length === 0 ? (
+              <p className="mono-brutal text-xs text-subtext">No traffic yet</p>
+            ) : (
+              <div className="space-y-2.5">
+                {topModels.map(m => {
+                  const pInfo = providers[m.pid]
+                  return (
+                    <div key={m.id} className="flex items-center gap-2">
+                      {/* provider icon instead of the id prefix */}
+                      <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                        {pInfo?.icon ? (
+                          <img src={pInfo.icon} alt="" className="w-5 h-5 rounded-sm object-contain" />
+                        ) : (
+                          <span
+                            className="w-4 h-4 rounded-sm border border-line"
+                            style={{ background: pInfo?.color || 'var(--muted)' }}
+                          />
+                        )}
+                      </div>
+                      <span className="mono-brutal text-xs font-bold text-ink truncate flex-1 min-w-0" title={m.id}>
+                        {m.bare}
+                      </span>
+                      {/* fixed-width columns so req/tok never wrap or misalign */}
+                      <span className="mono-brutal text-[10px] text-subtext tabular-nums w-12 text-right shrink-0">
+                        {fmt(m.count)}
+                      </span>
+                      <span className="mono-brutal text-[10px] text-subtext tabular-nums w-14 text-right shrink-0">
+                        {compact(m.tokens)}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Latency */}
+          <div className="brutal-card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="heading-brutal text-lg text-ink">Latency</h2>
+              <span className="mono-brutal text-[10px] uppercase text-subtext">{fmt(latencyStats.count)} samples</span>
+            </div>
+            {latencyStats.count === 0 ? (
+              <p className="mono-brutal text-xs text-subtext">No samples yet</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="mono-brutal text-[10px] uppercase text-subtext mb-1">Average</p>
+                    <p className="mono-brutal text-2xl font-black text-ink">
+                      {fmt(latencyStats.avg)}
+                      <span className="text-xs font-normal text-subtext ml-1">ms</span>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="mono-brutal text-[10px] uppercase text-subtext mb-1">p95</p>
+                    <p className="mono-brutal text-2xl font-black text-primary-text">
+                      {fmt(latencyStats.p95)}
+                      <span className="text-xs font-normal text-subtext ml-1">ms</span>
+                    </p>
+                  </div>
+                </div>
+                <div className="border-t-2 border-line mt-4 pt-3 flex items-center justify-between">
+                  <span className="mono-brutal text-[10px] uppercase text-subtext">Range</span>
+                  <span className="mono-brutal text-[10px] text-subtext tabular-nums">
+                    {fmt(latencyStats.min)}–{fmt(latencyStats.max)} ms
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
