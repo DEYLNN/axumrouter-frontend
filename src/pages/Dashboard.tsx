@@ -103,7 +103,7 @@ export default function Dashboard() {
       .slice(0, 5)
   }, [events])
 
-  /* Top models by request count */
+  /* Top models by total tokens (usage-weighted) */
   const topModels = useMemo(() => {
     const m = new Map<string, { count: number; tokens: number }>()
     for (const e of events) {
@@ -115,13 +115,12 @@ export default function Dashboard() {
     }
     return [...m.entries()]
       .map(([id, v]) => {
-        // model ids are usually "provider/model" — split off the provider prefix
         const slash = id.indexOf('/')
         const pid = slash > 0 ? id.slice(0, slash) : ''
         const bare = slash > 0 ? id.slice(slash + 1) : id
         return { id, pid, bare, ...v }
       })
-      .sort((a, b) => b.count - a.count)
+      .sort((a, b) => b.tokens - a.tokens)
       .slice(0, 5)
   }, [events])
 
@@ -353,31 +352,39 @@ export default function Dashboard() {
               <p className="mono-brutal text-xs text-subtext">No traffic yet</p>
             ) : (
               <div className="space-y-2.5">
-                {topModels.map(m => {
+                {topModels.map((m, i) => {
                   const pInfo = providers[m.pid]
+                  const maxTokens = topModels[0].tokens || 1
+                  const pct = (m.tokens / maxTokens) * 100
                   return (
-                    <div key={m.id} className="flex items-center gap-2">
-                      {/* provider icon instead of the id prefix */}
-                      <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                        {pInfo?.icon ? (
-                          <img src={pInfo.icon} alt="" className="w-5 h-5 rounded-sm object-contain" />
-                        ) : (
-                          <span
-                            className="w-4 h-4 rounded-sm border border-line"
-                            style={{ background: pInfo?.color || 'var(--muted)' }}
-                          />
-                        )}
+                    <div key={m.id}>
+                      <div className="flex items-center gap-2">
+                        <span className="mono-brutal text-[10px] font-black text-subtext w-4 shrink-0 tabular-nums">
+                          {i + 1}
+                        </span>
+                        <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                          {pInfo?.icon ? (
+                            <img src={pInfo.icon} alt="" className="w-5 h-5 rounded-sm object-contain" />
+                          ) : (
+                            <span
+                              className="w-4 h-4 rounded-sm border border-line"
+                              style={{ background: pInfo?.color || 'var(--muted)' }}
+                            />
+                          )}
+                        </div>
+                        <span className="mono-brutal text-xs font-bold text-ink truncate flex-1 min-w-0" title={m.id}>
+                          {m.bare}
+                        </span>
+                        <span className="mono-brutal text-[10px] text-subtext tabular-nums w-10 text-right shrink-0">
+                          {fmt(m.count)}×
+                        </span>
+                        <span className="mono-brutal text-[10px] font-bold text-ink tabular-nums w-12 text-right shrink-0">
+                          {compact(m.tokens)}
+                        </span>
                       </div>
-                      <span className="mono-brutal text-xs font-bold text-ink truncate flex-1 min-w-0" title={m.id}>
-                        {m.bare}
-                      </span>
-                      {/* fixed-width columns so req/tok never wrap or misalign */}
-                      <span className="mono-brutal text-[10px] text-subtext tabular-nums w-12 text-right shrink-0">
-                        {fmt(m.count)}
-                      </span>
-                      <span className="mono-brutal text-[10px] text-subtext tabular-nums w-14 text-right shrink-0">
-                        {compact(m.tokens)}
-                      </span>
+                      <div className="h-1.5 mt-1.5 ml-6 border border-line rounded-sm overflow-hidden bg-canvas">
+                        <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
+                      </div>
                     </div>
                   )
                 })}
