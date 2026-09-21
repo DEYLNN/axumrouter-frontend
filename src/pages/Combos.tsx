@@ -119,7 +119,7 @@ export default function Combos() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="heading-brutal text-3xl uppercase tracking-tight">COMBOS</h1>
-          <p className="text-lg font-medium text-gray-600">{combos.length} combos</p>
+          <p className="text-lg font-medium text-subtext">{combos.length} combos</p>
         </div>
         <button onClick={() => {
           setEditingId(null); setNewName(''); setStrategy('fallback'); setSelectedModels([]); setShowCreate(true)
@@ -136,27 +136,27 @@ export default function Combos() {
             className={`brutal-card p-5 ${!c.is_active ? 'opacity-60' : ''}`}>
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full border-2 border-[#111111] ${c.is_active ? 'bg-[#3ddc97]' : 'bg-gray-300'}`} />
+                <div className={`w-2 h-2 rounded-full border-2 border-line ${c.is_active ? 'bg-[#3ddc97]' : 'bg-muted'}`} />
                 <div>
-                  <h2 className="text-sm font-bold text-[#111111]">{c.name}</h2>
-                  <p className="text-[10px] mono-brutal text-gray-500 mt-0.5">
+                  <h2 className="text-sm font-bold text-ink">{c.name}</h2>
+                  <p className="text-[10px] mono-brutal text-subtext mt-0.5">
                     {c.strategy === 'round_robin' ? '🔀 round-robin' : '↳ fallback'} · {c.tiers.length} tiers
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => toggleCombo(c.id)}
-                  className={`relative w-10 h-5 rounded-full border-2 border-[#111111] transition-colors ${c.is_active ? 'bg-[#3ddc97]' : 'bg-gray-200'}`}
+                  className={`relative w-10 h-5 rounded-full border-2 border-line transition-colors ${c.is_active ? 'bg-[#3ddc97]' : 'bg-muted'}`}
                   title={c.is_active ? 'Active' : 'Paused'}>
-                  <div className={`absolute top-0 left-0 w-4 h-4 rounded-full bg-white border-2 border-[#111111] transition-transform ${
+                  <div className={`absolute top-0 left-0 w-4 h-4 rounded-full bg-surface border-2 border-line transition-transform ${
                     c.is_active ? 'translate-x-5' : 'translate-x-0'}`} />
                 </button>
                 <button onClick={() => deleteCombo(c.id)}
-                  className="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-[#ff6b5e] hover:bg-[#ff6b5e]/10 transition-all border-2 border-transparent hover:border-[#ff6b5e]">
+                  className="w-7 h-7 flex items-center justify-center rounded-md text-subtext/70 hover:text-[#ff6b5e] hover:bg-[#ff6b5e]/10 transition-all border-2 border-transparent hover:border-[#ff6b5e]">
                   ✕
                 </button>
                 <button onClick={() => editCombo(c)}
-                  className="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-[#ff3d81] hover:bg-[#ff3d81]/10 transition-all border-2 border-transparent hover:border-[#ff3d81]">
+                  className="w-7 h-7 flex items-center justify-center rounded-md text-subtext/70 hover:text-[#ff3d81] hover:bg-[#ff3d81]/10 transition-all border-2 border-transparent hover:border-[#ff3d81]">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                     <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -170,11 +170,11 @@ export default function Combos() {
               {c.tiers.map((tier, i) => (
                 <div key={i}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 ${
-                    i === 0 ? 'bg-[#3ddc97]/10 border-[#3ddc97]' : 'bg-[#f0f0f0] border-[#111111]'
+                    i === 0 ? 'bg-[#3ddc97]/10 border-[#3ddc97]' : 'bg-muted border-line'
                   }`}>
                   <span className={`text-[9px] mono-brutal font-bold uppercase tracking-wider ${
-                    i === 0 ? 'text-[#3ddc97]' : 'text-gray-500'}`}>T{i + 1}</span>
-                  <span className="text-[10px] mono-brutal text-[#111111] font-bold">{tier}</span>
+                    i === 0 ? 'text-[#3ddc97]' : 'text-subtext'}`}>T{i + 1}</span>
+                  <span className="text-[10px] mono-brutal text-ink font-bold">{tier}</span>
                   {i === 0 && c.strategy === 'fallback' && (
                     <span className="text-[8px] mono-brutal text-[#3ddc97] font-bold uppercase">PRIMARY</span>
                   )}
@@ -184,7 +184,7 @@ export default function Combos() {
           </div>
         ))}
         {combos.length === 0 && (
-          <div className="col-span-2 brutal-card border-dashed py-16 text-center text-sm mono-brutal text-gray-500">
+          <div className="col-span-2 brutal-card border-dashed py-16 text-center text-sm mono-brutal text-subtext">
             No combos yet. Click "+ New Combo" to create one.
           </div>
         )}
@@ -194,21 +194,21 @@ export default function Combos() {
       <Modal open={showCreate} onClose={() => {
         setShowCreate(false); setEditingId(null); setNewName(''); setStrategy('fallback'); setSelectedModels([])
       }} maxWidth="max-w-lg">
-        <h2 className="text-sm font-bold text-[#111111] mb-4">{editingId ? 'Edit Combo' : 'Create Combo'}</h2>
+        <h2 className="text-sm font-bold text-ink mb-4">{editingId ? 'Edit Combo' : 'Create Combo'}</h2>
 
         <div className="space-y-3 mb-4">
           <input type="text" value={newName} onChange={e => setNewName(e.target.value)}
             placeholder="Combo name"
-            className="w-full px-3 py-2.5 border-2 border-[#111111] rounded-lg text-sm mono-brutal bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+            className="w-full px-3 py-2.5 border-2 border-line rounded-lg text-sm mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
           <div className="flex gap-2">
             <button onClick={() => setStrategy('fallback')}
               className={`brutal-btn flex-1 py-2 text-xs font-bold ${
-                strategy === 'fallback' ? 'bg-[#ff3d81] text-white' : 'bg-white text-gray-500 hover:text-[#111111]'}`}>
+                strategy === 'fallback' ? 'bg-[#ff3d81] text-white' : 'bg-surface text-subtext hover:text-ink'}`}>
               ↳ Fallback
             </button>
             <button onClick={() => setStrategy('round_robin')}
               className={`brutal-btn flex-1 py-2 text-xs font-bold ${
-                strategy === 'round_robin' ? 'bg-[#ffd23f] text-[#111111]' : 'bg-white text-gray-500 hover:text-[#111111]'}`}>
+                strategy === 'round_robin' ? 'bg-[#ffd23f] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>
               🔀 Round Robin
             </button>
           </div>
@@ -217,7 +217,7 @@ export default function Combos() {
         {/* Pick Models button */}
         <div className="mb-4">
           <button onClick={openPicker}
-            className="brutal-btn w-full py-3 text-sm font-bold bg-white text-[#ff3d81] border-dashed">
+            className="brutal-btn w-full py-3 text-sm font-bold bg-surface text-[#ff3d81] border-dashed">
             {selectedModels.length === 0 ? '+ Pick Models' : `+ Pick Models (${selectedModels.length} selected)`}
           </button>
         </div>
@@ -225,7 +225,7 @@ export default function Combos() {
         {/* Selected models as ordered tiers */}
         {selectedModels.length > 0 && (
           <div className="space-y-1.5 mb-4">
-            <div className="text-[9px] mono-brutal text-gray-500 uppercase tracking-wider mb-1.5 font-bold">
+            <div className="text-[9px] mono-brutal text-subtext uppercase tracking-wider mb-1.5 font-bold">
               Tiers · {selectedModels.length} models
             </div>
             {selectedModels.map((mid, i) => {
@@ -235,24 +235,24 @@ export default function Combos() {
               return (
                 <div key={mid}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 ${
-                    i === 0 ? 'bg-[#3ddc97]/10 border-[#3ddc97]' : 'bg-[#f0f0f0] border-[#111111]'
+                    i === 0 ? 'bg-[#3ddc97]/10 border-[#3ddc97]' : 'bg-muted border-line'
                   }`}>
-                  <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 text-[9px] mono-brutal font-bold border-2 border-[#111111] ${
-                    i === 0 ? 'bg-[#3ddc97] text-[#111111]' : 'bg-[#ff3d81] text-white'}`}>{i + 1}</div>
+                  <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 text-[9px] mono-brutal font-bold border-2 border-line ${
+                    i === 0 ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff3d81] text-white'}`}>{i + 1}</div>
                   {pm && (
-                    <div className="w-4 h-4 rounded flex items-center justify-center shrink-0 border border-[#111111]"
+                    <div className="w-4 h-4 rounded flex items-center justify-center shrink-0 border border-line"
                       style={{ background: `${pm.color}20` }}>
                       {pm.icon_name ? <img src={iconUrl(pm.icon_name)} alt="" className="w-2.5 h-2.5 object-contain" /> : null}
                     </div>
                   )}
-                  <span className="text-[10px] mono-brutal text-[#111111] font-bold flex-1 truncate">{prov}/{modelName}</span>
+                  <span className="text-[10px] mono-brutal text-ink font-bold flex-1 truncate">{prov}/{modelName}</span>
                   {i === 0 && strategy === 'fallback' && (
                     <span className="text-[7px] mono-brutal font-bold text-[#3ddc97] uppercase tracking-wider">PRIMARY</span>
                   )}
                   <div className="flex items-center gap-0.5">
-                    {i > 0 && <button onClick={() => moveModel(i, -1)} className="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-[#111111] font-bold">↑</button>}
-                    {i < selectedModels.length - 1 && <button onClick={() => moveModel(i, 1)} className="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-[#111111] font-bold">↓</button>}
-                    <button onClick={() => removeSelected(mid)} className="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-[#ff6b5e] font-bold">✕</button>
+                    {i > 0 && <button onClick={() => moveModel(i, -1)} className="w-5 h-5 flex items-center justify-center rounded text-subtext/70 hover:text-ink font-bold">↑</button>}
+                    {i < selectedModels.length - 1 && <button onClick={() => moveModel(i, 1)} className="w-5 h-5 flex items-center justify-center rounded text-subtext/70 hover:text-ink font-bold">↓</button>}
+                    <button onClick={() => removeSelected(mid)} className="w-5 h-5 flex items-center justify-center rounded text-subtext/70 hover:text-[#ff6b5e] font-bold">✕</button>
                   </div>
                 </div>
               )
@@ -268,30 +268,30 @@ export default function Combos() {
           <button onClick={() => {
             setShowCreate(false); setEditingId(null); setNewName(''); setStrategy('fallback'); setSelectedModels([])
           }} disabled={creating}
-            className="brutal-btn bg-white text-[#111111] px-4 py-2.5 text-sm font-bold">Cancel</button>
+            className="brutal-btn bg-surface text-ink px-4 py-2.5 text-sm font-bold">Cancel</button>
         </div>
       </Modal>
 
       {/* Model picker modal */}
       {showPicker && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#111111]/60"
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60"
           onClick={() => setShowPicker(false)}>
           <div className="w-full max-w-lg mx-4 max-h-[80vh] brutal-card overflow-hidden flex flex-col"
             onClick={e => e.stopPropagation()}>
-            <div className="px-5 py-3 border-b-2 border-[#111111] flex items-center justify-between shrink-0 bg-[#f0f0f0]">
-              <h2 className="text-xs mono-brutal font-bold text-[#111111] uppercase">Pick Models</h2>
+            <div className="px-5 py-3 border-b-2 border-line flex items-center justify-between shrink-0 bg-muted">
+              <h2 className="text-xs mono-brutal font-bold text-ink uppercase">Pick Models</h2>
               <button onClick={() => setShowPicker(false)}
-                className="w-7 h-7 flex items-center justify-center rounded-md text-gray-500 hover:text-[#111111] hover:bg-white transition-all border-2 border-transparent hover:border-[#111111]">
+                className="w-7 h-7 flex items-center justify-center rounded-md text-subtext hover:text-ink hover:bg-surface transition-all border-2 border-transparent hover:border-line">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <div className="px-5 py-3 border-b-2 border-[#111111] shrink-0">
+            <div className="px-5 py-3 border-b-2 border-line shrink-0">
               <input type="text" value={modelSearch} onChange={e => setModelSearch(e.target.value)}
                 placeholder="Search models..."
-                className="w-full px-3 py-2 border-2 border-[#111111] rounded-lg text-sm mono-brutal bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+                className="w-full px-3 py-2 border-2 border-line rounded-lg text-sm mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
             </div>
 
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -303,13 +303,13 @@ export default function Combos() {
                   <div key={providerId}>
                     <div className="flex items-center gap-2 mb-2">
                       {pm && (
-                        <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 border-2 border-[#111111]"
+                        <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 border-2 border-line"
                           style={{ background: `${pm.color}20` }}>
                           {pm.icon_name ? <img src={iconUrl(pm.icon_name)} alt="" className="w-3 h-3 object-contain" /> : null}
                         </div>
                       )}
-                      <span className="text-[9px] mono-brutal font-bold text-gray-500 uppercase tracking-wider">{pm?.display_name || providerId}</span>
-                      <div className="h-0.5 flex-1 bg-[#111111]" />
+                      <span className="text-[9px] mono-brutal font-bold text-subtext uppercase tracking-wider">{pm?.display_name || providerId}</span>
+                      <div className="h-0.5 flex-1 bg-line" />
                     </div>
                     <div className="space-y-0.5">
                       {filtered.map(m => {
@@ -317,15 +317,15 @@ export default function Combos() {
                         return (
                           <div key={m.id} onClick={() => toggleSelect(m.id)}
                             className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all border-2 ${
-                              sel ? 'bg-[#ff3d81]/10 border-[#ff3d81]' : 'hover:bg-[#fdf9f0] border-transparent hover:border-[#111111]'
+                              sel ? 'bg-[#ff3d81]/10 border-[#ff3d81]' : 'hover:bg-canvas border-transparent hover:border-line'
                             }`}>
-                            <div className={`w-4 h-4 rounded border-2 border-[#111111] flex items-center justify-center shrink-0 transition-all ${
-                              sel ? 'bg-[#ff3d81]' : 'bg-white'}`}>
+                            <div className={`w-4 h-4 rounded border-2 border-line flex items-center justify-center shrink-0 transition-all ${
+                              sel ? 'bg-[#ff3d81]' : 'bg-surface'}`}>
                               {sel && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                                 <path d="M5 13l4 4L19 7" />
                               </svg>}
                             </div>
-                            <span className="text-xs mono-brutal text-[#111111] font-bold flex-1">{m.id}</span>
+                            <span className="text-xs mono-brutal text-ink font-bold flex-1">{m.id}</span>
                             {!m.enabled && <span className="text-[8px] mono-brutal text-[#ff6b5e] font-bold">disabled</span>}
                           </div>
                         )
@@ -336,8 +336,8 @@ export default function Combos() {
               })}
             </div>
 
-            <div className="px-5 py-3 border-t-2 border-[#111111] flex items-center justify-between shrink-0 bg-[#f0f0f0]">
-              <span className="text-[10px] mono-brutal text-gray-500 font-bold">{selectedModels.length} selected</span>
+            <div className="px-5 py-3 border-t-2 border-line flex items-center justify-between shrink-0 bg-muted">
+              <span className="text-[10px] mono-brutal text-subtext font-bold">{selectedModels.length} selected</span>
               <button onClick={() => setShowPicker(false)}
                 className="brutal-btn bg-[#ff3d81] text-white px-4 py-2 text-xs font-bold">
                 Done

@@ -41,19 +41,19 @@ export default function DatabaseSection({ dbInfo, stats, onDbReload }: Props) {
 
   return (
     <div className="brutal-card overflow-hidden">
-      <div className="px-5 py-4 border-b-2 border-[#111111]">
+      <div className="px-5 py-4 border-b-2 border-line">
         <h2 className="heading-brutal text-lg uppercase tracking-tight">DATABASE</h2>
       </div>
       <div className="p-5 text-sm space-y-3">
-        <div className="text-sm font-medium text-gray-700">sqlite:data/axumrouter.db</div>
+        <div className="text-sm font-medium text-ink/80">sqlite:data/axumrouter.db</div>
         {dbInfo && (
           <div className="space-y-1.5">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-subtext">
               <span>{dbInfo.size_mb.toFixed(1)} MB</span><span>·</span>
               <span>{dbInfo.total_rows} rows</span><span>·</span>
               <span>{dbInfo.tables.length} tables</span>
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-subtext">
               <span>{stats.totalModels} models</span><span>·</span>
               <span className="text-[#ff6b5e]">{stats.disabledModels} disabled</span><span>·</span>
               <span className="text-[#ffd23f]">{stats.blockedModels} blocked</span>
@@ -66,11 +66,11 @@ export default function DatabaseSection({ dbInfo, stats, onDbReload }: Props) {
             {exporting ? 'Exporting...' : 'Export DB'}
           </button>
           <button onClick={() => importRef.current?.click()}
-            className="brutal-btn bg-white text-[#111111] px-4 py-2 text-sm">
+            className="brutal-btn bg-surface text-ink px-4 py-2 text-sm">
             Import DB
           </button>
           <input type="file" accept=".json" ref={importRef} onChange={handleImport} className="hidden" />
-          {importStatus && <span className="text-xs text-gray-600">{importStatus}</span>}
+          {importStatus && <span className="text-xs text-subtext">{importStatus}</span>}
         </div>
       </div>
     </div>

@@ -166,17 +166,17 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
 
   const color = provider.color
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#111111]/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div className="brutal-card w-full max-w-md" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center gap-3 mb-5 border-b-2 border-[#111111] pb-4">
-          {provider.icon_name && <img src={iconUrl(provider.icon_name)} alt="" className="w-8 h-8 rounded-lg object-contain border-2 border-[#111111]" style={{ background: `${color}15` }} />}
+        <div className="flex items-center gap-3 mb-5 border-b-2 border-line pb-4">
+          {provider.icon_name && <img src={iconUrl(provider.icon_name)} alt="" className="w-8 h-8 rounded-lg object-contain border-2 border-line" style={{ background: `${color}15` }} />}
           <div>
             <h2 className="heading-brutal text-sm uppercase">Connect {provider.display_name}</h2>
-            <p className="mono-brutal text-[10px] text-gray-500">{provider.id} — OAuth</p>
+            <p className="mono-brutal text-[10px] text-subtext">{provider.id} — OAuth</p>
           </div>
         </div>
 
-        {step === 'loading' && <div className="text-center py-8 mono-brutal text-sm text-gray-500 animate-pulse">Starting OAuth flow...</div>}
+        {step === 'loading' && <div className="text-center py-8 mono-brutal text-sm text-subtext animate-pulse">Starting OAuth flow...</div>}
 
         {step === 'error' && (
           <div className="space-y-4">
@@ -190,8 +190,8 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
             <div className="w-12 h-12 mx-auto rounded-full bg-[#3ddc97]/10 border-2 border-[#3ddc97] flex items-center justify-center">
               <svg className="w-6 h-6 text-[#3ddc97]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
             </div>
-            <p className="mono-brutal text-sm text-[#111111]">Connected successfully!</p>
-            <button onClick={onClose} className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-[#111111] bg-[#3ddc97] hover:bg-[#3ddc97]/80">Done</button>
+            <p className="mono-brutal text-sm text-ink">Connected successfully!</p>
+            <button onClick={onClose} className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-on-accent bg-[#3ddc97] hover:bg-[#3ddc97]/80">Done</button>
           </div>
         )}
 
@@ -199,16 +199,16 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#c8a2ff]/10 border-2 border-[#c8a2ff]">
               <div className="w-4 h-4 border-2 border-[#c8a2ff]/40 border-t-[#c8a2ff] rounded-full animate-spin" />
-              <span className="mono-brutal text-xs text-[#111111]">Waiting for authorization...</span>
+              <span className="mono-brutal text-xs text-ink">Waiting for authorization...</span>
             </div>
             <div className="flex items-center gap-3 my-1">
-              <div className="flex-1 h-px bg-[#111111]/10" />
-              <span className="mono-brutal text-[9px] text-gray-500 tracking-wider">OR PASTE URL</span>
-              <div className="flex-1 h-px bg-[#111111]/10" />
+              <div className="flex-1 h-px bg-line/10" />
+              <span className="mono-brutal text-[9px] text-subtext tracking-wider">OR PASTE URL</span>
+              <div className="flex-1 h-px bg-line/10" />
             </div>
             <input type="text" value={callbackUrl} onChange={e => setCallbackUrl(e.target.value)}
               placeholder="Paste callback URL here..."
-              className="w-full bg-white border-2 border-[#111111] rounded-lg px-3 py-2 text-xs mono-brutal text-[#111111] placeholder-gray-400 focus:outline-none focus:border-[#c8a2ff]" />
+              className="w-full bg-surface border-2 border-line rounded-lg px-3 py-2 text-xs mono-brutal text-ink placeholder-gray-400 focus:outline-none focus:border-[#c8a2ff]" />
             <button onClick={handleManual} disabled={!callbackUrl}
               className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-white bg-[#ff3d81] hover:bg-[#ff3d81]/80 disabled:opacity-30">Connect</button>
           </div>
@@ -216,13 +216,13 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
 
         {step === 'input' && !isDeviceCode && (
           <div className="space-y-4">
-            <div className="p-3 rounded-lg bg-[#f0f0f0] border-2 border-[#111111]">
-              <p className="mono-brutal text-[10px] text-gray-500 mb-1">Auth URL</p>
-              <code className="mono-brutal text-[10px] text-[#111111] break-all">{authUrl}</code>
+            <div className="p-3 rounded-lg bg-muted border-2 border-line">
+              <p className="mono-brutal text-[10px] text-subtext mb-1">Auth URL</p>
+              <code className="mono-brutal text-[10px] text-ink break-all">{authUrl}</code>
             </div>
             <input type="text" value={callbackUrl} onChange={e => setCallbackUrl(e.target.value)}
               placeholder="Paste callback URL here..."
-              className="w-full bg-white border-2 border-[#111111] rounded-lg px-3 py-2 text-xs mono-brutal text-[#111111] placeholder-gray-400 focus:outline-none focus:border-[#c8a2ff]" />
+              className="w-full bg-surface border-2 border-line rounded-lg px-3 py-2 text-xs mono-brutal text-ink placeholder-gray-400 focus:outline-none focus:border-[#c8a2ff]" />
             <button onClick={handleManual} disabled={!callbackUrl}
               className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-white bg-[#ff3d81] hover:bg-[#ff3d81]/80 disabled:opacity-30">Connect</button>
           </div>
@@ -231,15 +231,15 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
         {step === 'waiting' && isDeviceCode && deviceData && (
           <div className="space-y-4 text-center">
             <div className="w-12 h-12 mx-auto border-2 border-[#c8a2ff]/40 border-t-[#c8a2ff] rounded-full animate-spin" />
-            <p className="mono-brutal text-sm text-[#111111]">Waiting for device authorization</p>
-            <p className="mono-brutal text-[10px] text-gray-500">Complete authorization in the opened tab, then return here.</p>
+            <p className="mono-brutal text-sm text-ink">Waiting for device authorization</p>
+            <p className="mono-brutal text-[10px] text-subtext">Complete authorization in the opened tab, then return here.</p>
             {deviceData.user_code && (
               <div className="p-3 rounded-lg bg-[#c8a2ff]/10 border-2 border-[#c8a2ff]">
-                <p className="mono-brutal text-[9px] text-gray-500 mb-1">Your code</p>
+                <p className="mono-brutal text-[9px] text-subtext mb-1">Your code</p>
                 <code className="mono-brutal text-lg font-bold tracking-[0.2em] text-[#c8a2ff]">{deviceData.user_code}</code>
               </div>
             )}
-            {polling && <p className="mono-brutal text-[9px] text-gray-500 animate-pulse">Polling...</p>}
+            {polling && <p className="mono-brutal text-[9px] text-subtext animate-pulse">Polling...</p>}
           </div>
         )}
       </div>

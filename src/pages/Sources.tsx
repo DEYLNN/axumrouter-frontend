@@ -58,21 +58,21 @@ function SourceCard({ branch, template }: { branch: SourceBranch; template: stri
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5 mb-2">
-            <div className="shrink-0 w-8 h-8 rounded-lg bg-[#c8a2ff] border-2 border-[#111111] flex items-center justify-center">
-              <svg className="w-4 h-4 text-[#111111]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="shrink-0 w-8 h-8 rounded-lg bg-[#c8a2ff] border-2 border-line flex items-center justify-center">
+              <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
-            <h3 className="text-sm font-bold text-[#111111] tracking-tight">{branch.name}</h3>
+            <h3 className="text-sm font-bold text-ink tracking-tight">{branch.name}</h3>
             {branch.commit_sha && (
-              <code className="shrink-0 px-2 py-0.5 rounded-md bg-[#f0f0f0] border-2 border-[#111111] text-[9px] mono-brutal text-gray-600 font-bold">
+              <code className="shrink-0 px-2 py-0.5 rounded-md bg-muted border-2 border-line text-[9px] mono-brutal text-subtext font-bold">
                 {branch.commit_sha.slice(0, 7)}
               </code>
             )}
           </div>
-          <div className="flex items-center gap-3 text-[10px] mono-brutal text-gray-500">
-            <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#f0f0f0] border-2 border-[#111111] font-bold">
-              <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <div className="flex items-center gap-3 text-[10px] mono-brutal text-subtext">
+            <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted border-2 border-line font-bold">
+              <svg className="w-3 h-3 text-subtext" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               {fmtDate(branch.updated_at)}
@@ -116,7 +116,7 @@ export default function Sources() {
         <div>
           <h1 className="heading-brutal text-3xl uppercase tracking-tight">SOURCES</h1>
           {repo && (
-            <p className="text-lg font-medium text-gray-600">
+            <p className="text-lg font-medium text-subtext">
               {repo.title} · {fmtSize(repo.size_kb)} · {branches.length} branches
             </p>
           )}
@@ -124,14 +124,14 @@ export default function Sources() {
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-sm mono-brutal text-gray-500">Loading sources…</div>
+        <div className="py-12 text-center text-sm mono-brutal text-subtext">Loading sources…</div>
       ) : error ? (
         <div className="brutal-card border-[#ff6b5e] p-4 text-sm mono-brutal text-[#ff6b5e] font-bold">
           Failed to load sources: {error}
         </div>
       ) : branches.length === 0 ? (
         <div className="brutal-card border-dashed py-12 text-center">
-          <div className="text-xs mono-brutal text-gray-500">No branches found</div>
+          <div className="text-xs mono-brutal text-subtext">No branches found</div>
         </div>
       ) : (
         <div className="grid gap-3">

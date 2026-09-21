@@ -42,33 +42,33 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fdf9f0] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-canvas flex items-center justify-center px-4">
       <div className="grid-pattern" />
       <div className="w-full max-w-sm relative z-10">
         <div className="brutal-card overflow-hidden">
-          <div className="px-6 py-5 border-b-2 border-[#111111]">
+          <div className="px-6 py-5 border-b-2 border-line">
             <div className="flex items-center gap-2.5">
               <img
                 src="/logo.png"
                 alt="NuvCode"
-                className="w-8 h-8 rounded-lg border-2 border-[#111111] object-cover bg-white"
+                className="w-8 h-8 rounded-lg border-2 border-line object-cover bg-surface"
               />
               <span className="heading-brutal text-lg uppercase tracking-tight">NuvCode</span>
             </div>
           </div>
           <form onSubmit={login} className="px-6 py-6 space-y-4">
             <div>
-              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Username</label>
+              <label className="block text-xs font-bold text-subtext uppercase tracking-wider mb-1.5">Username</label>
               <input type="text" value={username} onChange={e => { setUsername(e.target.value); if (error) setError('') }}
                 placeholder="Enter username"
                 autoFocus
-                className="w-full px-4 py-2.5 border-2 border-[#111111] rounded-lg font-mono text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] focus:border-[#ff3d81] transition-all" />
+                className="w-full px-4 py-2.5 border-2 border-line rounded-lg font-mono text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] focus:border-[#ff3d81] transition-all" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Password</label>
+              <label className="block text-xs font-bold text-subtext uppercase tracking-wider mb-1.5">Password</label>
               <input type="password" value={password} onChange={handlePasswordChange}
                 placeholder="Enter admin password"
-                className="w-full px-4 py-2.5 border-2 border-[#111111] rounded-lg font-mono text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] focus:border-[#ff3d81] transition-all" />
+                className="w-full px-4 py-2.5 border-2 border-line rounded-lg font-mono text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] focus:border-[#ff3d81] transition-all" />
             </div>
             {error && (
               <div className="text-sm font-bold text-[#ff6b5e] bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] rounded-lg px-4 py-2.5">

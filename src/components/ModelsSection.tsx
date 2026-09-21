@@ -39,13 +39,13 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
 
   return (
     <div className="brutal-card overflow-hidden">
-      <div className="px-5 py-4 border-b-2 border-[#111111]">
+      <div className="px-5 py-4 border-b-2 border-line">
         <h2 className="heading-brutal text-lg uppercase tracking-tight">MODELS</h2>
       </div>
-      <div className="px-5 py-3 border-b-2 border-[#111111]">
+      <div className="px-5 py-3 border-b-2 border-line">
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search models..."
-          className="w-full px-4 py-2 border-2 border-[#111111] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff3d81] text-sm" />
+          className="w-full px-4 py-2 border-2 border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff3d81] text-sm" />
       </div>
       <div className="p-5 space-y-6">
         {Object.entries(grouped).map(([cat, provs]) => (
@@ -53,7 +53,7 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
             <div className="flex items-center gap-2 mb-3">
               <div className="w-1.5 h-1.5 rounded-full bg-[#ff3d81]" />
               <span className="text-[10px] font-mono font-semibold text-[#ff3d81] uppercase tracking-wider">{catLabel(cat)}</span>
-              <div className="h-px flex-1 bg-gray-200" />
+              <div className="h-px flex-1 bg-muted" />
             </div>
             <div className="space-y-3">
               {provs.filter(p => p.id === 'combo' || p.total_keys > 0).map(p => {
@@ -65,38 +65,38 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
                   <div key={p.id} className="brutal-card overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border-2 border-[#111111]"
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border-2 border-line"
                           style={{ background: `${p.color}20` }}>
                           {p.id === 'combo' ? (
                             <span className="text-[10px] font-bold text-[#c8a2ff]">⚡</span>
                           ) : p.icon_name ? <img src={iconUrl(p.icon_name)} alt="" className="w-4 h-4 object-contain" /> : <span className="text-[9px] font-bold" style={{ color: p.color }}>{p.id.charAt(0).toUpperCase()}</span>}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-[11px] font-semibold text-[#111111] truncate">{p.display_name}</div>
-                          <div className="text-[9px] font-mono text-gray-500">{p.id}</div>
+                          <div className="text-[11px] font-semibold text-ink truncate">{p.display_name}</div>
+                          <div className="text-[9px] font-mono text-subtext">{p.id}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {p.total_keys > 0 && <span className="text-[9px] font-mono text-[#3ddc97]">{p.total_keys} keys</span>}
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: p.active_keys > 0 ? '#3ddc97' : '#d1d5db' }} />
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: p.active_keys > 0 ? '#3ddc97' : 'var(--muted)' }} />
                       </div>
                     </div>
                     {filtered ? (
                       <div className="px-4 py-2 space-y-0.5">
                         {filtered.map(m => (
-                          <div key={m.id} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-all">
+                          <div key={m.id} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-muted transition-all">
                             <div className="flex items-center gap-2 min-w-0">
-                              <span className={`text-[11px] font-mono truncate max-w-[220px] ${m.enabled ? 'text-gray-700' : 'text-[#ff6b5e]/50 line-through'}`}>{m.id}</span>
-                              <span className="text-[9px] font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">{m.context_length?.toLocaleString() || '?'}</span>
+                              <span className={`text-[11px] font-mono truncate max-w-[220px] ${m.enabled ? 'text-ink/80' : 'text-[#ff6b5e]/50 line-through'}`}>{m.id}</span>
+                              <span className="text-[9px] font-mono text-subtext bg-muted px-1.5 py-0.5 rounded shrink-0">{m.context_length?.toLocaleString() || '?'}</span>
                             </div>
                             <button onClick={() => onToggleModel(m.id, !m.enabled)} disabled={m.toggling}
-                              className={`relative w-9 h-5 rounded-full transition-all border-2 border-[#111111] ${m.enabled ? 'bg-[#3ddc97]' : 'bg-gray-200'} ${m.toggling ? 'opacity-50' : ''}`}>
-                              <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white border border-[#111111] transition-all ${m.enabled ? 'left-[16px]' : 'left-[2px]'}`} />
+                              className={`relative w-9 h-5 rounded-full transition-all border-2 border-line ${m.enabled ? 'bg-[#3ddc97]' : 'bg-muted'} ${m.toggling ? 'opacity-50' : ''}`}>
+                              <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-surface border border-line transition-all ${m.enabled ? 'left-[16px]' : 'left-[2px]'}`} />
                             </button>
                           </div>
                         ))}
                       </div>
-                    ) : <div className="px-4 py-3 text-[10px] font-mono text-gray-500 animate-pulse">Loading models...</div>}
+                    ) : <div className="px-4 py-3 text-[10px] font-mono text-subtext animate-pulse">Loading models...</div>}
                   </div>
                 )
               })}

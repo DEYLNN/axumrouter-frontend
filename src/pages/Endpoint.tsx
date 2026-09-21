@@ -29,6 +29,21 @@ const SECTION_COLORS = {
 } as const
 
 /* ─── Reusable Neubrutal section card ─── */
+/* Accent colours used as pill backgrounds. Text colour follows the established design:
+   white on saturated pink/red, near-black ink on bright green/purple/yellow. */
+function readableOn(hex: string): string {
+  const h = hex.replace('#', '')
+  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h
+  if (full.length !== 6) return '#ffffff'
+  const r = parseInt(full.slice(0, 2), 16) / 255
+  const g = parseInt(full.slice(2, 4), 16) / 255
+  const b = parseInt(full.slice(4, 6), 16) / 255
+  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4))
+  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+  // Green/purple/yellow read fine with dark ink; saturated pink/red keep white.
+  return L > 0.35 ? 'var(--on-accent)' : '#ffffff'
+}
+
 function SectionCard({
   color,
   title,
@@ -43,10 +58,13 @@ function SectionCard({
   return (
     <div className="brutal-card overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b-2 border-[#111111] flex items-center justify-between">
+      <div className="px-6 py-4 border-b-2 border-line flex items-center justify-between">
         <h2 className="heading-brutal text-sm uppercase tracking-tight">{title}</h2>
         {badge && (
-          <span className="status-pill text-[10px] font-bold" style={{ backgroundColor: color }}>
+          <span
+            className="status-pill text-[10px] font-bold"
+            style={{ backgroundColor: color, color: readableOn(color) }}
+          >
             {badge}
           </span>
         )}
@@ -70,17 +88,17 @@ function ToggleGroup({
   accentColor: string
 }) {
   return (
-    <div className="flex border-2 border-[#111111] rounded-lg overflow-hidden">
+    <div className="flex border-2 border-line rounded-lg overflow-hidden">
       {options.map((opt, i) => (
         <button
           key={opt.key}
           onClick={() => onChange(opt.key)}
           className={`flex-1 py-2 text-xs font-bold tracking-wide transition-all ${
-            i > 0 ? 'border-l-2 border-[#111111]' : ''
+            i > 0 ? 'border-l-2 border-line' : ''
           } ${
             active === opt.key
-              ? 'text-[#111111]'
-              : 'bg-white text-gray-400 hover:text-[#111111]'
+              ? 'text-on-accent'
+              : 'bg-surface text-subtext/70 hover:text-ink'
           }`}
           style={active === opt.key ? { backgroundColor: accentColor } : {}}
         >
@@ -111,22 +129,22 @@ function FeatureRow({
     <div className="space-y-3">
       <div className="flex items-center gap-3">
         <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center border-2 border-[#111111] shrink-0"
+          className="w-10 h-10 rounded-lg flex items-center justify-center border-2 border-line shrink-0"
           style={{ backgroundColor: statusColor }}
         >
           {icon}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-sm text-[#111111]">{name}</span>
+            <span className="font-bold text-sm text-ink">{name}</span>
             <span
-              className="status-pill text-[9px] font-bold"
+              className="status-pill text-[9px] font-bold text-on-accent"
               style={{ backgroundColor: statusColor }}
             >
               {status}
             </span>
           </div>
-          <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+          <p className="text-xs text-subtext mt-0.5">{desc}</p>
         </div>
       </div>
       {children}
@@ -135,10 +153,10 @@ function FeatureRow({
 }
 
 /* ─── Neubrutal code block ─── */
-function CodeBlock({ children, color = '#111111' }: { children: React.ReactNode; color?: string }) {
+function CodeBlock({ children, color = 'var(--ink)' }: { children: React.ReactNode; color?: string }) {
   return (
     <code
-      className="block text-xs mono-brutal bg-white rounded-lg px-4 py-3 border-2 border-[#111111] whitespace-pre-wrap break-all"
+      className="block text-xs mono-brutal bg-surface rounded-lg px-4 py-3 border-2 border-line whitespace-pre-wrap break-all"
       style={{ color }}
     >
       {children}
@@ -230,7 +248,7 @@ export default function Endpoint() {
 
   if (loading) return (
     <div className="flex items-center justify-center py-20">
-      <div className="text-sm mono-brutal text-gray-500 animate-pulse">LOADING...</div>
+      <div className="text-sm mono-brutal text-subtext animate-pulse">LOADING...</div>
     </div>
   )
 
@@ -246,7 +264,7 @@ export default function Endpoint() {
         {/* Page header */}
         <div className="mb-2">
           <h1 className="heading-brutal text-3xl uppercase tracking-tight">ENDPOINT</h1>
-          <p className="text-lg font-medium text-gray-600">Gateway configuration &amp; access</p>
+          <p className="text-lg font-medium text-subtext">Gateway configuration &amp; access</p>
         </div>
 
         {/* ─── OPENAI URL ─── */}
@@ -258,15 +276,15 @@ export default function Endpoint() {
                 onClick={() => copy(gatewayUrl, '__url__')}
                 className={`brutal-btn shrink-0 px-4 py-2 text-xs font-bold ${
                   copiedId === '__url__'
-                    ? 'bg-[#3ddc97] text-[#111111]'
-                    : 'bg-white text-[#111111]'
+                    ? 'bg-[#3ddc97] text-on-accent'
+                    : 'bg-surface text-ink'
                 }`}
               >
                 {copiedId === '__url__' ? '✓ Copied!' : 'Copy'}
               </button>
             </div>
           ) : (
-            <p className="text-xs mono-brutal text-gray-500">Set VITE_GATEWAY_BACKEND_URL in .env or wait for settings...</p>
+            <p className="text-xs mono-brutal text-subtext">Set VITE_GATEWAY_BACKEND_URL in .env or wait for settings...</p>
           )}
         </SectionCard>
 
@@ -274,8 +292,8 @@ export default function Endpoint() {
         <div className="opacity-50">
           <SectionCard color={SECTION_COLORS.anthropic.bg} title="ANTHROPIC_URL" badge="COMING SOON">
             <div className="flex items-center gap-3">
-              <CodeBlock color="#999">{claudeUrl || 'http://ip:port'}</CodeBlock>
-              <button disabled className="brutal-btn shrink-0 px-4 py-2 text-xs font-bold text-gray-400 bg-gray-100 border-gray-300 cursor-not-allowed">
+              <CodeBlock color="var(--subtext)">{claudeUrl || 'http://ip:port'}</CodeBlock>
+              <button disabled className="brutal-btn shrink-0 px-4 py-2 text-xs font-bold text-subtext/70 bg-muted border-line/40 cursor-not-allowed">
                 Not Available
               </button>
             </div>
@@ -291,9 +309,9 @@ export default function Endpoint() {
                 name="RTK"
                 desc="Compress tool output — fewer input tokens"
                 status={settings.rtk_enabled === 'true' ? 'ON' : 'OFF'}
-                statusColor={settings.rtk_enabled === 'true' ? '#3ddc97' : '#e5e5e5'}
+                statusColor={settings.rtk_enabled === 'true' ? '#3ddc97' : 'var(--muted)'}
                 icon={
-                  <svg className="w-5 h-5 text-[#111111]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-ink" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M8 5V3h8v2" />
                   </svg>
                 }
@@ -311,9 +329,9 @@ export default function Endpoint() {
                 name="Headroom"
                 desc="Compress prompts before routing"
                 status="SOON"
-                statusColor="#e5e5e5"
+                statusColor="var(--muted)"
                 icon={
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-subtext/70" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 }
@@ -324,9 +342,9 @@ export default function Endpoint() {
                 name="Caveman"
                 desc="Terse LLM output ~65% fewer tokens"
                 status={settings.caveman_enabled === 'off' ? 'OFF' : settings.caveman_enabled.toUpperCase()}
-                statusColor={settings.caveman_enabled !== 'off' ? '#c8a2ff' : '#e5e5e5'}
+                statusColor={settings.caveman_enabled !== 'off' ? '#c8a2ff' : 'var(--muted)'}
                 icon={
-                  <svg className="w-5 h-5 text-[#111111]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-ink" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 }
@@ -344,9 +362,9 @@ export default function Endpoint() {
                 name="Ponytail"
                 desc="Lazy senior dev — minimal output"
                 status={settings.ponytail_enabled === 'off' ? 'OFF' : settings.ponytail_enabled.toUpperCase()}
-                statusColor={settings.ponytail_enabled !== 'off' ? '#ffd23f' : '#e5e5e5'}
+                statusColor={settings.ponytail_enabled !== 'off' ? '#ffd23f' : 'var(--muted)'}
                 icon={
-                  <svg className="w-5 h-5 text-[#111111]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-ink" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 }
@@ -368,14 +386,14 @@ export default function Endpoint() {
           {newKeyResult && (
             <div className="mb-4 p-4 rounded-lg bg-[#ffd23f]/10 border-2 border-[#ffd23f]">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] mono-brutal font-bold text-[#111111] tracking-wider uppercase">KEY CREATED — COPY NOW</span>
-                <button onClick={() => setNewKeyResult(null)} className="text-[10px] text-gray-500 hover:text-[#111111] transition-colors font-bold">Dismiss</button>
+                <span className="text-[10px] mono-brutal font-bold text-ink tracking-wider uppercase">KEY CREATED — COPY NOW</span>
+                <button onClick={() => setNewKeyResult(null)} className="text-[10px] text-subtext hover:text-ink transition-colors font-bold">Dismiss</button>
               </div>
               <div className="flex items-center gap-2">
                 <CodeBlock>{newKeyResult.key_value}</CodeBlock>
                 <button onClick={() => copy(newKeyResult.key_value, 'new_key')}
                   className={`brutal-btn shrink-0 px-3 py-2 text-xs font-bold ${
-                    copiedId === 'new_key' ? 'bg-[#3ddc97] text-[#111111]' : 'bg-[#ffd23f] text-[#111111]'
+                    copiedId === 'new_key' ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ffd23f] text-on-accent'
                   }`}>
                   {copiedId === 'new_key' ? '✓' : 'Copy'}
                 </button>
@@ -386,27 +404,27 @@ export default function Endpoint() {
           {/* Key list */}
           <div className="space-y-2">
             {keys.length === 0 ? (
-              <div className="text-center py-8 text-xs mono-brutal text-gray-500">No gateway keys yet. Create one below.</div>
+              <div className="text-center py-8 text-xs mono-brutal text-subtext">No gateway keys yet. Create one below.</div>
             ) : (
               keys.map(k => (
                 <div key={k.id}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-[#111111] group hover:-translate-y-0.5 transition-all">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 border border-[#111111] ${k.is_active ? 'bg-[#3ddc97]' : 'bg-gray-300'}`} />
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-line group hover:-translate-y-0.5 transition-all">
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 border border-line ${k.is_active ? 'bg-[#3ddc97]' : 'bg-muted'}`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      {k.label && <span className="text-xs font-bold text-[#111111]">{k.label}</span>}
-                      <span className="text-[10px] mono-brutal text-gray-500">
+                      {k.label && <span className="text-xs font-bold text-ink">{k.label}</span>}
+                      <span className="text-[10px] mono-brutal text-subtext">
                         {new Date(k.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                       </span>
                     </div>
-                    <code className="text-xs mono-brutal text-gray-500 truncate block">
+                    <code className="text-xs mono-brutal text-subtext truncate block">
                       {k.id === newKeyResult?.id ? newKeyResult.key_value : maskKey(k.key_value)}
                     </code>
                   </div>
                   <div className="flex items-center gap-1">
                     <button onClick={() => copy(k.key_value, k.id)}
                       className={`w-7 h-7 flex items-center justify-center rounded-md transition-all border-2 ${
-                        copiedId === k.id ? 'text-[#3ddc97] bg-[#3ddc97]/10 border-[#3ddc97]' : 'text-gray-400 hover:text-[#3ddc97] hover:bg-[#3ddc97]/10 border-transparent hover:border-[#3ddc97]'
+                        copiedId === k.id ? 'text-[#3ddc97] bg-[#3ddc97]/10 border-[#3ddc97]' : 'text-subtext/70 hover:text-[#3ddc97] hover:bg-[#3ddc97]/10 border-transparent hover:border-[#3ddc97]'
                       }`}
                       title="Copy key">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -414,7 +432,7 @@ export default function Endpoint() {
                       </svg>
                     </button>
                     <button onClick={() => handleDelete(k.id)} disabled={deleting === k.id}
-                      className="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-[#ff6b5e] hover:bg-[#ff6b5e]/10 transition-all disabled:opacity-30 border-2 border-transparent hover:border-[#ff6b5e]"
+                      className="w-7 h-7 flex items-center justify-center rounded-md text-subtext/70 hover:text-[#ff6b5e] hover:bg-[#ff6b5e]/10 transition-all disabled:opacity-30 border-2 border-transparent hover:border-[#ff6b5e]"
                       title="Delete key">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path d={deleting === k.id ? 'M12 4v16m8-8H4' : 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'} />
@@ -427,14 +445,14 @@ export default function Endpoint() {
           </div>
 
           {/* Create form */}
-          <div className="mt-4 pt-4 border-t-2 border-[#111111]">
+          <div className="mt-4 pt-4 border-t-2 border-line">
             <div className="flex items-center gap-2">
               <input type="text" value={newKeyLabel} onChange={e => setNewKeyLabel(e.target.value)}
                 placeholder="Key label (optional)"
-                className="flex-1 px-4 py-2 border-2 border-[#111111] rounded-lg text-xs mono-brutal bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all"
+                className="flex-1 px-4 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all"
                 onKeyDown={e => e.key === 'Enter' && newKeyLabel !== '' && handleCreate()} />
               <button onClick={handleCreate} disabled={creating}
-                className="brutal-btn shrink-0 flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[#3ddc97] text-[#111111] disabled:opacity-40">
+                className="brutal-btn shrink-0 flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[#3ddc97] text-on-accent disabled:opacity-40">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M12 4v16m8-8H4" />
                 </svg>
@@ -448,34 +466,34 @@ export default function Endpoint() {
         <SectionCard color={SECTION_COLORS.injection.bg} title="KEY_INJECTION" badge="POST /admin/api/keys/bulk-add">
           <div className="space-y-4">
             <div>
-              <span className="text-[10px] mono-brutal text-gray-500 uppercase tracking-wider font-bold">Endpoint</span>
+              <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">Endpoint</span>
               <CodeBlock>{gatewayUrl ? gatewayUrl.replace(/\/v1$/, '') : 'http://IP:PORT'}/admin/api/keys/bulk-add</CodeBlock>
             </div>
             <div>
-              <span className="text-[10px] mono-brutal text-gray-500 uppercase tracking-wider font-bold">curl</span>
+              <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">curl</span>
               <CodeBlock color="#ff3d81">{`curl -X POST {base}/admin/api/keys/bulk-add \\
   -H "Authorization: Bearer ***" \\
   -H "Content-Type: application/json" \\
   -d '{"provider_id":"sop","keys":["sk-xxx","sk-yyy"]}'`}</CodeBlock>
             </div>
             <div>
-              <span className="text-[10px] mono-brutal text-gray-500 uppercase tracking-wider font-bold">Response</span>
+              <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">Response</span>
               <CodeBlock color="#3ddc97">{`{"added":2,"duplicates":0,"total":2,"message":"2 added, 0 duplicates skipped"}`}</CodeBlock>
             </div>
-            <p className="text-[10px] mono-brutal text-gray-500">
+            <p className="text-[10px] mono-brutal text-subtext">
               Accepts JSON array or <code>{"{keys:[...]}"}</code> object. Skips duplicates.
             </p>
-            <p className="text-[10px] mono-brutal text-gray-500">
+            <p className="text-[10px] mono-brutal text-subtext">
               Admin token: <code>curl -X POST {gatewayUrl ? gatewayUrl.replace(/\/v1$/, '') : '{base}'}/admin/api/login -d '&#123;"password":"PASSWORD"&#125;'</code>
             </p>
-            <div className="border-t-2 border-[#111111] pt-4">
-              <span className="text-[10px] mono-brutal text-gray-500 uppercase tracking-wider font-bold">Count keys</span>
+            <div className="border-t-2 border-line pt-4">
+              <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">Count keys</span>
               <CodeBlock color="#ff3d81">{`curl -H "Authorization: Bearer ***" \\
   {base}/admin/api/keys/count?provider_id=sop`}</CodeBlock>
               <CodeBlock color="#3ddc97">{`{"provider_id":"sop","total":5,"active":5,"disabled":0}`}</CodeBlock>
             </div>
-            <div className="border-t-2 border-[#111111] pt-4">
-              <span className="text-[10px] mono-brutal text-gray-500 uppercase tracking-wider font-bold">Delete keys</span>
+            <div className="border-t-2 border-line pt-4">
+              <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">Delete keys</span>
               <CodeBlock color="#ff6b5e">{`# delete all
 curl -X POST {base}/admin/api/keys/bulk-delete \\
   -H "Authorization: Bearer ***" \\
@@ -487,9 +505,9 @@ curl -X POST {base}/admin/api/keys/bulk-delete \\
   -d '{"provider_id":"sop","action":"by_key","key_value":"sk-xxx"}'`}</CodeBlock>
               <CodeBlock color="#3ddc97">{`{"deleted":2,"message":"Deleted 2 key(s) from sop"}`}</CodeBlock>
             </div>
-            <div className="border-t-2 border-[#111111] pt-4">
-              <span className="text-[10px] mono-brutal text-gray-500 uppercase tracking-wider font-bold">Docs</span>
-              <CodeBlock color="#999">{gatewayUrl ? gatewayUrl.replace(/\/v1$/, '') : 'http://IP:PORT'}/admin/api/docs/key-injection</CodeBlock>
+            <div className="border-t-2 border-line pt-4">
+              <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">Docs</span>
+              <CodeBlock color="var(--subtext)">{gatewayUrl ? gatewayUrl.replace(/\/v1$/, '') : 'http://IP:PORT'}/admin/api/docs/key-injection</CodeBlock>
             </div>
           </div>
         </SectionCard>

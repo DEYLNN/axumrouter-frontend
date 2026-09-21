@@ -69,7 +69,7 @@ export default function Logs() {
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h1 className="heading-brutal text-3xl uppercase tracking-tight">LOGS</h1>
-            <p className="text-lg font-medium text-gray-600">{total} entries</p>
+            <p className="text-lg font-medium text-subtext">{total} entries</p>
           </div>
           <button onClick={clearLogs} disabled={clearing || total === 0}
             className="brutal-btn bg-[#ff6b5e] text-white px-4 py-2 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed">
@@ -83,11 +83,11 @@ export default function Logs() {
         <div className="space-y-3">
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="text-sm mono-brutal text-gray-500 animate-pulse">LOADING...</div>
+              <div className="text-sm mono-brutal text-subtext animate-pulse">LOADING...</div>
             </div>
           ) : logs.length === 0 ? (
             <div className="brutal-card p-12 text-center">
-              <div className="text-xs mono-brutal text-gray-500">No logs yet</div>
+              <div className="text-xs mono-brutal text-subtext">No logs yet</div>
             </div>
           ) : (
             logs.map(l => {
@@ -106,7 +106,7 @@ export default function Logs() {
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div
-                        className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-[#111111]"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-line"
                         style={{ background: `${color}18` }}
                       >
                         {icon ? (
@@ -115,10 +115,10 @@ export default function Logs() {
                           <span className="text-[10px] font-bold mono-brutal" style={{ color }}>{l.provider_id.charAt(0).toUpperCase()}</span>
                         )}
                       </div>
-                      <code className="text-xs mono-brutal font-bold text-[#111111] truncate">{l.model_id}</code>
+                      <code className="text-xs mono-brutal font-bold text-ink truncate">{l.model_id}</code>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`status-pill ${isSuccess ? 'bg-[#3ddc97] text-[#111111]' : 'bg-[#ff6b5e] text-white'}`}>
+                      <span className={`status-pill ${isSuccess ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff6b5e] text-white'}`}>
                         {isSuccess ? 'OK' : l.status_code ? String(l.status_code) : 'ERR'}
                       </span>
                     </div>
@@ -126,7 +126,7 @@ export default function Logs() {
 
                   {/* Row 2: provider display name + gateway key label + provider key label */}
                   <div className="flex items-center justify-between mb-3 ml-9 gap-2">
-                    <span className="text-[10px] mono-brutal text-gray-500 truncate">{displayName}</span>
+                    <span className="text-[10px] mono-brutal text-subtext truncate">{displayName}</span>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {l.provider_key_label ? (
                         <span
@@ -145,7 +145,7 @@ export default function Logs() {
                         </span>
                       ) : l.api_key_id ? (
                         <span
-                          className="text-[9px] mono-brutal text-gray-400 truncate max-w-[120px]"
+                          className="text-[9px] mono-brutal text-subtext/70 truncate max-w-[120px]"
                           title={l.api_key_id}
                         >
                           {l.api_key_id}
@@ -155,7 +155,7 @@ export default function Logs() {
                   </div>
 
                   {/* Row 3: stats */}
-                  <div className="flex items-center gap-4 text-[10px] mono-brutal mb-3 text-gray-500">
+                  <div className="flex items-center gap-4 text-[10px] mono-brutal mb-3 text-subtext">
                     <div className="flex items-center gap-1.5">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -169,22 +169,22 @@ export default function Logs() {
                       </svg>
                       <span className="font-bold">{l.latency_ms != null ? `${l.latency_ms}ms` : '-'}</span>
                     </div>
-                    <div className="ml-auto text-gray-400">{timeAgo(l.created_at)}</div>
+                    <div className="ml-auto text-subtext/70">{timeAgo(l.created_at)}</div>
                   </div>
 
                   {/* Row 4: token breakdown */}
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="rounded-lg bg-[#f0f0f0] border-2 border-[#111111] p-2.5 text-center">
-                      <div className="text-[8px] mono-brutal text-gray-500 uppercase tracking-wider font-bold">In</div>
-                      <div className="text-[11px] mono-brutal font-bold text-[#111111] mt-0.5">{l.prompt_tokens}</div>
+                    <div className="rounded-lg bg-muted border-2 border-line p-2.5 text-center">
+                      <div className="text-[8px] mono-brutal text-subtext uppercase tracking-wider font-bold">In</div>
+                      <div className="text-[11px] mono-brutal font-bold text-ink mt-0.5">{l.prompt_tokens}</div>
                     </div>
-                    <div className="rounded-lg bg-[#f0f0f0] border-2 border-[#111111] p-2.5 text-center">
-                      <div className="text-[8px] mono-brutal text-gray-500 uppercase tracking-wider font-bold">Out</div>
-                      <div className="text-[11px] mono-brutal font-bold text-[#111111] mt-0.5">{l.completion_tokens}</div>
+                    <div className="rounded-lg bg-muted border-2 border-line p-2.5 text-center">
+                      <div className="text-[8px] mono-brutal text-subtext uppercase tracking-wider font-bold">Out</div>
+                      <div className="text-[11px] mono-brutal font-bold text-ink mt-0.5">{l.completion_tokens}</div>
                     </div>
-                    <div className="rounded-lg bg-[#f0f0f0] border-2 border-[#111111] p-2.5 text-center">
-                      <div className="text-[8px] mono-brutal text-gray-500 uppercase tracking-wider font-bold">Total</div>
-                      <div className="text-[11px] mono-brutal font-bold text-[#111111] mt-0.5">{l.total_tokens}</div>
+                    <div className="rounded-lg bg-muted border-2 border-line p-2.5 text-center">
+                      <div className="text-[8px] mono-brutal text-subtext uppercase tracking-wider font-bold">Total</div>
+                      <div className="text-[11px] mono-brutal font-bold text-ink mt-0.5">{l.total_tokens}</div>
                     </div>
                   </div>
 
@@ -206,7 +206,7 @@ export default function Logs() {
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 sm:gap-3 pt-2 px-2 flex-nowrap">
             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
-              className="brutal-btn bg-white text-[#111111] px-3 py-1.5 text-xs font-bold disabled:opacity-30 shrink-0">← Prev</button>
+              className="brutal-btn bg-surface text-ink px-3 py-1.5 text-xs font-bold disabled:opacity-30 shrink-0">← Prev</button>
             <div className="flex items-center gap-1 overflow-x-auto scrollbar-none justify-center">
               {(() => {
                 const pages: number[] = []
@@ -223,16 +223,16 @@ export default function Logs() {
                 }
                 return pages.map((p, idx) =>
                   p === -1 ? (
-                    <span key={`ellipsis-${idx}`} className="text-gray-400 px-0.5 shrink-0">…</span>
+                    <span key={`ellipsis-${idx}`} className="text-subtext/70 px-0.5 shrink-0">…</span>
                   ) : (
                     <button key={p} onClick={() => setPage(p)}
-                      className={`brutal-btn w-8 h-8 text-xs font-bold shrink-0 ${p === page ? 'bg-[#ff3d81] text-white' : 'bg-white text-[#111111]'}`}>{p}</button>
+                      className={`brutal-btn w-8 h-8 text-xs font-bold shrink-0 ${p === page ? 'bg-[#ff3d81] text-white' : 'bg-surface text-ink'}`}>{p}</button>
                   )
                 )
               })()}
             </div>
             <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
-              className="brutal-btn bg-white text-[#111111] px-3 py-1.5 text-xs font-bold disabled:opacity-30 shrink-0">Next →</button>
+              className="brutal-btn bg-surface text-ink px-3 py-1.5 text-xs font-bold disabled:opacity-30 shrink-0">Next →</button>
           </div>
         )}
       </div>

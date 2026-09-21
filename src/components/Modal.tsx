@@ -12,12 +12,12 @@ export default function Modal({ open, onClose, children, maxWidth = 'max-w-md' }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#111111]/60"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={onClose}
     >
       <div
-        className={`w-full ${maxWidth} mx-4 rounded-[18px] border-2 border-[#111111] bg-white p-6`}
-        style={{ boxShadow: '8px 8px 0px 0px #111111' }}
+        className={`w-full ${maxWidth} mx-4 rounded-[18px] border-2 border-line bg-surface p-6`}
+        style={{ boxShadow: '8px 8px 0px 0px var(--shadow)' }}
         onClick={e => e.stopPropagation()}
       >
         {children}

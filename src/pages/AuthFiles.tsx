@@ -509,30 +509,30 @@ export default function AuthFiles() {
               <h1 className="heading-brutal text-3xl uppercase tracking-tight">AUTH FILES</h1>
               <span className="status-pill bg-[#ff3d81] text-white">{stats?.total ?? files.length}</span>
             </div>
-            <p className="text-lg font-medium text-gray-600 mt-0.5">Provider credentials · {stats?.active ?? files.filter(f => f.is_active).length} active</p>
+            <p className="text-lg font-medium text-subtext mt-0.5">Provider credentials · {stats?.active ?? files.filter(f => f.is_active).length} active</p>
           </div>
           <div className="flex gap-1.5">
-            <label className="brutal-btn inline-flex h-9 cursor-pointer items-center gap-1.5 bg-[#3ddc97] text-[#111111] px-2 sm:px-4 text-xs font-bold">
+            <label className="brutal-btn inline-flex h-9 cursor-pointer items-center gap-1.5 bg-[#3ddc97] text-on-accent px-2 sm:px-4 text-xs font-bold">
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M12 4v16m8-8H4"/></svg>
               <span className="sm:hidden">Upload</span>
               <span className="hidden sm:inline">Upload JSON</span>
               <input type="file" accept=".json" multiple className="hidden" onChange={handleImport} />
             </label>
             <button onClick={() => downloadTemplate('oauth')}
-              className="brutal-btn h-9 flex items-center gap-1.5 bg-white text-[#111111] px-2 sm:px-3 text-xs font-bold"
+              className="brutal-btn h-9 flex items-center gap-1.5 bg-surface text-ink px-2 sm:px-3 text-xs font-bold"
               title="Download OAuth template">
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
               <span className="sm:hidden">OAUTH</span>
               <span className="hidden sm:inline">OAuth</span>
             </button>
             <button onClick={() => downloadTemplate('apikey')}
-              className="brutal-btn h-9 flex items-center gap-1.5 bg-white text-[#111111] px-2 sm:px-3 text-xs font-bold"
+              className="brutal-btn h-9 flex items-center gap-1.5 bg-surface text-ink px-2 sm:px-3 text-xs font-bold"
               title="Download API Key template">
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
               <span className="sm:hidden">APIKEY</span>
               <span className="hidden sm:inline">API Key</span>
             </button>
-            <button onClick={reload} className="brutal-btn h-9 w-9 flex items-center justify-center bg-white text-[#111111] text-sm font-bold shrink-0" disabled={loading}>
+            <button onClick={reload} className="brutal-btn h-9 w-9 flex items-center justify-center bg-surface text-ink text-sm font-bold shrink-0" disabled={loading}>
               {loading ? '⏳' : '↻'}
             </button>
           </div>
@@ -548,9 +548,9 @@ export default function AuthFiles() {
           <div className="brutal-card px-4 py-2.5 text-xs mono-brutal">
             <div className="flex items-center gap-2 mb-1.5">
               <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-              <span className="font-bold text-[#111111]">Progress… {importProgress.current}/{importProgress.total}</span>
+              <span className="font-bold text-ink">Progress… {importProgress.current}/{importProgress.total}</span>
             </div>
-            <div className="w-full h-2 rounded-full bg-[#f0f0f0] border-2 border-[#111111] overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-muted border-2 border-line overflow-hidden">
               <div className="h-full rounded-full bg-[#ff3d81] transition-all duration-200"
                 style={{ width: `${(importProgress.current / importProgress.total) * 100}%` }} />
             </div>
@@ -561,23 +561,23 @@ export default function AuthFiles() {
         <div className="brutal-card p-4 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <input value={query} onChange={e => onSearchChange(e.target.value)} placeholder="Filter by name, type, provider..."
-              className="flex-1 min-w-[200px] h-9 px-3 border-2 border-[#111111] rounded-lg text-xs mono-brutal bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+              className="flex-1 min-w-[200px] h-9 px-3 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
             
             {/* Provider dropdown — full-width block, dropdown panel matches */}
             <div className="relative z-10 w-full">
               <button
                 type="button"
                 onClick={() => setProviderOpen(v => !v)}
-                className="brutal-btn flex w-full items-center gap-2 h-9 bg-white text-[#111111] px-3 text-xs font-bold text-left"
+                className="brutal-btn flex w-full items-center gap-2 h-9 bg-surface text-ink px-3 text-xs font-bold text-left"
               >
                 {providerFilter !== 'all' && (
-                  <div className="w-4 h-4 rounded shrink-0 overflow-hidden bg-[#f0f0f0] border-2 border-[#111111] flex items-center justify-center">
+                  <div className="w-4 h-4 rounded shrink-0 overflow-hidden bg-muted border-2 border-line flex items-center justify-center">
                     {(() => {
                       const fm = getMeta(providerFilter)
                       return fm.icon_name ? (
                         <img src={iconUrl(fm.icon_name)} alt="" className="w-full h-full object-contain" />
                       ) : (
-                        <span className="mono-brutal text-[8px] text-gray-500 font-bold">{fm.name[0]}</span>
+                        <span className="mono-brutal text-[8px] text-subtext font-bold">{fm.name[0]}</span>
                       )
                     })()}
                   </div>
@@ -585,32 +585,32 @@ export default function AuthFiles() {
                 <span className="flex-1 truncate">
                   {providerFilter === 'all' ? 'All providers' : getMeta(providerFilter).name}
                 </span>
-                <span className="text-gray-400 text-[10px] mono-brutal">
+                <span className="text-subtext/70 text-[10px] mono-brutal">
                   {providerFilter === 'all' ? (stats?.total ?? files.length) : providerTypes.find(p => p.id === providerFilter)?.count || 0}
                 </span>
-                <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${providerOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M6 9l6 6 6-6"/></svg>
+                <svg className={`w-3.5 h-3.5 text-subtext/70 transition-transform ${providerOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M6 9l6 6 6-6"/></svg>
               </button>
 
               {providerOpen && (
                 <>
                   <div className="fixed inset-0 z-[100]" onClick={() => setProviderOpen(false)} />
                   <div className="absolute left-0 right-0 z-[101] mt-1.5 brutal-card py-1 max-h-80 overflow-hidden flex flex-col">
-                    <div className="px-2 py-1.5 border-b-2 border-[#111111] shrink-0">
+                    <div className="px-2 py-1.5 border-b-2 border-line shrink-0">
                       <input type="text" value={providerSearch} onChange={e => setProviderSearch(e.target.value)}
                         placeholder="Search provider..."
                         autoFocus
-                        className="w-full px-2.5 py-1.5 border-2 border-[#111111] rounded-md text-[11px] mono-brutal bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+                        className="w-full px-2.5 py-1.5 border-2 border-line rounded-md text-[11px] mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
                     </div>
                     <div className="overflow-y-auto">
                     <button
                       onClick={() => { setProviderFilter('all'); setProviderOpen(false) }}
-                      className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors mono-brutal font-bold ${providerFilter === 'all' ? 'text-[#ff3d81] bg-[#ff3d81]/10' : 'text-gray-600 hover:bg-[#fdf9f0] hover:text-[#111111]'}`}
+                      className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors mono-brutal font-bold ${providerFilter === 'all' ? 'text-[#ff3d81] bg-[#ff3d81]/10' : 'text-subtext hover:bg-canvas hover:text-ink'}`}
                     >
-                      <div className="w-5 h-5 rounded bg-[#f0f0f0] border-2 border-[#111111] flex items-center justify-center">
-                        <svg className="w-3 h-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                      <div className="w-5 h-5 rounded bg-muted border-2 border-line flex items-center justify-center">
+                        <svg className="w-3 h-3 text-subtext" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                       </div>
                       <span className="flex-1 text-left">All providers</span>
-                      <span className="text-gray-400">{stats?.total ?? files.length}</span>
+                      <span className="text-subtext/70">{stats?.total ?? files.length}</span>
                       {providerFilter === 'all' && <svg className="w-3.5 h-3.5 text-[#ff3d81]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
                     </button>
                     {providerTypes
@@ -621,17 +621,17 @@ export default function AuthFiles() {
                         <button
                           key={p.id}
                           onClick={() => { setProviderFilter(p.id); setProviderOpen(false) }}
-                          className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors mono-brutal font-bold ${providerFilter === p.id ? 'text-[#ff3d81] bg-[#ff3d81]/10' : 'text-gray-600 hover:bg-[#fdf9f0] hover:text-[#111111]'}`}
+                          className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors mono-brutal font-bold ${providerFilter === p.id ? 'text-[#ff3d81] bg-[#ff3d81]/10' : 'text-subtext hover:bg-canvas hover:text-ink'}`}
                         >
-                          <div className="w-5 h-5 rounded shrink-0 overflow-hidden bg-[#f0f0f0] border-2 border-[#111111] flex items-center justify-center">
+                          <div className="w-5 h-5 rounded shrink-0 overflow-hidden bg-muted border-2 border-line flex items-center justify-center">
                             {fm.icon_name ? (
                               <img src={iconUrl(fm.icon_name)} alt="" className="w-full h-full object-contain p-0.5" />
                             ) : (
-                              <span className="mono-brutal text-[9px] text-gray-500 font-bold">{fm.name[0]}</span>
+                              <span className="mono-brutal text-[9px] text-subtext font-bold">{fm.name[0]}</span>
                             )}
                           </div>
                           <span className="flex-1 text-left truncate">{p.name}</span>
-                          <span className="text-gray-400">{p.count}</span>
+                          <span className="text-subtext/70">{p.count}</span>
                           {providerFilter === p.id && <svg className="w-3.5 h-3.5 text-[#ff3d81]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
                         </button>
                       )
@@ -643,32 +643,32 @@ export default function AuthFiles() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs mono-brutal">
-            <button onClick={() => setOnlyProblem(v => !v)} className={`status-pill ${onlyProblem ? 'bg-[#ff6b5e] text-white' : 'bg-white text-gray-500 hover:text-[#111111]'}`}>
+            <button onClick={() => setOnlyProblem(v => !v)} className={`status-pill ${onlyProblem ? 'bg-[#ff6b5e] text-white' : 'bg-surface text-subtext hover:text-ink'}`}>
               Problematic {problemCount}
             </button>
-            <button onClick={() => setOnlyDisabled(v => !v)} className={`status-pill ${onlyDisabled ? 'bg-[#ffd23f] text-[#111111]' : 'bg-white text-gray-500 hover:text-[#111111]'}`}>
+            <button onClick={() => setOnlyDisabled(v => !v)} className={`status-pill ${onlyDisabled ? 'bg-[#ffd23f] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>
               Disabled {disabledCount}
             </button>
             {onlyProblem && availableCodes.length > 0 && (
               <>
-                <span className="w-px h-5 bg-[#111111]" />
+                <span className="w-px h-5 bg-line" />
                 <button onClick={() => setStatusCodeFilter('all')}
-                  className={`status-pill ${statusCodeFilter === 'all' ? 'bg-[#ff6b5e] text-white' : 'bg-white text-gray-500 hover:text-[#111111]'}`}>
+                  className={`status-pill ${statusCodeFilter === 'all' ? 'bg-[#ff6b5e] text-white' : 'bg-surface text-subtext hover:text-ink'}`}>
                   All
                 </button>
                 {availableCodes.map(code => (
                   <button key={code} onClick={() => setStatusCodeFilter(String(code))}
-                    className={`status-pill ${statusCodeFilter === String(code) ? 'bg-[#ff6b5e] text-white' : 'bg-white text-gray-500 hover:text-[#111111]'}`}>
+                    className={`status-pill ${statusCodeFilter === String(code) ? 'bg-[#ff6b5e] text-white' : 'bg-surface text-subtext hover:text-ink'}`}>
                     {code}
                   </button>
                 ))}
               </>
             )}
-            <span className="w-px h-5 bg-[#111111]" />
-            <button onClick={selectVisible} disabled={!visibleIds.length} className="status-pill bg-white text-gray-500 hover:text-[#111111] disabled:opacity-40">
+            <span className="w-px h-5 bg-line" />
+            <button onClick={selectVisible} disabled={!visibleIds.length} className="status-pill bg-surface text-subtext hover:text-ink disabled:opacity-40">
               Select {paginated.length}
             </button>
-            <button onClick={clearVisible} disabled={!selectedVisible} className="status-pill bg-white text-gray-500 hover:text-[#111111] disabled:opacity-40">
+            <button onClick={clearVisible} disabled={!selectedVisible} className="status-pill bg-surface text-subtext hover:text-ink disabled:opacity-40">
               Clear {selectedVisible}
             </button>
             <button onClick={deleteSelected} disabled={!selectedIds.size} className="status-pill bg-[#ff6b5e] text-white disabled:opacity-40">
@@ -679,32 +679,32 @@ export default function AuthFiles() {
               ⬇ Download {selectedIds.size}
             </button>
             {onlyDisabled && (
-              <button onClick={enableSelected} disabled={!selectedIds.size} className="status-pill bg-[#3ddc97] text-[#111111] disabled:opacity-40" title="Enable + reset error counters (backoff, consecutive errors)">
+              <button onClick={enableSelected} disabled={!selectedIds.size} className="status-pill bg-[#3ddc97] text-on-accent disabled:opacity-40" title="Enable + reset error counters (backoff, consecutive errors)">
                 Enable {selectedIds.size}
               </button>
             )}
           </div>
 
           {/* Dedupe row — minimal, sits under the provider dropdown. */}
-          <div className="relative flex items-center gap-3 rounded-lg border-2 border-[#111111] bg-[#fdf9f0] px-3 py-2.5 transition-colors hover:bg-[#f0f0f0]">
+          <div className="relative flex items-center gap-3 rounded-lg border-2 border-line bg-canvas px-3 py-2.5 transition-colors hover:bg-muted">
             <span className="text-xs font-bold text-[#ffd23f] shrink-0">Remove Duplicate keys</span>
-            <span className="text-gray-400">·</span>
-            <span className="flex-1 min-w-0 text-xs text-gray-500 truncate mono-brutal">
+            <span className="text-subtext/70">·</span>
+            <span className="flex-1 min-w-0 text-xs text-subtext truncate mono-brutal">
               keep oldest of{' '}
-              <code className="px-1 py-px rounded bg-[#f0f0f0] text-gray-500 mono-brutal text-[10.5px] border border-[#111111]">provider_id + key_value</code>
+              <code className="px-1 py-px rounded bg-muted text-subtext mono-brutal text-[10.5px] border border-line">provider_id + key_value</code>
             </span>
-            <span className="hidden sm:inline-flex items-center rounded-md bg-[#f0f0f0] px-1.5 py-0.5 text-[10px] mono-brutal text-gray-500 border-2 border-[#111111] font-bold">
+            <span className="hidden sm:inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] mono-brutal text-subtext border-2 border-line font-bold">
               {providerFilter === 'all' ? 'all' : providerFilter}
             </span>
-            <span className={`inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 rounded-md text-[11px] mono-brutal font-bold border-2 border-[#111111] ${
+            <span className={`inline-flex items-center justify-center min-w-[28px] h-6 px-1.5 rounded-md text-[11px] mono-brutal font-bold border-2 border-line ${
               (stats?.duplicates ?? 0) > 0
-                ? 'bg-[#ffd23f] text-[#111111]'
-                : 'bg-[#f0f0f0] text-gray-500'
+                ? 'bg-[#ffd23f] text-on-accent'
+                : 'bg-muted text-subtext'
             }`}>
               {stats?.duplicates ?? 0}
             </span>
             <button onClick={runDedupe}
-              className="brutal-btn shrink-0 inline-flex items-center gap-1 h-7 px-2.5 bg-[#ffd23f] text-[#111111] text-xs font-bold">
+              className="brutal-btn shrink-0 inline-flex items-center gap-1 h-7 px-2.5 bg-[#ffd23f] text-on-accent text-xs font-bold">
               Run
             </button>
           </div>
@@ -713,7 +713,7 @@ export default function AuthFiles() {
         {/* CARDS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {!paginated.length && !loading && (
-            <div className="col-span-full text-center py-20 text-gray-500 text-sm mono-brutal">
+            <div className="col-span-full text-center py-20 text-subtext text-sm mono-brutal">
               <span className="text-[#ff3d81]">◈</span> No auth files match your filter.
             </div>
           )}
@@ -734,10 +734,10 @@ export default function AuthFiles() {
                 <div className="p-3 flex items-start gap-3">
                   <label className="mt-1 shrink-0 cursor-pointer">
                     <input type="checkbox" checked={sel} onChange={() => toggle(f.id)}
-                      className="w-3.5 h-3.5 rounded border-2 border-[#111111] bg-white"
+                      className="w-3.5 h-3.5 rounded border-2 border-line bg-surface"
                       style={{ accentColor: '#ff3d81' }} />
                   </label>
-                  <div className="w-9 h-9 rounded-lg shrink-0 overflow-hidden bg-[#f0f0f0] border-2 border-[#111111] flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-lg shrink-0 overflow-hidden bg-muted border-2 border-line flex items-center justify-center">
                     {meta.icon_name ? (
                       <img src={iconUrl(meta.icon_name)} alt="" className="w-full h-full object-contain p-1" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; const el = (e.target as HTMLImageElement).nextElementSibling as HTMLElement; if (el) el.style.display = 'flex' }} />
                     ) : null}
@@ -747,24 +747,24 @@ export default function AuthFiles() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-sm font-bold truncate max-w-[120px] text-[#111111]">{meta.name}</span>
+                      <span className="text-sm font-bold truncate max-w-[120px] text-ink">{meta.name}</span>
                       <span className={`status-pill text-[9px] ${
-                        isOAuth ? 'bg-[#c8a2ff] text-[#111111]' : 'bg-[#f0f0f0] text-gray-600'
+                        isOAuth ? 'bg-[#c8a2ff] text-on-accent' : 'bg-muted text-subtext'
                       }`}>{isOAuth ? 'OAUTH' : 'API'}</span>
                       {hasUsageError ? (
                         <span className="status-pill bg-[#ff6b5e] text-white text-[9px]">error</span>
                       ) : (
-                        <span className={`status-pill text-[9px] ${f.is_active ? 'bg-[#3ddc97] text-[#111111]' : 'bg-[#ff6b5e] text-white'}`}>
+                        <span className={`status-pill text-[9px] ${f.is_active ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff6b5e] text-white'}`}>
                           {f.is_active ? 'active' : 'disabled'}
                         </span>
                       )}
                     </div>
-                    <div className="text-[12px] text-gray-600 font-bold truncate mt-0.5" title={f.label}>{f.label || '—'}</div>
+                    <div className="text-[12px] text-subtext font-bold truncate mt-0.5" title={f.label}>{f.label || '—'}</div>
                   </div>
                 </div>
 
                 {/* STATUS & TOGGLE BAR — active/inactive switch with error counter */}
-                <div className="mx-3 mb-2 px-2.5 py-2 rounded-lg border-2 border-[#111111] bg-[#fdf9f0] flex items-center justify-between gap-2">
+                <div className="mx-3 mb-2 px-2.5 py-2 rounded-lg border-2 border-line bg-canvas flex items-center justify-between gap-2">
                   {/* Left: state icon + label + error counter */}
                   <div className="flex items-center gap-2 min-w-0">
                     {f.is_active ? (
@@ -784,7 +784,7 @@ export default function AuthFiles() {
                         className={`status-pill text-[9px] ${
                           (f.consecutive_error_count ?? 0) >= 3
                             ? 'bg-[#ff6b5e] text-white'
-                            : 'bg-[#ffd23f] text-[#111111]'
+                            : 'bg-[#ffd23f] text-on-accent'
                         }`}
                         title={`${f.consecutive_error_count} consecutive errors — auto-deactivates at 3`}
                       >
@@ -806,12 +806,12 @@ export default function AuthFiles() {
                         setImportMsg({ ok: false, text: `Toggle failed: ${err.message}` })
                       }
                     }}
-                    className={`relative shrink-0 rounded-full border-2 border-[#111111] transition-colors ${f.is_active ? 'bg-[#3ddc97]' : 'bg-[#ff6b5e]'}`}
+                    className={`relative shrink-0 rounded-full border-2 border-line transition-colors ${f.is_active ? 'bg-[#3ddc97]' : 'bg-[#ff6b5e]'}`}
                     style={{ width: '34px', height: '18px' }}
                     title={f.is_active ? 'Click to disable' : 'Click to enable'}
                   >
                     <span
-                      className="absolute top-0 rounded-full bg-white border-2 border-[#111111] transition-all"
+                      className="absolute top-0 rounded-full bg-surface border-2 border-line transition-all"
                       style={{
                         width: '14px',
                         height: '14px',
@@ -823,29 +823,29 @@ export default function AuthFiles() {
 
                 {/* OAUTH DETAILS */}
                 {isOAuth && (
-                  <div className="mx-3 mb-2 rounded-lg border-2 border-[#111111] bg-[#f0f0f0] p-2.5 space-y-1.5 text-[11px] mono-brutal">
+                  <div className="mx-3 mb-2 rounded-lg border-2 border-line bg-muted p-2.5 space-y-1.5 text-[11px] mono-brutal">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-500 font-bold">Token expiry</span>
-                      <span className={`mono-brutal font-bold ${exp.expired ? 'text-[#ff6b5e]' : exp.infinite ? 'text-[#ff3d81]' : 'text-[#111111]'}`}>
+                      <span className="text-subtext font-bold">Token expiry</span>
+                      <span className={`mono-brutal font-bold ${exp.expired ? 'text-[#ff6b5e]' : exp.infinite ? 'text-[#ff3d81]' : 'text-ink'}`}>
                         {exp.expired ? 'Expired' : exp.infinite ? '∞' : exp.label}
                       </span>
                     </div>
                     {f.email && (
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-500 font-bold">Email</span>
-                        <span className="text-[#111111] truncate max-w-[180px] font-bold" title={f.email}>{f.email}</span>
+                        <span className="text-subtext font-bold">Email</span>
+                        <span className="text-ink truncate max-w-[180px] font-bold" title={f.email}>{f.email}</span>
                       </div>
                     )}
                     {f.plan && (
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-500 font-bold">Plan</span>
-                        <span className="status-pill bg-[#3ddc97] text-[#111111] text-[9px]">{f.plan}</span>
+                        <span className="text-subtext font-bold">Plan</span>
+                        <span className="status-pill bg-[#3ddc97] text-on-accent text-[9px]">{f.plan}</span>
                       </div>
                     )}
                     {exp.seconds > 0 && !exp.expired && !exp.infinite && (
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-500 font-bold">Expires</span>
-                        <span className="text-[#111111] font-bold">{fmtDate(f.expires_at)}</span>
+                        <span className="text-subtext font-bold">Expires</span>
+                        <span className="text-ink font-bold">{fmtDate(f.expires_at)}</span>
                       </div>
                     )}
                   </div>
@@ -865,7 +865,7 @@ export default function AuthFiles() {
                         {f.last_error_message}
                       </div>
                     )}
-                    <div className="flex items-center justify-between gap-2 text-[9px] mono-brutal text-gray-400">
+                    <div className="flex items-center justify-between gap-2 text-[9px] mono-brutal text-subtext/70">
                       <span className="truncate" title={f.last_error_model || ''}>{f.last_error_model || '—'}</span>
                       <span className="shrink-0">{f.last_error_at ? fmtDate(f.last_error_at) : ''}</span>
                     </div>
@@ -875,27 +875,27 @@ export default function AuthFiles() {
                 {/* SECRETS */}
                 <div className="mx-3 mb-2 space-y-1">
                   {secrets.map(s => (
-                    <div key={s.field} className="flex items-center justify-between rounded-lg bg-[#f0f0f0] border-2 border-[#111111] px-2.5 py-1.5">
+                    <div key={s.field} className="flex items-center justify-between rounded-lg bg-muted border-2 border-line px-2.5 py-1.5">
                       <div className="min-w-0 flex-1">
-                        <div className="text-[9px] mono-brutal text-gray-500 font-bold">{s.field}</div>
-                        <div className="text-[10px] mono-brutal text-gray-600 truncate">{s.preview}</div>
+                        <div className="text-[9px] mono-brutal text-subtext font-bold">{s.field}</div>
+                        <div className="text-[10px] mono-brutal text-subtext truncate">{s.preview}</div>
                       </div>
                       <button onClick={() => copySecret(`${f.id}:${s.field}`, s.value)}
-                        className="shrink-0 ml-2 text-gray-400 hover:text-[#ff3d81] transition-colors p-1 font-bold">
+                        className="shrink-0 ml-2 text-subtext/70 hover:text-[#ff3d81] transition-colors p-1 font-bold">
                         {copiedKey === `${f.id}:${s.field}` ? '✓' : copiedKey === `${f.id}:${s.field}:err` ? '✗' : '⧉'}
                       </button>
                     </div>
                   ))}
                   {!secrets.length && (
-                    <div className="text-[10px] text-gray-500 text-center py-2 mono-brutal">No secret fields</div>
+                    <div className="text-[10px] text-subtext text-center py-2 mono-brutal">No secret fields</div>
                   )}
                 </div>
 
                 {/* ACTIONS */}
                 <div className="mx-3 mb-3 grid grid-cols-2 gap-1.5">
-                  {isOAuth && f.has_refresh && (f.provider_id === 'gb' || f.provider_id === 'cx') && <button onClick={async () => { try { const r = await refreshAuthFile(f.id, f.provider_id); if (!r.ok) throw new Error(r.error || 'Refresh failed'); setImportMsg({ ok: true, text: 'Token refreshed' }); await reload() } catch (e: any) { setImportMsg({ ok: false, text: e.message }) } }} className="brutal-btn col-span-2 text-[10px] py-1.5 bg-[#c8a2ff] text-[#111111] font-bold">Refresh token</button>}
+                  {isOAuth && f.has_refresh && (f.provider_id === 'gb' || f.provider_id === 'cx') && <button onClick={async () => { try { const r = await refreshAuthFile(f.id, f.provider_id); if (!r.ok) throw new Error(r.error || 'Refresh failed'); setImportMsg({ ok: true, text: 'Token refreshed' }); await reload() } catch (e: any) { setImportMsg({ ok: false, text: e.message }) } }} className="brutal-btn col-span-2 text-[10px] py-1.5 bg-[#c8a2ff] text-on-accent font-bold">Refresh token</button>}
                   <button onClick={() => downloadJson(f)}
-                    className="brutal-btn text-[10px] py-1.5 bg-white text-[#111111] font-bold">
+                    className="brutal-btn text-[10px] py-1.5 bg-surface text-ink font-bold">
                     Download
                   </button>
                   <button onClick={async () => {
@@ -922,7 +922,7 @@ export default function AuthFiles() {
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-1.5 pt-2">
             <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
-              className="brutal-btn h-8 px-2.5 flex items-center justify-center bg-white text-[#111111] text-xs font-bold disabled:opacity-30 disabled:pointer-events-none">
+              className="brutal-btn h-8 px-2.5 flex items-center justify-center bg-surface text-ink text-xs font-bold disabled:opacity-30 disabled:pointer-events-none">
               ← Prev
             </button>
             {(() => {
@@ -939,13 +939,13 @@ export default function AuthFiles() {
               }
               return pages.map((p, idx) =>
                 p === '...' ? (
-                  <span key={`ellipsis-${idx}`} className="text-gray-400 text-xs px-1 mono-brutal">…</span>
+                  <span key={`ellipsis-${idx}`} className="text-subtext/70 text-xs px-1 mono-brutal">…</span>
                 ) : (
                   <button key={p} onClick={() => setPage(p)}
                     className={`brutal-btn h-8 min-w-[2rem] flex items-center justify-center text-xs font-bold ${
                       p === page
                         ? 'bg-[#ff3d81] text-white'
-                        : 'bg-white text-[#111111]'
+                        : 'bg-surface text-ink'
                     }`}>
                     {p + 1}
                   </button>
@@ -953,7 +953,7 @@ export default function AuthFiles() {
               )
             })()}
             <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-              className="brutal-btn h-8 px-2.5 flex items-center justify-center bg-white text-[#111111] text-xs font-bold disabled:opacity-30 disabled:pointer-events-none">
+              className="brutal-btn h-8 px-2.5 flex items-center justify-center bg-surface text-ink text-xs font-bold disabled:opacity-30 disabled:pointer-events-none">
               Next →
             </button>
           </div>

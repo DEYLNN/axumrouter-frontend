@@ -33,8 +33,8 @@ export default function ProtectedRoute() {
 
   if (checking) {
     return (
-      <div className="min-h-screen bg-[#0B1220] flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
       </div>
     )
   }

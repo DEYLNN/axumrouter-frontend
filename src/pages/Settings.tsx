@@ -111,7 +111,7 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <h1 className="heading-brutal text-3xl uppercase tracking-tight">CONFIG</h1>
-      <p className="text-lg font-medium text-gray-600">Gateway configuration</p>
+      <p className="text-lg font-medium text-subtext">Gateway configuration</p>
       <DatabaseSection dbInfo={dbInfo} stats={stats} onDbReload={reloadDb} />
       <ModelsSection providers={providers} models={models} onToggleModel={toggleModel} />
       <GatewayKeysSection keys={gwKeys} onRefresh={fetchGw} />

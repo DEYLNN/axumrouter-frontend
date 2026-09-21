@@ -62,8 +62,8 @@ export default function Dashboard() {
       <div className="space-y-8">
         {/* Mobile-only page title (desktop header shows it) */}
         <div className="mb-2">
-          <h1 className="heading-brutal text-3xl text-[#111111]">Dashboard</h1>
-          <p className="mono-brutal text-xs text-gray-500 mt-1 uppercase">System overview & statistics</p>
+          <h1 className="heading-brutal text-3xl text-ink">Dashboard</h1>
+          <p className="mono-brutal text-xs text-subtext mt-1 uppercase">System overview & statistics</p>
         </div>
 
         {/* KPI GRID */}
@@ -72,20 +72,20 @@ export default function Dashboard() {
             <div key={s.label} className="brutal-card p-6">
               <div className="flex justify-between items-start mb-4">
                 <div
-                  className="w-10 h-10 border-2 border-[#111111] rounded flex items-center justify-center"
+                  className="w-10 h-10 border-2 border-line rounded flex items-center justify-center"
                   style={{ background: s.iconBg }}
                 >
                   <svg
-                    className={`w-5 h-5 ${s.whiteIcon ? 'text-white' : 'text-[#111111]'}`}
+                    className={`w-5 h-5 ${s.whiteIcon ? 'text-white' : 'text-ink'}`}
                     fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
                   >
                     <path d={s.icon} />
                   </svg>
                 </div>
-                <div className="status-pill text-[10px]" style={{ background: s.pillBg }}>{s.pill}</div>
+                <div className="status-pill text-[10px] text-on-accent" style={{ background: s.pillBg }}>{s.pill}</div>
               </div>
-              <p className="mono-brutal text-3xl font-black text-[#111111]">{s.value}</p>
-              <p className="text-sm font-bold uppercase tracking-wide text-[#111111] mt-1">{s.label}</p>
+              <p className="mono-brutal text-3xl font-black text-ink">{s.value}</p>
+              <p className="text-sm font-bold uppercase tracking-wide text-ink mt-1">{s.label}</p>
             </div>
           ))}
         </div>
@@ -96,51 +96,51 @@ export default function Dashboard() {
           <div className="lg:col-span-2 brutal-card p-8">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="heading-brutal text-2xl text-[#111111]">Requests Volume</h2>
-                <p className="mono-brutal text-xs text-gray-500 uppercase">Last 7 days activity</p>
+                <h2 className="heading-brutal text-2xl text-ink">Requests Volume</h2>
+                <p className="mono-brutal text-xs text-subtext uppercase">Last 7 days activity</p>
               </div>
               <div className="hidden sm:flex gap-2">
-                <div className="flex items-center gap-2 px-3 py-1 border-2 border-[#111111] rounded-full text-xs font-bold">
-                  <span className="w-3 h-3 bg-[#ff3d81] rounded-full border border-[#111111]" /> Incoming
+                <div className="flex items-center gap-2 px-3 py-1 border-2 border-line rounded-full text-xs font-bold">
+                  <span className="w-3 h-3 bg-[#ff3d81] rounded-full border border-line" /> Incoming
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1 border-2 border-[#111111] rounded-full text-xs font-bold">
-                  <span className="w-3 h-3 bg-[#c8a2ff] rounded-full border border-[#111111]" /> Cached
+                <div className="flex items-center gap-2 px-3 py-1 border-2 border-line rounded-full text-xs font-bold">
+                  <span className="w-3 h-3 bg-[#c8a2ff] rounded-full border border-line" /> Cached
                 </div>
               </div>
             </div>
 
-            <div className="h-[240px] flex items-end gap-3 pb-4 border-b-2 border-[#111111]">
+            <div className="h-[240px] flex items-end gap-3 pb-4 border-b-2 border-line">
               {chartBars.map(([a, b], i) => (
                 <div key={i} className="flex-1 flex flex-col justify-end gap-1">
                   <div
-                    className="w-full bg-[#ff3d81] border-2 border-[#111111] transition-all hover:opacity-90"
+                    className="w-full bg-[#ff3d81] border-2 border-line transition-all hover:opacity-90"
                     style={{ height: `${a}%` }}
                   />
                   <div
-                    className="w-full bg-[#c8a2ff] border-2 border-[#111111] transition-all hover:opacity-90"
+                    className="w-full bg-[#c8a2ff] border-2 border-line transition-all hover:opacity-90"
                     style={{ height: `${b}%` }}
                   />
                 </div>
               ))}
             </div>
-            <div className="flex justify-between mt-4 mono-brutal text-[10px] text-gray-500 uppercase">
+            <div className="flex justify-between mt-4 mono-brutal text-[10px] text-subtext uppercase">
               {chartDays.map(d => <span key={d}>{d}</span>)}
             </div>
           </div>
 
           {/* Base URL card (1/3) */}
           <div className="brutal-card p-6 flex flex-col">
-            <h3 className="heading-brutal text-lg text-[#111111] mb-2">Base URL</h3>
-            <p className="mono-brutal text-xs text-gray-500 uppercase mb-4">Public gateway endpoint</p>
-            <code className="mono-brutal block text-xs text-[#111111] bg-[#fdf9f0] border-2 border-[#111111] rounded-lg px-4 py-3 truncate">
+            <h3 className="heading-brutal text-lg text-ink mb-2">Base URL</h3>
+            <p className="mono-brutal text-xs text-subtext uppercase mb-4">Public gateway endpoint</p>
+            <code className="mono-brutal block text-xs text-ink bg-canvas border-2 border-line rounded-lg px-4 py-3 truncate">
               {baseUrl}
             </code>
             <div className="mt-auto pt-6">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-[#3ddc97] border-2 border-[#111111] rounded-full" />
-                <span className="text-sm font-bold text-[#111111]">Gateway online</span>
+                <span className="w-3 h-3 bg-[#3ddc97] border-2 border-line rounded-full" />
+                <span className="text-sm font-bold text-ink">Gateway online</span>
               </div>
-              <p className="mono-brutal text-[10px] text-gray-500 mt-1 uppercase">All systems normal</p>
+              <p className="mono-brutal text-[10px] text-subtext mt-1 uppercase">All systems normal</p>
             </div>
           </div>
         </div>
@@ -155,17 +155,17 @@ export default function Dashboard() {
             <a key={c.path} href={c.path} className="brutal-card p-5 block group">
               <div className="flex items-center justify-between">
                 <div
-                  className="w-9 h-9 border-2 border-[#111111] rounded flex items-center justify-center"
+                  className="w-9 h-9 border-2 border-line rounded flex items-center justify-center"
                   style={{ background: c.bg }}
                 >
-                  <svg className="w-4 h-4 text-[#111111]" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path d="M13 7l5 5-5 5M6 7l5 5-5 5" />
                   </svg>
                 </div>
-                <span className="mono-brutal text-[10px] text-gray-400 uppercase group-hover:text-[#111111] transition-colors">OPEN →</span>
+                <span className="mono-brutal text-[10px] text-subtext/70 uppercase group-hover:text-ink transition-colors">OPEN →</span>
               </div>
-              <div className="heading-brutal text-base text-[#111111] mt-4">{c.label}</div>
-              <div className="text-xs font-semibold text-gray-500 mt-1">{c.desc}</div>
+              <div className="heading-brutal text-base text-ink mt-4">{c.label}</div>
+              <div className="text-xs font-semibold text-subtext mt-1">{c.desc}</div>
             </a>
           ))}
         </div>
