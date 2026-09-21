@@ -103,24 +103,41 @@ export default function Dashboard() {
       .slice(0, 5)
   }, [events])
 
-  /* Top models by total tokens (usage-weighted) */
+  /* Top models — composite score from tokens, requests, speed, success */
   const topModels = useMemo(() => {
-    const m = new Map<string, { count: number; tokens: number }>()
+    const m = new Map<string, { count: number; ok: number; err: number; tokens: number; latencySum: number; latencyCount: number }>()
     for (const e of events) {
       const id = e.model_id || 'unknown'
-      const cur = m.get(id) || { count: 0, tokens: 0 }
+      const cur = m.get(id) || { count: 0, ok: 0, err: 0, tokens: 0, latencySum: 0, latencyCount: 0 }
       cur.count++
+      if (e.status === 'error') cur.err++
+      else cur.ok++
       cur.tokens += e.total_tokens || 0
+      if (e.latency_ms > 0) {
+        cur.latencySum += e.latency_ms
+        cur.latencyCount++
+      }
       m.set(id, cur)
     }
-    return [...m.entries()]
-      .map(([id, v]) => {
-        const slash = id.indexOf('/')
-        const pid = slash > 0 ? id.slice(0, slash) : ''
-        const bare = slash > 0 ? id.slice(slash + 1) : id
-        return { id, pid, bare, ...v }
-      })
-      .sort((a, b) => b.tokens - a.tokens)
+    const arr = [...m.entries()].map(([id, v]) => {
+      const slash = id.indexOf('/')
+      const pid = slash > 0 ? id.slice(0, slash) : ''
+      const bare = slash > 0 ? id.slice(slash + 1) : id
+      const avgLatency = v.latencyCount > 0 ? v.latencySum / v.latencyCount : 0
+      const tps = avgLatency > 0 ? (v.tokens / (avgLatency / 1000)) : 0
+      const successRate = v.count > 0 ? v.ok / v.count : 0
+      return { id, pid, bare, ...v, avgLatency: Math.round(avgLatency), tps: Math.round(tps), successRate }
+    })
+    // normalize each metric to 0-1, then composite
+    const maxTokens = Math.max(1, ...arr.map(a => a.tokens))
+    const maxCount = Math.max(1, ...arr.map(a => a.count))
+    const maxTps = Math.max(1, ...arr.map(a => a.tps))
+    return arr
+      .map(a => ({
+        ...a,
+        score: 0.40 * (a.tokens / maxTokens) + 0.25 * (a.count / maxCount) + 0.20 * (a.tps / maxTps) + 0.15 * a.successRate,
+      }))
+      .sort((a, b) => b.score - a.score)
       .slice(0, 5)
   }, [events])
 
@@ -144,6 +161,25 @@ export default function Dashboard() {
   const requestSeries = useMemo(() => bucket(events, () => 1, now, BUCKETS, 1), [events, now])
   const promptSeries = useMemo(() => bucket(events, e => e.prompt_tokens || 0, now, BUCKETS, 1), [events, now])
   const completionSeries = useMemo(() => bucket(events, e => e.completion_tokens || 0, now, BUCKETS, 1), [events, now])
+
+  /* Average latency per 1-minute bucket (0 when no samples in that minute) */
+  const latencySeries = useMemo(() => {
+    const sums = new Array<number>(BUCKETS).fill(0)
+    const counts = new Array<number>(BUCKETS).fill(0)
+    const size = 60_000
+    const nowSlot = Math.floor(now / size)
+    for (const e of events) {
+      if (!e.latency_ms || e.latency_ms <= 0) continue
+      const t = Date.parse(e.created_at.replace(' ', 'T') + 'Z')
+      if (Number.isNaN(t)) continue
+      const idx = BUCKETS - 1 - (nowSlot - Math.floor(t / size))
+      if (idx >= 0 && idx < BUCKETS) {
+        sums[idx] += e.latency_ms
+        counts[idx]++
+      }
+    }
+    return sums.map((s, i) => (counts[i] > 0 ? Math.round(s / counts[i]) : 0))
+  }, [events, now])
 
   const reqLabels = windowLabels(BUCKETS, 1)
   const tokenLabels = reqLabels
@@ -285,7 +321,7 @@ export default function Dashboard() {
         {/* INSIGHTS — top providers / top models / latency */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Top Providers */}
-          <div className="brutal-card p-6">
+          <div className="brutal-card p-6 flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="heading-brutal text-lg text-ink">Top Providers</h2>
               <span className="mono-brutal text-[10px] uppercase text-subtext">by requests</span>
@@ -293,52 +329,63 @@ export default function Dashboard() {
             {topProviders.length === 0 ? (
               <p className="mono-brutal text-xs text-subtext">No traffic yet</p>
             ) : (
-              <div className="space-y-3">
-                {topProviders.map(p => {
-                  const total = p.count || 1
-                  const okPct = (p.ok / total) * 100
-                  const errPct = (p.err / total) * 100
-                  const pInfo = providers[p.id]
-                  return (
-                    <div key={p.id}>
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <div className="flex items-center gap-2 min-w-0">
-                          {pInfo?.icon ? (
-                            <img src={pInfo.icon} alt="" className="w-4 h-4 rounded-sm object-contain shrink-0" />
-                          ) : (
+              <>
+                <div className="space-y-3">
+                  {topProviders.map(p => {
+                    const total = p.count || 1
+                    const okPct = (p.ok / total) * 100
+                    const errPct = (p.err / total) * 100
+                    const pInfo = providers[p.id]
+                    return (
+                      <div key={p.id}>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {pInfo?.icon ? (
+                              <img src={pInfo.icon} alt="" className="w-4 h-4 rounded-sm object-contain shrink-0" />
+                            ) : (
+                              <span
+                                className="w-4 h-4 rounded-sm border border-line shrink-0"
+                                style={{ background: pInfo?.color || 'var(--muted)' }}
+                              />
+                            )}
+                            <span className="mono-brutal text-xs font-bold text-ink truncate">
+                              {pInfo?.name || p.id}
+                            </span>
+                          </div>
+                          <span className="mono-brutal text-[10px] text-subtext shrink-0 tabular-nums flex items-center gap-1.5">
+                            {fmt(p.count)}
                             <span
-                              className="w-4 h-4 rounded-sm border border-line shrink-0"
-                              style={{ background: pInfo?.color || 'var(--muted)' }}
-                            />
-                          )}
-                          <span className="mono-brutal text-xs font-bold text-ink truncate">
-                            {pInfo?.name || p.id}
+                              className={`border rounded px-1 py-px leading-none ${
+                                okPct >= 95
+                                  ? 'text-success-text border-success-text'
+                                  : okPct >= 50
+                                    ? 'text-warning-text border-warning-text'
+                                    : 'text-danger-text border-danger-text'
+                              }`}
+                            >
+                              {Math.round(okPct)}%
+                            </span>
                           </span>
                         </div>
-                        <span className="mono-brutal text-[10px] text-subtext shrink-0 tabular-nums flex items-center gap-1.5">
-                          {fmt(p.count)}
-                          <span
-                            className={`border rounded px-1 py-px leading-none ${
-                              okPct >= 95
-                                ? 'text-success-text border-success-text'
-                                : okPct >= 50
-                                  ? 'text-warning-text border-warning-text'
-                                  : 'text-danger-text border-danger-text'
-                            }`}
-                          >
-                            {Math.round(okPct)}%
-                          </span>
-                        </span>
+                        {/* stacked success/error bar */}
+                        <div className="flex h-2.5 border-2 border-line rounded-sm overflow-hidden bg-canvas">
+                          <div className="h-full bg-success" style={{ width: `${okPct}%` }} />
+                          <div className="h-full bg-danger" style={{ width: `${errPct}%` }} />
+                        </div>
                       </div>
-                      {/* stacked success/error bar */}
-                      <div className="flex h-2.5 border-2 border-line rounded-sm overflow-hidden bg-canvas">
-                        <div className="h-full bg-success" style={{ width: `${okPct}%` }} />
-                        <div className="h-full bg-danger" style={{ width: `${errPct}%` }} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                </div>
+                {/* summary footer fills the gap */}
+                <div className="mt-auto pt-4 border-t-2 border-line">
+                  <div className="flex items-center justify-between">
+                    <span className="mono-brutal text-[10px] uppercase text-subtext">Total</span>
+                    <span className="mono-brutal text-[10px] font-bold text-ink tabular-nums">
+                      {fmt(topProviders.reduce((s, p) => s + p.count, 0))} req · {fmt(topProviders.length)} providers
+                    </span>
+                  </div>
+                </div>
+              </>
             )}
           </div>
 
@@ -346,16 +393,17 @@ export default function Dashboard() {
           <div className="brutal-card p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="heading-brutal text-lg text-ink">Top Models</h2>
-              <span className="mono-brutal text-[10px] uppercase text-subtext">req · tok</span>
+              <span className="mono-brutal text-[10px] uppercase text-subtext">composite score</span>
             </div>
             {topModels.length === 0 ? (
               <p className="mono-brutal text-xs text-subtext">No traffic yet</p>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {topModels.map((m, i) => {
                   const pInfo = providers[m.pid]
-                  const maxTokens = topModels[0].tokens || 1
-                  const pct = (m.tokens / maxTokens) * 100
+                  const maxScore = topModels[0].score || 1
+                  const pct = (m.score / maxScore) * 100
+                  const okPct = Math.round(m.successRate * 100)
                   return (
                     <div key={m.id}>
                       <div className="flex items-center gap-2">
@@ -375,15 +423,22 @@ export default function Dashboard() {
                         <span className="mono-brutal text-xs font-bold text-ink truncate flex-1 min-w-0" title={m.id}>
                           {m.bare}
                         </span>
-                        <span className="mono-brutal text-[10px] text-subtext tabular-nums w-10 text-right shrink-0">
-                          {fmt(m.count)}×
-                        </span>
-                        <span className="mono-brutal text-[10px] font-bold text-ink tabular-nums w-12 text-right shrink-0">
+                        <span className="mono-brutal text-[10px] font-bold text-ink tabular-nums w-11 text-right shrink-0">
                           {compact(m.tokens)}
                         </span>
                       </div>
+                      {/* score bar + sub-metrics */}
                       <div className="h-1.5 mt-1.5 ml-6 border border-line rounded-sm overflow-hidden bg-canvas">
                         <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
+                      </div>
+                      <div className="flex items-center gap-2 ml-6 mt-1 mono-brutal text-[9px] text-subtext tabular-nums">
+                        <span>{fmt(m.count)}×</span>
+                        <span className="opacity-40">·</span>
+                        <span>{compact(m.tps)} tok/s</span>
+                        <span className="opacity-40">·</span>
+                        <span className={okPct >= 95 ? 'text-success-text' : okPct >= 50 ? 'text-warning-text' : 'text-danger-text'}>
+                          {okPct}%
+                        </span>
                       </div>
                     </div>
                   )
@@ -393,7 +448,7 @@ export default function Dashboard() {
           </div>
 
           {/* Latency */}
-          <div className="brutal-card p-6">
+          <div className="brutal-card p-6 flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="heading-brutal text-lg text-ink">Latency</h2>
               <span className="mono-brutal text-[10px] uppercase text-subtext">{fmt(latencyStats.count)} samples</span>
@@ -418,7 +473,19 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
-                <div className="border-t-2 border-line mt-4 pt-3 flex items-center justify-between">
+
+                {/* latency trend — last 30 min */}
+                <div className="mt-4">
+                  <LineChart
+                    series={[{ values: latencySeries, color: 'var(--primary)', label: 'ms' }]}
+                    height={110}
+                    fmt={n => fmt(n)}
+                    legendFmt={() => `avg ${fmt(latencyStats.avg)}ms`}
+                    xLabels={['-30m', '-15m', 'now']}
+                  />
+                </div>
+
+                <div className="border-t-2 border-line mt-auto pt-3 flex items-center justify-between">
                   <span className="mono-brutal text-[10px] uppercase text-subtext">Range</span>
                   <span className="mono-brutal text-[10px] text-subtext tabular-nums">
                     {fmt(latencyStats.min)}–{fmt(latencyStats.max)} ms
