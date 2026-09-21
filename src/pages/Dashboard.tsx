@@ -1,16 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getSettings } from '../api'
 import { getProviders } from '../api/providers'
-import { apiFetch } from '../api/client'
 import type { SettingsData } from '../api'
+import LineChart, { compact } from '../components/LineChart'
+import { useLiveUsage, useNow, timeAgo, bucket, utcToday } from '../hooks/useLiveUsage'
 
-const chartBars = [
-  [60, 30], [75, 20], [55, 40], [90, 10], [65, 25], [80, 15], [95, 5],
-]
-
-const chartDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
-/* ─── Icons ─── */
 const ICONS = {
   requests: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
   tokens: 'M13 10V3L4 14h7v7l9-11h-7z',
@@ -36,62 +30,57 @@ function StatIcon({ name }: { name: keyof typeof ICONS }) {
   )
 }
 
-/** "1s ago" / "5m ago" / "2h ago" / "3d ago" — DB stores UTC */
-function timeAgo(dt: string): string {
-  const t = new Date(dt.replace(' ', 'T') + 'Z')
-  const diff = Math.floor((Date.now() - t.getTime()) / 1000)
-  if (diff < 0) return 'just now'
-  if (diff < 60) return `${diff}s ago`
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return `${Math.floor(diff / 86400)}d ago`
+/** Rolling clock label for the "last hour" window. */
+function windowLabels(count: number, minutes: number): string[] {
+  const out: string[] = []
+  for (let i = count - 1; i >= 0; i -= Math.max(1, Math.floor(count / 4))) {
+    const minsAgo = i * minutes
+    out.push(minsAgo === 0 ? 'now' : `-${minsAgo}m`)
+  }
+  return out
 }
 
 export default function Dashboard() {
   const [settings, setSettings] = useState<SettingsData | null>(null)
   const [providerCount, setProviderCount] = useState(0)
-  const [totalRequests, setTotalRequests] = useState(0)
-  const [totalTokens, setTotalTokens] = useState(0)
-  const [todayRequests, setTodayRequests] = useState(0)
-  const [todayTokens, setTodayTokens] = useState(0)
-  const [lastRequestAgo, setLastRequestAgo] = useState('—')
+
+  const { events, totals, ready, connected } = useLiveUsage(200)
+  const now = useNow(1000)
 
   useEffect(() => {
     getSettings().then(s => setSettings(s)).catch(() => {})
     getProviders().then(p => setProviderCount(p.length)).catch(() => {})
   }, [])
 
-  useEffect(() => {
-    Promise.all([
-      apiFetch('/usage/stats').then(r => r.json()).catch(() => ({})),
-      apiFetch('/logs?limit=200').then(r => r.json()).catch(() => ({})),
-    ]).then(([usageStats, logsData]) => {
-      setTotalRequests(usageStats.total_requests || 0)
-      const tokens = usageStats.total_tokens
-        || (usageStats.total_prompt_tokens || 0) + (usageStats.total_completion_tokens || 0)
-      setTotalTokens(tokens)
+  const today = utcToday()
+  const todayEvents = useMemo(() => events.filter(e => e.created_at.startsWith(today)), [events, today])
 
-      const today = new Date().toISOString().slice(0, 10) // UTC, matches DB
-      const logs: Array<{ created_at: string; total_tokens: number }> = logsData.logs || []
-      const todayLogs = logs.filter(l => l.created_at.startsWith(today))
-      setTodayRequests(todayLogs.length)
-      setTodayTokens(todayLogs.reduce((s, l) => s + (l.total_tokens || 0), 0))
+  const todayRequests = useMemo(() => {
+    // seeded window may be shorter than a day — show the larger of the two
+    return Math.max(todayEvents.length, 0)
+  }, [todayEvents])
 
-      if (logs.length > 0) setLastRequestAgo(timeAgo(logs[0].created_at))
-    }).catch(() => {})
-  }, [])
+  const todayTokens = useMemo(
+    () => todayEvents.reduce((s, e) => s + (e.total_tokens || 0), 0),
+    [todayEvents],
+  )
 
-  // refresh "time ago" every 15s
-  useEffect(() => {
-    const id = setInterval(async () => {
-      try {
-        const r = await apiFetch('/logs?limit=1')
-        const d = await r.json()
-        if (d.logs?.length) setLastRequestAgo(timeAgo(d.logs[0].created_at))
-      } catch { /* ignore */ }
-    }, 15000)
-    return () => clearInterval(id)
-  }, [])
+  const successCount = useMemo(
+    () => events.filter(e => e.status === 'success' || e.status === 'streaming').length,
+    [events],
+  )
+  const errorCount = useMemo(() => events.filter(e => e.status === 'error').length, [events])
+
+  const lastRequestAgo = events.length > 0 ? timeAgo(events[0].created_at, now) : '—'
+
+  /* Charts — 30 one-minute buckets = last 30 minutes */
+  const BUCKETS = 30
+  const requestSeries = useMemo(() => bucket(events, () => 1, now, BUCKETS, 1), [events, now])
+  const promptSeries = useMemo(() => bucket(events, e => e.prompt_tokens || 0, now, BUCKETS, 1), [events, now])
+  const completionSeries = useMemo(() => bucket(events, e => e.completion_tokens || 0, now, BUCKETS, 1), [events, now])
+
+  const reqLabels = windowLabels(BUCKETS, 1)
+  const tokenLabels = reqLabels
 
   const baseUrl = settings?.public_url || import.meta.env.VITE_GATEWAY_BACKEND_URL || '—'
   const fmt = (n: number) => n.toLocaleString('en-US')
@@ -99,13 +88,23 @@ export default function Dashboard() {
   return (
     <div className="relative">
       <div className="space-y-8">
-        {/* Mobile-only page title (desktop header shows it) */}
-        <div className="mb-2">
-          <h1 className="heading-brutal text-3xl text-ink">Dashboard</h1>
-          <p className="mono-brutal text-xs text-subtext mt-1 uppercase">System overview & statistics</p>
+        {/* Header */}
+        <div className="mb-2 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="heading-brutal text-3xl text-ink">Dashboard</h1>
+            <p className="mono-brutal text-xs text-subtext mt-1 uppercase">System overview & statistics</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 mt-1">
+            <span
+              className={`w-2.5 h-2.5 rounded-full border-2 border-line ${connected ? 'bg-success' : 'bg-danger'}`}
+            />
+            <span className="mono-brutal text-[10px] uppercase text-subtext">
+              {connected ? 'live' : ready ? 'reconnecting' : 'connecting'}
+            </span>
+          </div>
         </div>
 
-        {/* STAT CARDS — 3 columns */}
+        {/* STAT CARDS — 3 columns, live */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Card 1 — Requests */}
           <div className="brutal-card p-6">
@@ -113,9 +112,11 @@ export default function Dashboard() {
               <StatIcon name="requests" />
               <p className="mono-brutal text-xs text-subtext uppercase">Requests</p>
             </div>
-            <p className="text-3xl font-black heading-brutal text-ink">{fmt(totalRequests)}</p>
+            <p className="text-3xl font-black heading-brutal text-ink">{fmt(totals.requests)}</p>
             <div className="border-t-2 border-line mt-4 pt-3">
-              <p className="text-xs mono-brutal text-subtext uppercase">Today: {todayRequests} requests</p>
+              <p className="text-xs mono-brutal text-subtext uppercase">
+                Today: {fmt(todayRequests)} requests
+              </p>
             </div>
           </div>
 
@@ -125,9 +126,11 @@ export default function Dashboard() {
               <StatIcon name="tokens" />
               <p className="mono-brutal text-xs text-subtext uppercase">Total Tokens</p>
             </div>
-            <p className="text-3xl font-black heading-brutal text-ink">{fmt(totalTokens)}</p>
+            <p className="text-3xl font-black heading-brutal text-ink">{fmt(totals.tokens)}</p>
             <div className="border-t-2 border-line mt-4 pt-3">
-              <p className="text-xs mono-brutal text-subtext uppercase">Today: {fmt(todayTokens)} tokens</p>
+              <p className="text-xs mono-brutal text-subtext uppercase">
+                Today: {fmt(todayTokens)} tokens
+              </p>
             </div>
           </div>
 
@@ -144,57 +147,70 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* CHART + BASE URL */}
+        {/* CHARTS — requests (2/3) + tokens & status (1/3) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Bar chart (2/3) */}
-          <div className="lg:col-span-2 brutal-card p-8">
-            <div className="flex items-center justify-between mb-8">
+          {/* Requests line chart */}
+          <div className="lg:col-span-2 brutal-card p-6 sm:p-8">
+            <div className="flex items-start justify-between mb-5 gap-4">
               <div>
                 <h2 className="heading-brutal text-2xl text-ink">Requests Volume</h2>
-                <p className="mono-brutal text-xs text-subtext uppercase">Last 7 days activity</p>
+                <p className="mono-brutal text-xs text-subtext uppercase">Last 30 minutes · live</p>
               </div>
-              <div className="hidden sm:flex gap-2">
-                <div className="flex items-center gap-2 px-3 py-1 border-2 border-line rounded-full text-xs font-bold">
-                  <span className="w-3 h-3 bg-primary rounded-full border border-line" /> Incoming
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1 border-2 border-line rounded-full text-xs font-bold">
-                  <span className="w-3 h-3 bg-accent rounded-full border border-line" /> Cached
-                </div>
+              <div className="text-right shrink-0">
+                <p className="mono-brutal text-2xl font-black text-ink">
+                  {compact(requestSeries.reduce((a, b) => a + b, 0))}
+                </p>
+                <p className="mono-brutal text-[10px] uppercase text-subtext">in window</p>
               </div>
             </div>
 
-            <div className="h-[240px] flex items-end gap-3 pb-4 border-b-2 border-line">
-              {chartBars.map(([a, b], i) => (
-                <div key={i} className="flex-1 flex flex-col justify-end gap-1">
-                  <div
-                    className="w-full bg-primary border-2 border-line transition-all hover:opacity-90"
-                    style={{ height: `${a}%` }}
-                  />
-                  <div
-                    className="w-full bg-accent border-2 border-line transition-all hover:opacity-90"
-                    style={{ height: `${b}%` }}
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-between mt-4 mono-brutal text-[10px] text-subtext uppercase">
-              {chartDays.map(d => <span key={d}>{d}</span>)}
-            </div>
+            <LineChart
+              series={[{ values: requestSeries, color: 'var(--primary)', label: 'Requests' }]}
+              height={240}
+              xLabels={reqLabels}
+            />
           </div>
 
-          {/* Base URL card (1/3) */}
+          {/* Tokens line chart + success/error */}
           <div className="brutal-card p-6 flex flex-col">
-            <h3 className="heading-brutal text-lg text-ink mb-2">Base URL</h3>
-            <p className="mono-brutal text-xs text-subtext uppercase mb-4">Public gateway endpoint</p>
-            <code className="mono-brutal block text-xs text-ink bg-canvas border-2 border-line rounded-lg px-4 py-3 truncate">
-              {baseUrl}
-            </code>
-            <div className="mt-auto pt-6">
+            <div className="mb-5">
+              <h2 className="heading-brutal text-xl text-ink">Token Flow</h2>
+              <p className="mono-brutal text-xs text-subtext uppercase">Last 30 minutes · live</p>
+            </div>
+
+            <LineChart
+              series={[
+                { values: promptSeries, color: 'var(--primary)', label: 'In' },
+                { values: completionSeries, color: 'var(--success)', label: 'Out' },
+              ]}
+              height={170}
+              xLabels={tokenLabels}
+            />
+
+            {/* success / error counts */}
+            <div className="border-t-2 border-line mt-5 pt-4 grid grid-cols-2 gap-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2.5 h-2.5 rounded-full border border-line bg-success" />
+                  <span className="mono-brutal text-[10px] uppercase text-subtext">Success</span>
+                </div>
+                <p className="mono-brutal text-lg font-black text-success-text">{fmt(successCount)}</p>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2.5 h-2.5 rounded-full border border-line bg-danger" />
+                  <span className="mono-brutal text-[10px] uppercase text-subtext">Error</span>
+                </div>
+                <p className="mono-brutal text-lg font-black text-danger-text">{fmt(errorCount)}</p>
+              </div>
+            </div>
+
+            <div className="mt-auto pt-4">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 bg-success border-2 border-line rounded-full" />
                 <span className="text-sm font-bold text-ink">Gateway online</span>
               </div>
-              <p className="mono-brutal text-[10px] text-subtext mt-1 uppercase">All systems normal</p>
+              <p className="mono-brutal text-[10px] text-subtext mt-1 uppercase truncate">{baseUrl}</p>
             </div>
           </div>
         </div>
@@ -212,7 +228,7 @@ export default function Dashboard() {
                   className="w-9 h-9 border-2 border-line rounded flex items-center justify-center"
                   style={{ background: c.bg }}
                 >
-                  <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-on-accent" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path d="M13 7l5 5-5 5M6 7l5 5-5 5" />
                   </svg>
                 </div>
