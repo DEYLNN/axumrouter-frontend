@@ -59,7 +59,7 @@ export default function Logs() {
 
   if (error) return (
     <div className="brutal-card p-6 text-center">
-      <div className="text-[#ff6b5e] mono-brutal text-sm font-bold">ERROR: {error}</div>
+      <div className="text-danger-text mono-brutal text-sm font-bold">ERROR: {error}</div>
     </div>
   )
 
@@ -72,7 +72,7 @@ export default function Logs() {
             <p className="text-lg font-medium text-subtext">{total} entries</p>
           </div>
           <button onClick={clearLogs} disabled={clearing || total === 0}
-            className="brutal-btn bg-[#ff6b5e] text-white px-4 py-2 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed">
+            className="brutal-btn bg-[#ff6b5e] text-on-accent px-4 py-2 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d={clearing ? 'M12 4v16m8-8H4' : 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'} />
             </svg>
@@ -118,7 +118,7 @@ export default function Logs() {
                       <code className="text-xs mono-brutal font-bold text-ink truncate">{l.model_id}</code>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`status-pill ${isSuccess ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff6b5e] text-white'}`}>
+                      <span className={`status-pill ${isSuccess ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff6b5e] text-on-accent'}`}>
                         {isSuccess ? 'OK' : l.status_code ? String(l.status_code) : 'ERR'}
                       </span>
                     </div>
@@ -130,7 +130,7 @@ export default function Logs() {
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {l.provider_key_label ? (
                         <span
-                          className="text-[9px] mono-brutal text-[#ffd23f] font-bold truncate max-w-[120px]"
+                          className="text-[9px] mono-brutal text-warning-text font-bold truncate max-w-[120px]"
                           title={l.provider_key_label}
                         >
                           🔑 {l.provider_key_label}
@@ -138,7 +138,7 @@ export default function Logs() {
                       ) : null}
                       {l.key_label ? (
                         <span
-                          className="text-[9px] mono-brutal text-[#ff3d81] font-bold truncate max-w-[120px]"
+                          className="text-[9px] mono-brutal text-primary-text font-bold truncate max-w-[120px]"
                           title={l.api_key_id}
                         >
                           {l.key_label}
@@ -191,7 +191,7 @@ export default function Logs() {
                   {/* Error */}
                   {!isSuccess && l.error_message && (
                     <div className="rounded-lg bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] p-3 mt-3">
-                      <div className="text-[9px] mono-brutal text-[#ff6b5e] font-bold break-words leading-relaxed">
+                      <div className="text-[9px] mono-brutal text-danger-text font-bold break-words leading-relaxed">
                         {l.status_code && <span className="font-bold">[{l.status_code}] </span>}
                         {l.error_message}
                       </div>
@@ -226,7 +226,7 @@ export default function Logs() {
                     <span key={`ellipsis-${idx}`} className="text-subtext/70 px-0.5 shrink-0">…</span>
                   ) : (
                     <button key={p} onClick={() => setPage(p)}
-                      className={`brutal-btn w-8 h-8 text-xs font-bold shrink-0 ${p === page ? 'bg-[#ff3d81] text-white' : 'bg-surface text-ink'}`}>{p}</button>
+                      className={`brutal-btn w-8 h-8 text-xs font-bold shrink-0 ${p === page ? 'bg-[#ff3d81] text-on-accent' : 'bg-surface text-ink'}`}>{p}</button>
                   )
                 )
               })()}

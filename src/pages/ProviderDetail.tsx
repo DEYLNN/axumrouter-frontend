@@ -21,6 +21,17 @@ const C = {
   danger: '#ff6b5e',
 }
 
+/* Accent as TEXT/icon colour needs the WCAG-safe variant (raw accents are too
+   bright on light surfaces). CSS vars flip per theme automatically. */
+const TEXT_OF: Record<string, string> = {
+  '#ff3d81': 'var(--primary-text)',
+  '#3ddc97': 'var(--success-text)',
+  '#ffd23f': 'var(--warning-text)',
+  '#c8a2ff': 'var(--accent-text)',
+  '#ff6b5e': 'var(--danger-text)',
+}
+const txt = (c: string) => TEXT_OF[c] || c
+
 /* ─── Section card wrapper ─── */
 function SectionCard({
   accent,
@@ -83,7 +94,7 @@ function IconBtn({
       title={title}
       className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg border-2 transition-all disabled:opacity-40 ${
         active
-          ? 'text-ink'
+          ? 'text-on-accent'
           : 'text-subtext/70 bg-surface border-transparent hover:border-line'
       }`}
       style={active ? { backgroundColor: color, borderColor: C.ink } : {}}
@@ -131,7 +142,7 @@ function StatCard({
       </div>
       <div
         className="heading-brutal text-2xl sm:text-3xl leading-none"
-        style={{ color: emphasis ? color : C.ink }}
+        style={{ color: emphasis ? txt(color) : C.ink }}
       >
         {value}
       </div>
@@ -183,7 +194,7 @@ export default function ProviderDetail() {
 
   if (ctx.error) return (
     <div className="brutal-card p-6 text-center">
-      <div className="text-[#ff6b5e] mono-brutal text-sm font-bold">ERROR: {ctx.error}</div>
+      <div className="text-danger-text mono-brutal text-sm font-bold">ERROR: {ctx.error}</div>
     </div>
   )
 
@@ -216,7 +227,7 @@ export default function ProviderDetail() {
                 {data.icon_name ? (
                   <img src={iconUrl(data.icon_name)} alt="" className="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
                 ) : (
-                  <span className="heading-brutal text-xl sm:text-2xl" style={{ color: accent }}>
+                  <span className="heading-brutal text-xl sm:text-2xl" style={{ color: txt(accent) }}>
                     {data.display_name.charAt(0).toUpperCase()}
                   </span>
                 )}
@@ -263,7 +274,7 @@ export default function ProviderDetail() {
                   await deleteCustomProvider(id)
                   navigate('/admin/providers')
                 }}
-                  className="self-end sm:self-start w-9 h-9 flex items-center justify-center rounded-lg bg-surface border-2 border-[#ff6b5e] text-[#ff6b5e] hover:bg-[#ff6b5e] hover:text-white transition-colors shrink-0"
+                  className="self-end sm:self-start w-9 h-9 flex items-center justify-center rounded-lg bg-surface border-2 border-[#ff6b5e] text-danger-text hover:bg-[#ff6b5e] hover:text-white transition-colors shrink-0"
                   title="Delete provider">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -412,7 +423,7 @@ export default function ProviderDetail() {
         noPadding
         action={data.type === 'oauth' ? (
           <button onClick={() => ctx.setShowOAuth(true)}
-            className="brutal-btn bg-[#ff3d81] text-white px-3 py-1 text-[11px] font-bold">
+            className="brutal-btn bg-[#ff3d81] text-on-accent px-3 py-1 text-[11px] font-bold">
             Connect OAuth
           </button>
         ) : undefined}
@@ -430,7 +441,7 @@ export default function ProviderDetail() {
                         title={k.is_locked ? `Locked${k.locked_reason ? ': ' + k.locked_reason : ''}` : 'Active'} />
                       <span className="text-xs mono-brutal font-bold text-ink truncate">{k.label || k.id}</span>
                       {k.is_locked && Math.max(0, k.locked_remaining - tick) > 0 && (
-                        <span className="inline-flex items-center gap-1 text-[9px] mono-brutal px-2 py-0.5 rounded-full bg-[#ff6b5e]/10 text-[#ff6b5e] border-2 border-[#ff6b5e] font-bold animate-pulse"
+                        <span className="inline-flex items-center gap-1 text-[9px] mono-brutal px-2 py-0.5 rounded-full bg-[#ff6b5e]/10 text-danger-text border-2 border-[#ff6b5e] font-bold animate-pulse"
                           title={k.locked_reason || ''}>
                           <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -489,14 +500,14 @@ export default function ProviderDetail() {
                   <label className="text-[10px] mono-brutal text-subtext mb-1 block font-bold uppercase">{f.label}</label>
                   <input type="text" value={ctx.keyFields[f.key] || ''} onChange={e => ctx.setKeyFields(p => ({ ...p, [f.key]: e.target.value }))}
                     placeholder={f.placeholder}
-                    className="w-full px-3 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81]" />
+                    className="w-full px-3 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
               ))}
             </div>
           ) : (
             <textarea value={ctx.newKeyValue} onChange={e => ctx.setNewKeyValue(e.target.value)}
               placeholder="One key per line, or pipe: label | key_value"
-              className="w-full px-3 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] h-24 resize-none" />
+              className="w-full px-3 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary h-24 resize-none" />
           )}
           <div className="flex items-center justify-end gap-2 mt-4">
             <button onClick={() => ctx.setShowAddModal(false)}
@@ -524,7 +535,7 @@ export default function ProviderDetail() {
             {testResult.error && (
               <div className="pb-2 border-b-2 border-line">
                 <span className="text-subtext font-bold">ERROR</span>
-                <div className="text-[#ff6b5e] mt-1.5 break-all max-h-24 overflow-y-auto bg-[#ff6b5e]/10 p-2 rounded-lg border-2 border-[#ff6b5e]">{testResult.error}</div>
+                <div className="text-danger-text mt-1.5 break-all max-h-24 overflow-y-auto bg-[#ff6b5e]/10 p-2 rounded-lg border-2 border-[#ff6b5e]">{testResult.error}</div>
               </div>
             )}
             <div className="flex justify-between"><span className="text-subtext">Latency</span>
@@ -544,18 +555,18 @@ export default function ProviderDetail() {
       {/* Add Model Modal */}
       <Modal open={showAddModel} onClose={() => { setShowAddModel(false); setModelError('') }}>
         <h2 className="heading-brutal text-base uppercase tracking-tight mb-4">Add Model</h2>
-        {modelError && <div className="mb-3 rounded-lg border-2 border-[#ff6b5e] bg-[#ff6b5e]/10 px-3 py-2 text-[10px] mono-brutal text-[#ff6b5e] font-bold">{modelError}</div>}
+        {modelError && <div className="mb-3 rounded-lg border-2 border-[#ff6b5e] bg-[#ff6b5e]/10 px-3 py-2 text-[10px] mono-brutal text-danger-text font-bold">{modelError}</div>}
         <div className="space-y-3">
           <div>
             <label className="text-[10px] mono-brutal text-subtext mb-1 block font-bold uppercase">Model ID</label>
             <input value={newModel.model_id} onChange={e => setNewModel(f => ({ ...f, model_id: e.target.value }))}
               placeholder="model-name"
-              className="w-full px-3 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81]" />
+              className="w-full px-3 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
           <div>
             <label className="text-[10px] mono-brutal text-subtext mb-1 block font-bold uppercase">Context Length</label>
             <input type="number" value={newModel.ctx} onChange={e => setNewModel(f => ({ ...f, ctx: +e.target.value }))}
-              className="w-full px-3 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface focus:outline-none focus:ring-2 focus:ring-[#ff3d81]" />
+              className="w-full px-3 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface focus:outline-none focus:ring-2 focus:ring-primary" />
           </div>
         </div>
         <div className="flex justify-end gap-2 mt-4">

@@ -131,7 +131,7 @@ export default function Providers() {
           <div><span className="text-ink font-bold">{p.active_keys}</span><span className="text-subtext ml-1.5">active</span></div>
           <div className="text-subtext">{p.total_keys} total</div>
           <div className="text-subtext">{p.model_count} models</div>
-          {p.locked_keys > 0 && <div className="text-[#ff6b5e] font-bold">{p.locked_keys} locked</div>}
+          {p.locked_keys > 0 && <div className="text-danger-text font-bold">{p.locked_keys} locked</div>}
         </div>
       </Link>
     )
@@ -162,7 +162,7 @@ export default function Providers() {
           <div><span className="text-ink font-bold">{p.active_keys}</span><span className="text-subtext ml-1.5">active</span></div>
           <div className="text-subtext">{p.total_keys} total</div>
           <div className="text-subtext">{p.model_count} models</div>
-          {p.locked_keys > 0 && <div className="text-[#ff6b5e] font-bold">{p.locked_keys} locked</div>}
+          {p.locked_keys > 0 && <div className="text-danger-text font-bold">{p.locked_keys} locked</div>}
         </div>
       </Link>
     )
@@ -180,14 +180,14 @@ export default function Providers() {
               <p className="text-lg font-medium text-subtext">{providers.length + (custom?.length || 0)} providers</p>
             </div>
             <button onClick={() => setShowModal(true)}
-              className="brutal-btn bg-[#ff3d81] text-white px-3 sm:px-4 py-2 text-sm font-bold whitespace-nowrap">
+              className="brutal-btn bg-[#ff3d81] text-on-accent px-3 sm:px-4 py-2 text-sm font-bold whitespace-nowrap">
               <svg className="w-4 h-4 sm:hidden" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
               <span className="hidden sm:inline">+ OpenAI-Compatible</span>
             </button>
           </div>
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search providers..."
-            className="w-full px-4 py-2.5 border-2 border-line rounded-lg font-mono text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+            className="w-full px-4 py-2.5 border-2 border-line rounded-lg font-mono text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
         </div>
 
         {noResults ? (
@@ -251,14 +251,14 @@ export default function Providers() {
                 <label className="text-[10px] mono-brutal text-subtext block mb-1.5">Name</label>
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="My Provider"
-                  className="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+                  className="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
               </div>
               <div>
                 <label className="text-[10px] mono-brutal text-subtext block mb-1.5">Prefix <span className="text-subtext/70">(ID: custom_{form.prefix || '…'})</span></label>
                 <div className="flex gap-2">
                   <input value={form.prefix} onChange={e => { setForm(f => ({ ...f, prefix: e.target.value })); setPrefixCheck('idle') }}
                     placeholder="my-provider"
-                    className="flex-1 px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all font-mono" />
+                    className="flex-1 px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono" />
                   <button onClick={async () => {
                     if (!form.prefix.trim()) return
                     try {
@@ -270,27 +270,27 @@ export default function Providers() {
                     className="brutal-btn bg-surface text-ink px-3 py-2.5 text-xs font-bold whitespace-nowrap">
                     Check
                   </button>
-                  {prefixCheck === 'ok' && <span className="inline-flex items-center text-[#3ddc97] text-[11px] font-bold">✓</span>}
-                  {prefixCheck === 'taken' && <span className="inline-flex items-center text-[#ff6b5e] text-[11px] font-bold">✗ Taken</span>}
+                  {prefixCheck === 'ok' && <span className="inline-flex items-center text-success-text text-[11px] font-bold">✓</span>}
+                  {prefixCheck === 'taken' && <span className="inline-flex items-center text-danger-text text-[11px] font-bold">✗ Taken</span>}
                 </div>
               </div>
               <div>
                 <label className="text-[10px] mono-brutal text-subtext block mb-1.5">Base URL</label>
                 <input value={form.base_url} onChange={e => setForm(f => ({ ...f, base_url: e.target.value }))}
                   placeholder="https://api.example.com/v1"
-                  className="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all font-mono" />
+                  className="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] mono-brutal text-subtext block mb-1.5">Validate URL <span className="text-subtext/70">(optional)</span></label>
                   <input value={form.validate_url} onChange={e => setForm(f => ({ ...f, validate_url: e.target.value }))}
                     placeholder="https://api.example.com/v1/models"
-                    className="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all font-mono" />
+                    className="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono" />
                 </div>
                 <div>
                   <label className="text-[10px] mono-brutal text-subtext block mb-1.5">Timeout <span className="text-subtext/70">(sec)</span></label>
                   <input type="number" value={form.timeout_secs} onChange={e => setForm(f => ({ ...f, timeout_secs: +e.target.value }))}
-                    className="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all font-mono" />
+                    className="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono" />
                 </div>
               </div>
               <div>
@@ -308,16 +308,16 @@ export default function Providers() {
                 <div className="flex gap-2">
                   <input value={form.model_id} onChange={e => setForm(f => ({ ...f, model_id: e.target.value }))}
                     placeholder="model-name"
-                    className="flex-1 px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all font-mono" />
+                    className="flex-1 px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono" />
                   <input type="number" value={form.ctx} onChange={e => setForm(f => ({ ...f, ctx: +e.target.value }))}
-                    className="w-24 px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all font-mono" placeholder="ctx" />
+                    className="w-24 px-3.5 py-2.5 border-2 border-line rounded-lg text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono" placeholder="ctx" />
                 </div>
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-1">
               <button onClick={() => setShowModal(false)} className="brutal-btn bg-surface text-ink px-4 py-2 text-sm font-bold">Cancel</button>
               <button onClick={handleCreate} disabled={saving || !form.prefix || !form.name || !form.base_url}
-                className="brutal-btn bg-[#ff3d81] text-white px-5 py-2 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed">
+                className="brutal-btn bg-[#ff3d81] text-on-accent px-5 py-2 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed">
                 {saving ? (
                   <span className="flex items-center gap-2">
                     <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>

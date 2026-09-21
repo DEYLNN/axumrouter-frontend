@@ -124,7 +124,7 @@ export default function Combos() {
         <button onClick={() => {
           setEditingId(null); setNewName(''); setStrategy('fallback'); setSelectedModels([]); setShowCreate(true)
         }}
-          className="brutal-btn bg-[#ff3d81] text-white px-4 py-2 text-sm font-bold">
+          className="brutal-btn bg-[#ff3d81] text-on-accent px-4 py-2 text-sm font-bold">
           + New Combo
         </button>
       </div>
@@ -152,11 +152,11 @@ export default function Combos() {
                     c.is_active ? 'translate-x-5' : 'translate-x-0'}`} />
                 </button>
                 <button onClick={() => deleteCombo(c.id)}
-                  className="w-7 h-7 flex items-center justify-center rounded-md text-subtext/70 hover:text-[#ff6b5e] hover:bg-[#ff6b5e]/10 transition-all border-2 border-transparent hover:border-[#ff6b5e]">
+                  className="w-7 h-7 flex items-center justify-center rounded-md text-subtext/70 hover:text-danger-text hover:bg-[#ff6b5e]/10 transition-all border-2 border-transparent hover:border-[#ff6b5e]">
                   ✕
                 </button>
                 <button onClick={() => editCombo(c)}
-                  className="w-7 h-7 flex items-center justify-center rounded-md text-subtext/70 hover:text-[#ff3d81] hover:bg-[#ff3d81]/10 transition-all border-2 border-transparent hover:border-[#ff3d81]">
+                  className="w-7 h-7 flex items-center justify-center rounded-md text-subtext/70 hover:text-primary-text hover:bg-[#ff3d81]/10 transition-all border-2 border-transparent hover:border-[#ff3d81]">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                     <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -173,10 +173,10 @@ export default function Combos() {
                     i === 0 ? 'bg-[#3ddc97]/10 border-[#3ddc97]' : 'bg-muted border-line'
                   }`}>
                   <span className={`text-[9px] mono-brutal font-bold uppercase tracking-wider ${
-                    i === 0 ? 'text-[#3ddc97]' : 'text-subtext'}`}>T{i + 1}</span>
+                    i === 0 ? 'text-success-text' : 'text-subtext'}`}>T{i + 1}</span>
                   <span className="text-[10px] mono-brutal text-ink font-bold">{tier}</span>
                   {i === 0 && c.strategy === 'fallback' && (
-                    <span className="text-[8px] mono-brutal text-[#3ddc97] font-bold uppercase">PRIMARY</span>
+                    <span className="text-[8px] mono-brutal text-success-text font-bold uppercase">PRIMARY</span>
                   )}
                 </div>
               ))}
@@ -199,11 +199,11 @@ export default function Combos() {
         <div className="space-y-3 mb-4">
           <input type="text" value={newName} onChange={e => setNewName(e.target.value)}
             placeholder="Combo name"
-            className="w-full px-3 py-2.5 border-2 border-line rounded-lg text-sm mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+            className="w-full px-3 py-2.5 border-2 border-line rounded-lg text-sm mono-brutal bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
           <div className="flex gap-2">
             <button onClick={() => setStrategy('fallback')}
               className={`brutal-btn flex-1 py-2 text-xs font-bold ${
-                strategy === 'fallback' ? 'bg-[#ff3d81] text-white' : 'bg-surface text-subtext hover:text-ink'}`}>
+                strategy === 'fallback' ? 'bg-[#ff3d81] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>
               ↳ Fallback
             </button>
             <button onClick={() => setStrategy('round_robin')}
@@ -217,7 +217,7 @@ export default function Combos() {
         {/* Pick Models button */}
         <div className="mb-4">
           <button onClick={openPicker}
-            className="brutal-btn w-full py-3 text-sm font-bold bg-surface text-[#ff3d81] border-dashed">
+            className="brutal-btn w-full py-3 text-sm font-bold bg-surface text-primary-text border-dashed">
             {selectedModels.length === 0 ? '+ Pick Models' : `+ Pick Models (${selectedModels.length} selected)`}
           </button>
         </div>
@@ -238,7 +238,7 @@ export default function Combos() {
                     i === 0 ? 'bg-[#3ddc97]/10 border-[#3ddc97]' : 'bg-muted border-line'
                   }`}>
                   <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 text-[9px] mono-brutal font-bold border-2 border-line ${
-                    i === 0 ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff3d81] text-white'}`}>{i + 1}</div>
+                    i === 0 ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff3d81] text-on-accent'}`}>{i + 1}</div>
                   {pm && (
                     <div className="w-4 h-4 rounded flex items-center justify-center shrink-0 border border-line"
                       style={{ background: `${pm.color}20` }}>
@@ -247,12 +247,12 @@ export default function Combos() {
                   )}
                   <span className="text-[10px] mono-brutal text-ink font-bold flex-1 truncate">{prov}/{modelName}</span>
                   {i === 0 && strategy === 'fallback' && (
-                    <span className="text-[7px] mono-brutal font-bold text-[#3ddc97] uppercase tracking-wider">PRIMARY</span>
+                    <span className="text-[7px] mono-brutal font-bold text-success-text uppercase tracking-wider">PRIMARY</span>
                   )}
                   <div className="flex items-center gap-0.5">
                     {i > 0 && <button onClick={() => moveModel(i, -1)} className="w-5 h-5 flex items-center justify-center rounded text-subtext/70 hover:text-ink font-bold">↑</button>}
                     {i < selectedModels.length - 1 && <button onClick={() => moveModel(i, 1)} className="w-5 h-5 flex items-center justify-center rounded text-subtext/70 hover:text-ink font-bold">↓</button>}
-                    <button onClick={() => removeSelected(mid)} className="w-5 h-5 flex items-center justify-center rounded text-subtext/70 hover:text-[#ff6b5e] font-bold">✕</button>
+                    <button onClick={() => removeSelected(mid)} className="w-5 h-5 flex items-center justify-center rounded text-subtext/70 hover:text-danger-text font-bold">✕</button>
                   </div>
                 </div>
               )
@@ -262,7 +262,7 @@ export default function Combos() {
 
         <div className="flex items-center gap-3">
           <button onClick={createCombo} disabled={creating || !newName.trim() || selectedModels.length === 0}
-            className="brutal-btn flex-1 py-2.5 text-sm font-bold bg-[#ff3d81] text-white disabled:opacity-40">
+            className="brutal-btn flex-1 py-2.5 text-sm font-bold bg-[#ff3d81] text-on-accent disabled:opacity-40">
             {creating ? 'Creating...' : `${editingId ? 'Update' : 'Create'} (${selectedModels.length} tiers)`}
           </button>
           <button onClick={() => {
@@ -291,7 +291,7 @@ export default function Combos() {
             <div className="px-5 py-3 border-b-2 border-line shrink-0">
               <input type="text" value={modelSearch} onChange={e => setModelSearch(e.target.value)}
                 placeholder="Search models..."
-                className="w-full px-3 py-2 border-2 border-line rounded-lg text-sm mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+                className="w-full px-3 py-2 border-2 border-line rounded-lg text-sm mono-brutal bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
             </div>
 
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -326,7 +326,7 @@ export default function Combos() {
                               </svg>}
                             </div>
                             <span className="text-xs mono-brutal text-ink font-bold flex-1">{m.id}</span>
-                            {!m.enabled && <span className="text-[8px] mono-brutal text-[#ff6b5e] font-bold">disabled</span>}
+                            {!m.enabled && <span className="text-[8px] mono-brutal text-danger-text font-bold">disabled</span>}
                           </div>
                         )
                       })}
@@ -339,7 +339,7 @@ export default function Combos() {
             <div className="px-5 py-3 border-t-2 border-line flex items-center justify-between shrink-0 bg-muted">
               <span className="text-[10px] mono-brutal text-subtext font-bold">{selectedModels.length} selected</span>
               <button onClick={() => setShowPicker(false)}
-                className="brutal-btn bg-[#ff3d81] text-white px-4 py-2 text-xs font-bold">
+                className="brutal-btn bg-[#ff3d81] text-on-accent px-4 py-2 text-xs font-bold">
                 Done
               </button>
             </div>

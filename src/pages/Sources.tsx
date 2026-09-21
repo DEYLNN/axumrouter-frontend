@@ -83,7 +83,7 @@ function SourceCard({ branch, template }: { branch: SourceBranch; template: stri
         <button
           onClick={handleDownload}
           disabled={downloading}
-          className="brutal-btn shrink-0 bg-[#ff3d81] text-white px-3.5 py-2 text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+          className="brutal-btn shrink-0 bg-[#ff3d81] text-on-accent px-3.5 py-2 text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -126,7 +126,7 @@ export default function Sources() {
       {loading ? (
         <div className="py-12 text-center text-sm mono-brutal text-subtext">Loading sources…</div>
       ) : error ? (
-        <div className="brutal-card border-[#ff6b5e] p-4 text-sm mono-brutal text-[#ff6b5e] font-bold">
+        <div className="brutal-card border-[#ff6b5e] p-4 text-sm mono-brutal text-danger-text font-bold">
           Failed to load sources: {error}
         </div>
       ) : branches.length === 0 ? (

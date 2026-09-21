@@ -507,7 +507,7 @@ export default function AuthFiles() {
           <div className="text-left">
             <div className="flex items-center gap-2">
               <h1 className="heading-brutal text-3xl uppercase tracking-tight">AUTH FILES</h1>
-              <span className="status-pill bg-[#ff3d81] text-white">{stats?.total ?? files.length}</span>
+              <span className="status-pill bg-[#ff3d81] text-on-accent">{stats?.total ?? files.length}</span>
             </div>
             <p className="text-lg font-medium text-subtext mt-0.5">Provider credentials · {stats?.active ?? files.filter(f => f.is_active).length} active</p>
           </div>
@@ -539,7 +539,7 @@ export default function AuthFiles() {
         </div>
 
         {importMsg && (
-          <div className={`brutal-card px-4 py-2.5 text-xs mono-brutal font-bold ${importMsg.ok ? 'border-[#3ddc97] text-[#3ddc97]' : 'border-[#ff6b5e] text-[#ff6b5e]'}`}>
+          <div className={`brutal-card px-4 py-2.5 text-xs mono-brutal font-bold ${importMsg.ok ? 'border-[#3ddc97] text-success-text' : 'border-[#ff6b5e] text-danger-text'}`}>
             {importMsg.text}
           </div>
         )}
@@ -561,7 +561,7 @@ export default function AuthFiles() {
         <div className="brutal-card p-4 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <input value={query} onChange={e => onSearchChange(e.target.value)} placeholder="Filter by name, type, provider..."
-              className="flex-1 min-w-[200px] h-9 px-3 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+              className="flex-1 min-w-[200px] h-9 px-3 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
             
             {/* Provider dropdown — full-width block, dropdown panel matches */}
             <div className="relative z-10 w-full">
@@ -599,19 +599,19 @@ export default function AuthFiles() {
                       <input type="text" value={providerSearch} onChange={e => setProviderSearch(e.target.value)}
                         placeholder="Search provider..."
                         autoFocus
-                        className="w-full px-2.5 py-1.5 border-2 border-line rounded-md text-[11px] mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+                        className="w-full px-2.5 py-1.5 border-2 border-line rounded-md text-[11px] mono-brutal bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
                     </div>
                     <div className="overflow-y-auto">
                     <button
                       onClick={() => { setProviderFilter('all'); setProviderOpen(false) }}
-                      className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors mono-brutal font-bold ${providerFilter === 'all' ? 'text-[#ff3d81] bg-[#ff3d81]/10' : 'text-subtext hover:bg-canvas hover:text-ink'}`}
+                      className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors mono-brutal font-bold ${providerFilter === 'all' ? 'text-primary-text bg-[#ff3d81]/10' : 'text-subtext hover:bg-canvas hover:text-ink'}`}
                     >
                       <div className="w-5 h-5 rounded bg-muted border-2 border-line flex items-center justify-center">
                         <svg className="w-3 h-3 text-subtext" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                       </div>
                       <span className="flex-1 text-left">All providers</span>
                       <span className="text-subtext/70">{stats?.total ?? files.length}</span>
-                      {providerFilter === 'all' && <svg className="w-3.5 h-3.5 text-[#ff3d81]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
+                      {providerFilter === 'all' && <svg className="w-3.5 h-3.5 text-primary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
                     </button>
                     {providerTypes
                       .filter(p => !providerSearch || p.name.toLowerCase().includes(providerSearch.toLowerCase()) || p.id.toLowerCase().includes(providerSearch.toLowerCase()))
@@ -621,7 +621,7 @@ export default function AuthFiles() {
                         <button
                           key={p.id}
                           onClick={() => { setProviderFilter(p.id); setProviderOpen(false) }}
-                          className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors mono-brutal font-bold ${providerFilter === p.id ? 'text-[#ff3d81] bg-[#ff3d81]/10' : 'text-subtext hover:bg-canvas hover:text-ink'}`}
+                          className={`flex w-full items-center gap-2.5 px-3 py-2 text-xs transition-colors mono-brutal font-bold ${providerFilter === p.id ? 'text-primary-text bg-[#ff3d81]/10' : 'text-subtext hover:bg-canvas hover:text-ink'}`}
                         >
                           <div className="w-5 h-5 rounded shrink-0 overflow-hidden bg-muted border-2 border-line flex items-center justify-center">
                             {fm.icon_name ? (
@@ -632,7 +632,7 @@ export default function AuthFiles() {
                           </div>
                           <span className="flex-1 text-left truncate">{p.name}</span>
                           <span className="text-subtext/70">{p.count}</span>
-                          {providerFilter === p.id && <svg className="w-3.5 h-3.5 text-[#ff3d81]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
+                          {providerFilter === p.id && <svg className="w-3.5 h-3.5 text-primary-text" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7"/></svg>}
                         </button>
                       )
                     })}
@@ -643,7 +643,7 @@ export default function AuthFiles() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs mono-brutal">
-            <button onClick={() => setOnlyProblem(v => !v)} className={`status-pill ${onlyProblem ? 'bg-[#ff6b5e] text-white' : 'bg-surface text-subtext hover:text-ink'}`}>
+            <button onClick={() => setOnlyProblem(v => !v)} className={`status-pill ${onlyProblem ? 'bg-[#ff6b5e] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>
               Problematic {problemCount}
             </button>
             <button onClick={() => setOnlyDisabled(v => !v)} className={`status-pill ${onlyDisabled ? 'bg-[#ffd23f] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>
@@ -653,12 +653,12 @@ export default function AuthFiles() {
               <>
                 <span className="w-px h-5 bg-line" />
                 <button onClick={() => setStatusCodeFilter('all')}
-                  className={`status-pill ${statusCodeFilter === 'all' ? 'bg-[#ff6b5e] text-white' : 'bg-surface text-subtext hover:text-ink'}`}>
+                  className={`status-pill ${statusCodeFilter === 'all' ? 'bg-[#ff6b5e] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>
                   All
                 </button>
                 {availableCodes.map(code => (
                   <button key={code} onClick={() => setStatusCodeFilter(String(code))}
-                    className={`status-pill ${statusCodeFilter === String(code) ? 'bg-[#ff6b5e] text-white' : 'bg-surface text-subtext hover:text-ink'}`}>
+                    className={`status-pill ${statusCodeFilter === String(code) ? 'bg-[#ff6b5e] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>
                     {code}
                   </button>
                 ))}
@@ -671,10 +671,10 @@ export default function AuthFiles() {
             <button onClick={clearVisible} disabled={!selectedVisible} className="status-pill bg-surface text-subtext hover:text-ink disabled:opacity-40">
               Clear {selectedVisible}
             </button>
-            <button onClick={deleteSelected} disabled={!selectedIds.size} className="status-pill bg-[#ff6b5e] text-white disabled:opacity-40">
+            <button onClick={deleteSelected} disabled={!selectedIds.size} className="status-pill bg-[#ff6b5e] text-on-accent disabled:opacity-40">
               Delete {selectedIds.size}
             </button>
-            <button onClick={downloadSelected} disabled={!selectedIds.size} className="status-pill bg-[#ff3d81] text-white disabled:opacity-40"
+            <button onClick={downloadSelected} disabled={!selectedIds.size} className="status-pill bg-[#ff3d81] text-on-accent disabled:opacity-40"
               title="Download selected as JSON array">
               ⬇ Download {selectedIds.size}
             </button>
@@ -687,7 +687,7 @@ export default function AuthFiles() {
 
           {/* Dedupe row — minimal, sits under the provider dropdown. */}
           <div className="relative flex items-center gap-3 rounded-lg border-2 border-line bg-canvas px-3 py-2.5 transition-colors hover:bg-muted">
-            <span className="text-xs font-bold text-[#ffd23f] shrink-0">Remove Duplicate keys</span>
+            <span className="text-xs font-bold text-warning-text shrink-0">Remove Duplicate keys</span>
             <span className="text-subtext/70">·</span>
             <span className="flex-1 min-w-0 text-xs text-subtext truncate mono-brutal">
               keep oldest of{' '}
@@ -714,7 +714,7 @@ export default function AuthFiles() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {!paginated.length && !loading && (
             <div className="col-span-full text-center py-20 text-subtext text-sm mono-brutal">
-              <span className="text-[#ff3d81]">◈</span> No auth files match your filter.
+              <span className="text-primary-text">◈</span> No auth files match your filter.
             </div>
           )}
           {paginated.map(f => {
@@ -752,9 +752,9 @@ export default function AuthFiles() {
                         isOAuth ? 'bg-[#c8a2ff] text-on-accent' : 'bg-muted text-subtext'
                       }`}>{isOAuth ? 'OAUTH' : 'API'}</span>
                       {hasUsageError ? (
-                        <span className="status-pill bg-[#ff6b5e] text-white text-[9px]">error</span>
+                        <span className="status-pill bg-[#ff6b5e] text-on-accent text-[9px]">error</span>
                       ) : (
-                        <span className={`status-pill text-[9px] ${f.is_active ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff6b5e] text-white'}`}>
+                        <span className={`status-pill text-[9px] ${f.is_active ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff6b5e] text-on-accent'}`}>
                           {f.is_active ? 'active' : 'disabled'}
                         </span>
                       )}
@@ -768,22 +768,22 @@ export default function AuthFiles() {
                   {/* Left: state icon + label + error counter */}
                   <div className="flex items-center gap-2 min-w-0">
                     {f.is_active ? (
-                      <svg className="w-3.5 h-3.5 shrink-0 text-[#3ddc97]" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-3.5 h-3.5 shrink-0 text-success-text" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                     ) : (
-                      <svg className="w-3.5 h-3.5 shrink-0 text-[#ff6b5e]" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-3.5 h-3.5 shrink-0 text-danger-text" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                       </svg>
                     )}
-                    <span className={`text-[10px] mono-brutal font-bold ${f.is_active ? 'text-[#3ddc97]' : 'text-[#ff6b5e]'}`}>
+                    <span className={`text-[10px] mono-brutal font-bold ${f.is_active ? 'text-success-text' : 'text-danger-text'}`}>
                       {f.is_active ? 'ACTIVE' : 'DISABLED'}
                     </span>
                     {(f.consecutive_error_count ?? 0) > 0 && (
                       <span
                         className={`status-pill text-[9px] ${
                           (f.consecutive_error_count ?? 0) >= 3
-                            ? 'bg-[#ff6b5e] text-white'
+                            ? 'bg-[#ff6b5e] text-on-accent'
                             : 'bg-[#ffd23f] text-on-accent'
                         }`}
                         title={`${f.consecutive_error_count} consecutive errors — auto-deactivates at 3`}
@@ -826,7 +826,7 @@ export default function AuthFiles() {
                   <div className="mx-3 mb-2 rounded-lg border-2 border-line bg-muted p-2.5 space-y-1.5 text-[11px] mono-brutal">
                     <div className="flex items-center justify-between">
                       <span className="text-subtext font-bold">Token expiry</span>
-                      <span className={`mono-brutal font-bold ${exp.expired ? 'text-[#ff6b5e]' : exp.infinite ? 'text-[#ff3d81]' : 'text-ink'}`}>
+                      <span className={`mono-brutal font-bold ${exp.expired ? 'text-danger-text' : exp.infinite ? 'text-primary-text' : 'text-ink'}`}>
                         {exp.expired ? 'Expired' : exp.infinite ? '∞' : exp.label}
                       </span>
                     </div>
@@ -855,13 +855,13 @@ export default function AuthFiles() {
                 {hasUsageError && (
                   <div className="mx-3 mb-2 rounded-lg border-2 border-[#ff6b5e] bg-[#ff6b5e]/10 p-2.5 space-y-1">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[9px] mono-brutal font-bold text-[#ff6b5e] uppercase tracking-wider">Last error</span>
-                      <span className="text-[9px] mono-brutal text-[#ff6b5e] font-bold">
+                      <span className="text-[9px] mono-brutal font-bold text-danger-text uppercase tracking-wider">Last error</span>
+                      <span className="text-[9px] mono-brutal text-danger-text font-bold">
                         {f.last_error_status ? `[${f.last_error_status}]` : 'ERR'}
                       </span>
                     </div>
                     {f.last_error_message && (
-                      <div className="text-[10px] mono-brutal text-[#ff6b5e] break-words leading-relaxed">
+                      <div className="text-[10px] mono-brutal text-danger-text break-words leading-relaxed">
                         {f.last_error_message}
                       </div>
                     )}
@@ -881,7 +881,7 @@ export default function AuthFiles() {
                         <div className="text-[10px] mono-brutal text-subtext truncate">{s.preview}</div>
                       </div>
                       <button onClick={() => copySecret(`${f.id}:${s.field}`, s.value)}
-                        className="shrink-0 ml-2 text-subtext/70 hover:text-[#ff3d81] transition-colors p-1 font-bold">
+                        className="shrink-0 ml-2 text-subtext/70 hover:text-primary-text transition-colors p-1 font-bold">
                         {copiedKey === `${f.id}:${s.field}` ? '✓' : copiedKey === `${f.id}:${s.field}:err` ? '✗' : '⧉'}
                       </button>
                     </div>
@@ -909,7 +909,7 @@ export default function AuthFiles() {
                       await reload()
                     } catch { setImportMsg({ ok: false, text: 'Delete failed' }) }
                   }}
-                    className="brutal-btn text-[10px] py-1.5 bg-[#ff6b5e] text-white font-bold">
+                    className="brutal-btn text-[10px] py-1.5 bg-[#ff6b5e] text-on-accent font-bold">
                     Delete
                   </button>
                 </div>
@@ -944,7 +944,7 @@ export default function AuthFiles() {
                   <button key={p} onClick={() => setPage(p)}
                     className={`brutal-btn h-8 min-w-[2rem] flex items-center justify-center text-xs font-bold ${
                       p === page
-                        ? 'bg-[#ff3d81] text-white'
+                        ? 'bg-[#ff3d81] text-on-accent'
                         : 'bg-surface text-ink'
                     }`}>
                     {p + 1}

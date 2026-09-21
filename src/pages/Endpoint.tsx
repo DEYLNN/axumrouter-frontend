@@ -28,22 +28,12 @@ const SECTION_COLORS = {
   injection: { bg: '#ffd23f', label: 'KEY_INJECTION' },
 } as const
 
-/* ─── Reusable Neubrutal section card ─── */
-/* Accent colours used as pill backgrounds. Text colour follows the established design:
-   white on saturated pink/red, near-black ink on bright green/purple/yellow. */
-function readableOn(hex: string): string {
-  const h = hex.replace('#', '')
-  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h
-  if (full.length !== 6) return '#ffffff'
-  const r = parseInt(full.slice(0, 2), 16) / 255
-  const g = parseInt(full.slice(2, 4), 16) / 255
-  const b = parseInt(full.slice(4, 6), 16) / 255
-  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4))
-  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
-  // Green/purple/yellow read fine with dark ink; saturated pink/red keep white.
-  return L > 0.35 ? 'var(--on-accent)' : '#ffffff'
-}
+/* Which text colour to use on a pill whose background comes from a runtime colour:
+   accents are bright -> dark ink (on-accent); neutral/muted tones -> normal ink. */
+const NEUTRAL_BG = /^(var\(--(muted|surface|line|canvas|subtext)\)|#(e5e5e5|d1d5db|f0f0f0|ffffff|fff)$)/i
+const pillText = (bg?: string) => (bg && NEUTRAL_BG.test(bg.trim()) ? 'text-ink' : 'text-on-accent')
 
+/* ─── Reusable Neubrutal section card ─── */
 function SectionCard({
   color,
   title,
@@ -62,8 +52,8 @@ function SectionCard({
         <h2 className="heading-brutal text-sm uppercase tracking-tight">{title}</h2>
         {badge && (
           <span
-            className="status-pill text-[10px] font-bold"
-            style={{ backgroundColor: color, color: readableOn(color) }}
+            className="status-pill text-[10px] font-bold text-on-accent"
+            style={{ backgroundColor: color }}
           >
             {badge}
           </span>
@@ -138,7 +128,7 @@ function FeatureRow({
           <div className="flex items-center gap-2">
             <span className="font-bold text-sm text-ink">{name}</span>
             <span
-              className="status-pill text-[9px] font-bold text-on-accent"
+              className={`status-pill text-[9px] font-bold ${pillText(statusColor)}`}
               style={{ backgroundColor: statusColor }}
             >
               {status}
@@ -254,7 +244,7 @@ export default function Endpoint() {
 
   if (error) return (
     <div className="brutal-card p-6 text-center">
-      <div className="text-[#ff6b5e] mono-brutal text-sm font-bold">ERROR: {error}</div>
+      <div className="text-danger-text mono-brutal text-sm font-bold">ERROR: {error}</div>
     </div>
   )
 
@@ -289,7 +279,7 @@ export default function Endpoint() {
         </SectionCard>
 
         {/* ─── ANTHROPIC URL ─── */}
-        <div className="opacity-50">
+        <div className="[&_.brutal-card>div:last-child]:opacity-60">
           <SectionCard color={SECTION_COLORS.anthropic.bg} title="ANTHROPIC_URL" badge="COMING SOON">
             <div className="flex items-center gap-3">
               <CodeBlock color="var(--subtext)">{claudeUrl || 'http://ip:port'}</CodeBlock>
@@ -424,7 +414,7 @@ export default function Endpoint() {
                   <div className="flex items-center gap-1">
                     <button onClick={() => copy(k.key_value, k.id)}
                       className={`w-7 h-7 flex items-center justify-center rounded-md transition-all border-2 ${
-                        copiedId === k.id ? 'text-[#3ddc97] bg-[#3ddc97]/10 border-[#3ddc97]' : 'text-subtext/70 hover:text-[#3ddc97] hover:bg-[#3ddc97]/10 border-transparent hover:border-[#3ddc97]'
+                        copiedId === k.id ? 'text-success-text bg-[#3ddc97]/10 border-[#3ddc97]' : 'text-subtext/70 hover:text-success-text hover:bg-[#3ddc97]/10 border-transparent hover:border-[#3ddc97]'
                       }`}
                       title="Copy key">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -432,7 +422,7 @@ export default function Endpoint() {
                       </svg>
                     </button>
                     <button onClick={() => handleDelete(k.id)} disabled={deleting === k.id}
-                      className="w-7 h-7 flex items-center justify-center rounded-md text-subtext/70 hover:text-[#ff6b5e] hover:bg-[#ff6b5e]/10 transition-all disabled:opacity-30 border-2 border-transparent hover:border-[#ff6b5e]"
+                      className="w-7 h-7 flex items-center justify-center rounded-md text-subtext/70 hover:text-danger-text hover:bg-[#ff6b5e]/10 transition-all disabled:opacity-30 border-2 border-transparent hover:border-[#ff6b5e]"
                       title="Delete key">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path d={deleting === k.id ? 'M12 4v16m8-8H4' : 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'} />
@@ -449,7 +439,7 @@ export default function Endpoint() {
             <div className="flex items-center gap-2">
               <input type="text" value={newKeyLabel} onChange={e => setNewKeyLabel(e.target.value)}
                 placeholder="Key label (optional)"
-                className="flex-1 px-4 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all"
+                className="flex-1 px-4 py-2 border-2 border-line rounded-lg text-xs mono-brutal bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 onKeyDown={e => e.key === 'Enter' && newKeyLabel !== '' && handleCreate()} />
               <button onClick={handleCreate} disabled={creating}
                 className="brutal-btn shrink-0 flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[#3ddc97] text-on-accent disabled:opacity-40">
@@ -471,14 +461,14 @@ export default function Endpoint() {
             </div>
             <div>
               <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">curl</span>
-              <CodeBlock color="#ff3d81">{`curl -X POST {base}/admin/api/keys/bulk-add \\
+              <CodeBlock color="var(--primary-text)">{`curl -X POST {base}/admin/api/keys/bulk-add \\
   -H "Authorization: Bearer ***" \\
   -H "Content-Type: application/json" \\
   -d '{"provider_id":"sop","keys":["sk-xxx","sk-yyy"]}'`}</CodeBlock>
             </div>
             <div>
               <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">Response</span>
-              <CodeBlock color="#3ddc97">{`{"added":2,"duplicates":0,"total":2,"message":"2 added, 0 duplicates skipped"}`}</CodeBlock>
+              <CodeBlock color="var(--success-text)">{`{"added":2,"duplicates":0,"total":2,"message":"2 added, 0 duplicates skipped"}`}</CodeBlock>
             </div>
             <p className="text-[10px] mono-brutal text-subtext">
               Accepts JSON array or <code>{"{keys:[...]}"}</code> object. Skips duplicates.
@@ -488,13 +478,13 @@ export default function Endpoint() {
             </p>
             <div className="border-t-2 border-line pt-4">
               <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">Count keys</span>
-              <CodeBlock color="#ff3d81">{`curl -H "Authorization: Bearer ***" \\
+              <CodeBlock color="var(--primary-text)">{`curl -H "Authorization: Bearer ***" \\
   {base}/admin/api/keys/count?provider_id=sop`}</CodeBlock>
-              <CodeBlock color="#3ddc97">{`{"provider_id":"sop","total":5,"active":5,"disabled":0}`}</CodeBlock>
+              <CodeBlock color="var(--success-text)">{`{"provider_id":"sop","total":5,"active":5,"disabled":0}`}</CodeBlock>
             </div>
             <div className="border-t-2 border-line pt-4">
               <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">Delete keys</span>
-              <CodeBlock color="#ff6b5e">{`# delete all
+              <CodeBlock color="var(--danger-text)">{`# delete all
 curl -X POST {base}/admin/api/keys/bulk-delete \\
   -H "Authorization: Bearer ***" \\
   -d '{"provider_id":"sop","action":"all"}'
@@ -503,7 +493,7 @@ curl -X POST {base}/admin/api/keys/bulk-delete \\
 curl -X POST {base}/admin/api/keys/bulk-delete \\
   -H "Authorization: Bearer ***" \\
   -d '{"provider_id":"sop","action":"by_key","key_value":"sk-xxx"}'`}</CodeBlock>
-              <CodeBlock color="#3ddc97">{`{"deleted":2,"message":"Deleted 2 key(s) from sop"}`}</CodeBlock>
+              <CodeBlock color="var(--success-text)">{`{"deleted":2,"message":"Deleted 2 key(s) from sop"}`}</CodeBlock>
             </div>
             <div className="border-t-2 border-line pt-4">
               <span className="text-[10px] mono-brutal text-subtext uppercase tracking-wider font-bold">Docs</span>

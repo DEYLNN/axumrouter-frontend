@@ -8,7 +8,7 @@ export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () =
       {onRetry && (
         <button
           onClick={onRetry}
-          className="brutal-btn bg-[#ff6b5e] text-white px-4 py-1.5 text-[11px] uppercase"
+          className="brutal-btn bg-[#ff6b5e] text-on-accent px-4 py-1.5 text-[11px] uppercase"
         >
           RETRY
         </button>

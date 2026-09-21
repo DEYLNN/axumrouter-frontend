@@ -95,9 +95,9 @@ export default function Usage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card label="Total Requests" value={stats ? fmt(stats.total_requests) : '-'} color="var(--ink)" />
-        <Card label="Input Tokens" value={stats ? fmt(stats.total_prompt_tokens) : '-'} color="#ff3d81" />
-        <Card label="Output Tokens" value={stats ? fmt(stats.total_completion_tokens) : '-'} color="#3ddc97" />
-        <Card label="Total Tokens" value={stats ? fmt(stats.total_tokens) : '-'} color="#c8a2ff" />
+        <Card label="Input Tokens" value={stats ? fmt(stats.total_prompt_tokens) : '-'} color="var(--primary-text)" />
+        <Card label="Output Tokens" value={stats ? fmt(stats.total_completion_tokens) : '-'} color="var(--success-text)" />
+        <Card label="Total Tokens" value={stats ? fmt(stats.total_tokens) : '-'} color="var(--accent-text)" />
       </div>
 
       <div>
@@ -121,9 +121,9 @@ export default function Usage() {
                       <div className="text-[11px] mono-brutal font-bold text-ink">{k.label || 'unnamed'}</div>
                     </td>
                     <td className="px-4 py-3 text-right text-[10px] mono-brutal text-ink">{k.requests}</td>
-                    <td className="px-4 py-3 text-right text-[10px] mono-brutal text-[#ff3d81]">{fmt(k.prompt_tokens)}</td>
-                    <td className="px-4 py-3 text-right text-[10px] mono-brutal text-[#3ddc97]">{fmt(k.completion_tokens)}</td>
-                    <td className="px-4 py-3 text-right text-[10px] mono-brutal text-[#c8a2ff]">{fmt(k.total_tokens)}</td>
+                    <td className="px-4 py-3 text-right text-[10px] mono-brutal text-primary-text">{fmt(k.prompt_tokens)}</td>
+                    <td className="px-4 py-3 text-right text-[10px] mono-brutal text-success-text">{fmt(k.completion_tokens)}</td>
+                    <td className="px-4 py-3 text-right text-[10px] mono-brutal text-accent-text">{fmt(k.total_tokens)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -169,9 +169,9 @@ export default function Usage() {
                         <code className="text-xs mono-brutal text-ink truncate font-bold">{l.model_id}</code>
                       </div>
                       <div className="text-right whitespace-nowrap mono-brutal text-xs">
-                        <span className="text-[#ff3d81]">{fmt(l.prompt_tokens)}↑</span>
+                        <span className="text-primary-text">{fmt(l.prompt_tokens)}↑</span>
                         {' '}
-                        <span className="text-[#3ddc97]">{fmt(l.completion_tokens)}↓</span>
+                        <span className="text-success-text">{fmt(l.completion_tokens)}↓</span>
                       </div>
                       <div className="text-right w-16 mono-brutal text-[10px] text-subtext">
                         {timeAgo(l.created_at)}

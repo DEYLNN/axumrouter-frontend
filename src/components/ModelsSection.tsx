@@ -45,14 +45,14 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
       <div className="px-5 py-3 border-b-2 border-line">
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search models..."
-          className="w-full px-4 py-2 border-2 border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff3d81] text-sm" />
+          className="w-full px-4 py-2 border-2 border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
       </div>
       <div className="p-5 space-y-6">
         {Object.entries(grouped).map(([cat, provs]) => (
           <div key={cat}>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-1.5 h-1.5 rounded-full bg-[#ff3d81]" />
-              <span className="text-[10px] font-mono font-semibold text-[#ff3d81] uppercase tracking-wider">{catLabel(cat)}</span>
+              <span className="text-[10px] font-mono font-semibold text-primary-text uppercase tracking-wider">{catLabel(cat)}</span>
               <div className="h-px flex-1 bg-muted" />
             </div>
             <div className="space-y-3">
@@ -68,7 +68,7 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border-2 border-line"
                           style={{ background: `${p.color}20` }}>
                           {p.id === 'combo' ? (
-                            <span className="text-[10px] font-bold text-[#c8a2ff]">⚡</span>
+                            <span className="text-[10px] font-bold text-accent-text">⚡</span>
                           ) : p.icon_name ? <img src={iconUrl(p.icon_name)} alt="" className="w-4 h-4 object-contain" /> : <span className="text-[9px] font-bold" style={{ color: p.color }}>{p.id.charAt(0).toUpperCase()}</span>}
                         </div>
                         <div className="min-w-0">
@@ -77,7 +77,7 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {p.total_keys > 0 && <span className="text-[9px] font-mono text-[#3ddc97]">{p.total_keys} keys</span>}
+                        {p.total_keys > 0 && <span className="text-[9px] font-mono text-success-text">{p.total_keys} keys</span>}
                         <div className="w-1.5 h-1.5 rounded-full" style={{ background: p.active_keys > 0 ? '#3ddc97' : 'var(--muted)' }} />
                       </div>
                     </div>
@@ -86,7 +86,7 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
                         {filtered.map(m => (
                           <div key={m.id} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-muted transition-all">
                             <div className="flex items-center gap-2 min-w-0">
-                              <span className={`text-[11px] font-mono truncate max-w-[220px] ${m.enabled ? 'text-ink/80' : 'text-[#ff6b5e]/50 line-through'}`}>{m.id}</span>
+                              <span className={`text-[11px] font-mono truncate max-w-[220px] ${m.enabled ? 'text-ink/80' : 'text-danger-text/50 line-through'}`}>{m.id}</span>
                               <span className="text-[9px] font-mono text-subtext bg-muted px-1.5 py-0.5 rounded shrink-0">{m.context_length?.toLocaleString() || '?'}</span>
                             </div>
                             <button onClick={() => onToggleModel(m.id, !m.enabled)} disabled={m.toggling}

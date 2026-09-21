@@ -180,7 +180,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
 
         {step === 'error' && (
           <div className="space-y-4">
-            <div className="p-3 rounded-lg bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] text-[11px] mono-brutal text-[#ff6b5e]">{error}</div>
+            <div className="p-3 rounded-lg bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] text-[11px] mono-brutal text-danger-text">{error}</div>
             <button onClick={onClose} className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-white bg-[#ff6b5e] hover:bg-[#ff6b5e]/80">Close</button>
           </div>
         )}
@@ -188,7 +188,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
         {step === 'success' && (
           <div className="text-center py-8 space-y-4">
             <div className="w-12 h-12 mx-auto rounded-full bg-[#3ddc97]/10 border-2 border-[#3ddc97] flex items-center justify-center">
-              <svg className="w-6 h-6 text-[#3ddc97]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+              <svg className="w-6 h-6 text-success-text" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
             </div>
             <p className="mono-brutal text-sm text-ink">Connected successfully!</p>
             <button onClick={onClose} className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-on-accent bg-[#3ddc97] hover:bg-[#3ddc97]/80">Done</button>
@@ -208,7 +208,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
             </div>
             <input type="text" value={callbackUrl} onChange={e => setCallbackUrl(e.target.value)}
               placeholder="Paste callback URL here..."
-              className="w-full bg-surface border-2 border-line rounded-lg px-3 py-2 text-xs mono-brutal text-ink placeholder-gray-400 focus:outline-none focus:border-[#c8a2ff]" />
+              className="w-full bg-surface border-2 border-line rounded-lg px-3 py-2 text-xs mono-brutal text-ink placeholder:text-subtext/70 focus:outline-none focus:border-[#c8a2ff]" />
             <button onClick={handleManual} disabled={!callbackUrl}
               className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-white bg-[#ff3d81] hover:bg-[#ff3d81]/80 disabled:opacity-30">Connect</button>
           </div>
@@ -222,7 +222,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
             </div>
             <input type="text" value={callbackUrl} onChange={e => setCallbackUrl(e.target.value)}
               placeholder="Paste callback URL here..."
-              className="w-full bg-surface border-2 border-line rounded-lg px-3 py-2 text-xs mono-brutal text-ink placeholder-gray-400 focus:outline-none focus:border-[#c8a2ff]" />
+              className="w-full bg-surface border-2 border-line rounded-lg px-3 py-2 text-xs mono-brutal text-ink placeholder:text-subtext/70 focus:outline-none focus:border-[#c8a2ff]" />
             <button onClick={handleManual} disabled={!callbackUrl}
               className="brutal-btn w-full py-2.5 text-xs mono-brutal font-semibold text-white bg-[#ff3d81] hover:bg-[#ff3d81]/80 disabled:opacity-30">Connect</button>
           </div>
@@ -236,7 +236,7 @@ export default function OAuthConnectModal({ open, provider, onClose, onSuccess }
             {deviceData.user_code && (
               <div className="p-3 rounded-lg bg-[#c8a2ff]/10 border-2 border-[#c8a2ff]">
                 <p className="mono-brutal text-[9px] text-subtext mb-1">Your code</p>
-                <code className="mono-brutal text-lg font-bold tracking-[0.2em] text-[#c8a2ff]">{deviceData.user_code}</code>
+                <code className="mono-brutal text-lg font-bold tracking-[0.2em] text-accent-text">{deviceData.user_code}</code>
               </div>
             )}
             {polling && <p className="mono-brutal text-[9px] text-subtext animate-pulse">Polling...</p>}

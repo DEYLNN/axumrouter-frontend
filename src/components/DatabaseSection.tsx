@@ -55,14 +55,14 @@ export default function DatabaseSection({ dbInfo, stats, onDbReload }: Props) {
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-subtext">
               <span>{stats.totalModels} models</span><span>·</span>
-              <span className="text-[#ff6b5e]">{stats.disabledModels} disabled</span><span>·</span>
-              <span className="text-[#ffd23f]">{stats.blockedModels} blocked</span>
+              <span className="text-danger-text">{stats.disabledModels} disabled</span><span>·</span>
+              <span className="text-warning-text">{stats.blockedModels} blocked</span>
             </div>
           </div>
         )}
         <div className="flex items-center gap-2 pt-2">
           <button onClick={handleExport} disabled={exporting}
-            className="brutal-btn bg-[#ff3d81] text-white px-4 py-2 text-sm">
+            className="brutal-btn bg-[#ff3d81] text-on-accent px-4 py-2 text-sm">
             {exporting ? 'Exporting...' : 'Export DB'}
           </button>
           <button onClick={() => importRef.current?.click()}

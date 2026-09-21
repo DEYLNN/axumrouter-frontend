@@ -99,12 +99,12 @@ export default function Playground() {
           {/* Provider selector */}
           <div className="brutal-card overflow-hidden min-w-0">
             <div className="px-5 py-3 border-b-2 border-line bg-muted">
-              <h2 className="text-xs mono-brutal font-bold text-[#ff3d81] uppercase tracking-wider">Provider</h2>
+              <h2 className="text-xs mono-brutal font-bold text-primary-text uppercase tracking-wider">Provider</h2>
             </div>
             <div className="p-5">
               <input type="text" value={search} onChange={e => { setSearch(e.target.value); setOpen(true) }}
                 onFocus={() => setOpen(true)} placeholder="Search provider..."
-                className="w-full px-3 py-2.5 border-2 border-line rounded-lg font-mono text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all mb-2" />
+                className="w-full px-3 py-2.5 border-2 border-line rounded-lg font-mono text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all mb-2" />
 
               {selected && !open && (
                 <div onClick={() => setOpen(true)}
@@ -170,7 +170,7 @@ export default function Playground() {
               {/* Base URL */}
               <div className="brutal-card overflow-hidden min-w-0">
                 <div className="px-5 py-3 border-b-2 border-line bg-muted">
-                  <h2 className="text-xs mono-brutal font-bold text-[#ff3d81] uppercase tracking-wider">Base URL</h2>
+                  <h2 className="text-xs mono-brutal font-bold text-primary-text uppercase tracking-wider">Base URL</h2>
                 </div>
                 <div className="p-5">
                   <code className="block text-[11px] mono-brutal text-subtext bg-muted rounded-lg px-3 py-2.5 border-2 border-line break-all overflow-hidden">
@@ -182,12 +182,12 @@ export default function Playground() {
               {/* Keys */}
               <div className="brutal-card overflow-hidden min-w-0">
                 <div className="px-5 py-3 border-b-2 border-line bg-muted flex items-center justify-between">
-                  <h2 className="text-xs mono-brutal font-bold text-[#ff3d81] uppercase tracking-wider">Key</h2>
+                  <h2 className="text-xs mono-brutal font-bold text-primary-text uppercase tracking-wider">Key</h2>
                   <div className="flex items-center gap-1.5">
                     <button onClick={() => setKeyMode('auto')}
-                      className={`brutal-btn px-2 py-1 text-[9px] font-bold ${keyMode === 'auto' ? 'bg-[#ff3d81] text-white' : 'bg-surface text-subtext hover:text-ink'}`}>Auto</button>
+                      className={`brutal-btn px-2 py-1 text-[9px] font-bold ${keyMode === 'auto' ? 'bg-[#ff3d81] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>Auto</button>
                     <button onClick={() => setKeyMode('manual')}
-                      className={`brutal-btn px-2 py-1 text-[9px] font-bold ${keyMode === 'manual' ? 'bg-[#ff3d81] text-white' : 'bg-surface text-subtext hover:text-ink'}`}>Manual</button>
+                      className={`brutal-btn px-2 py-1 text-[9px] font-bold ${keyMode === 'manual' ? 'bg-[#ff3d81] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>Manual</button>
                   </div>
                 </div>
                 <div className="p-5">
@@ -203,7 +203,7 @@ export default function Playground() {
                             onClick={() => setSelectedKeyId(k.id)}
                             className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all text-[11px] mono-brutal border-2 ${
                               selectedKeyId === k.id
-                                ? 'bg-[#ff3d81]/10 text-[#ff3d81] border-[#ff3d81] font-bold'
+                                ? 'bg-[#ff3d81]/10 text-primary-text border-[#ff3d81] font-bold'
                                 : 'text-subtext hover:bg-canvas border-transparent hover:border-line'
                             } ${k.is_locked ? 'opacity-40' : ''}`}>
                             <div className={`w-1.5 h-1.5 rounded-full shrink-0 border border-line ${k.is_locked ? 'bg-[#ff6b5e]' : 'bg-[#3ddc97]'}`} />
@@ -220,7 +220,7 @@ export default function Playground() {
               {/* Models */}
               <div className="brutal-card overflow-hidden min-w-0">
                 <div className="px-5 py-3 border-b-2 border-line bg-muted flex items-center justify-between">
-                  <h2 className="text-xs mono-brutal font-bold text-[#ff3d81] uppercase tracking-wider">Models</h2>
+                  <h2 className="text-xs mono-brutal font-bold text-primary-text uppercase tracking-wider">Models</h2>
                   <span className="text-[9px] mono-brutal text-subtext">{models.length} / {remoteModels.length || '?'}</span>
                 </div>
                 <div className="p-5 space-y-3">
@@ -229,7 +229,7 @@ export default function Playground() {
                       <div className="text-[9px] mono-brutal text-subtext uppercase tracking-wider mb-1 font-bold">Custom model</div>
                       <input type="text" value={customModel} onChange={e => setCustomModel(e.target.value)}
                         placeholder="claude-sonnet-4, gpt-5.5, ..."
-                        className="w-full px-3 py-2 border-2 border-line rounded-lg text-[11px] mono-brutal bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] transition-all" />
+                        className="w-full px-3 py-2 border-2 border-line rounded-lg text-[11px] mono-brutal bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
                     </div>
                     <button onClick={() => fetchModels(selectedKeyId)} disabled={remoteLoading}
                       className="brutal-btn mt-5 px-3 py-2 text-xs font-bold bg-[#c8a2ff] text-on-accent disabled:opacity-40 whitespace-nowrap">
@@ -241,7 +241,7 @@ export default function Playground() {
                     <div className="text-[10px] mono-brutal text-subtext animate-pulse">Fetching remote models...</div>
                   )}
                   {remoteError && (
-                    <div className="px-3 py-2 rounded-lg bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] text-[10px] mono-brutal text-[#ff6b5e] font-bold break-all overflow-hidden">{remoteError}</div>
+                    <div className="px-3 py-2 rounded-lg bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] text-[10px] mono-brutal text-danger-text font-bold break-all overflow-hidden">{remoteError}</div>
                   )}
 
                   <div className="max-h-48 overflow-y-auto space-y-1 scrollbar-thin">
@@ -250,7 +250,7 @@ export default function Playground() {
                         onClick={() => { setCustomModel(m.id); setResult(null) }}
                         className={`px-3 py-2 rounded-lg cursor-pointer transition-all text-[11px] mono-brutal border-2 ${
                           customModel === m.id
-                            ? 'bg-[#ff3d81]/10 text-[#ff3d81] border-[#ff3d81] font-bold'
+                            ? 'bg-[#ff3d81]/10 text-primary-text border-[#ff3d81] font-bold'
                             : 'text-subtext hover:bg-canvas border-transparent hover:border-line'
                         }`}>
                         <div className="truncate">{m.id}</div>
@@ -264,7 +264,7 @@ export default function Playground() {
                         onClick={() => { setCustomModel(rm.id); setResult(null) }}
                         className={`px-3 py-2 rounded-lg cursor-pointer transition-all text-[11px] mono-brutal border-2 ${
                           customModel === rm.id
-                            ? 'bg-[#c8a2ff]/10 text-[#c8a2ff] border-[#c8a2ff] font-bold'
+                            ? 'bg-[#c8a2ff]/10 text-accent-text border-[#c8a2ff] font-bold'
                             : 'text-subtext hover:bg-canvas border-transparent hover:border-line'
                         }`}>
                         <div className="truncate flex items-center gap-2">
@@ -277,7 +277,7 @@ export default function Playground() {
                   </div>
 
                   <button onClick={handleTest} disabled={testing || !customModel}
-                    className="brutal-btn w-full py-2.5 text-xs font-bold bg-[#ff3d81] text-white disabled:opacity-40">
+                    className="brutal-btn w-full py-2.5 text-xs font-bold bg-[#ff3d81] text-on-accent disabled:opacity-40">
                     {testing ? '↻ Testing...' : '▶ Test Model'}
                   </button>
                 </div>
@@ -295,9 +295,9 @@ export default function Playground() {
           ) : result ? (
             <div className="brutal-card overflow-hidden min-w-0">
               <div className="px-5 py-3 border-b-2 border-line bg-muted flex items-center justify-between">
-                <h2 className="text-xs mono-brutal font-bold text-[#ff3d81] uppercase tracking-wider">Result</h2>
+                <h2 className="text-xs mono-brutal font-bold text-primary-text uppercase tracking-wider">Result</h2>
                 <span className={`status-pill ${
-                  result.ok ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff6b5e] text-white'
+                  result.ok ? 'bg-[#3ddc97] text-on-accent' : 'bg-[#ff6b5e] text-on-accent'
                 }`}>
                   {result.ok ? 'SUCCESS' : 'ERROR'}
                 </span>
@@ -333,7 +333,7 @@ export default function Playground() {
                   <div>
                     <div className="text-[9px] mono-brutal text-subtext uppercase tracking-wider mb-1.5 font-bold">Error</div>
                     <div className="px-4 py-3 rounded-lg bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] break-words overflow-hidden">
-                      <p className="text-xs mono-brutal text-[#ff6b5e] font-bold break-all">{result.error || 'Unknown error'}</p>
+                      <p className="text-xs mono-brutal text-danger-text font-bold break-all">{result.error || 'Unknown error'}</p>
                     </div>
                   </div>
                 )}

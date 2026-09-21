@@ -28,9 +28,9 @@ function InfoIcon() {
 }
 
 function quotaColor(remaining: number) {
-  if (remaining > 70) return { text: 'text-[#3ddc97]', bar: 'bg-[#3ddc97]', track: 'bg-[#3ddc97]/20' }
-  if (remaining >= 30) return { text: 'text-[#ffd23f]', bar: 'bg-[#ffd23f]', track: 'bg-[#ffd23f]/20' }
-  return { text: 'text-[#ff6b5e]', bar: 'bg-[#ff6b5e]', track: 'bg-[#ff6b5e]/20' }
+  if (remaining > 70) return { text: 'text-success-text', bar: 'bg-[#3ddc97]', track: 'bg-[#3ddc97]/20' }
+  if (remaining >= 30) return { text: 'text-warning-text', bar: 'bg-[#ffd23f]', track: 'bg-[#ffd23f]/20' }
+  return { text: 'text-danger-text', bar: 'bg-[#ff6b5e]', track: 'bg-[#ff6b5e]/20' }
 }
 
 function ProviderLogo({ provider, iconName, color }: { provider: string; iconName?: string; color?: string }) {
@@ -140,16 +140,16 @@ export default function Quota() {
           {providerOpen && <>
             <div className="fixed inset-0 z-10" onClick={() => setProviderOpen(false)} />
             <div role="listbox" className="absolute left-0 right-0 z-20 mt-1.5 max-h-72 overflow-y-auto brutal-card py-1">
-              <button type="button" role="option" aria-selected={providerFilter === 'all'} onClick={() => { setProviderFilter('all'); setProviderOpen(false) }} className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors font-bold ${providerFilter === 'all' ? 'bg-[#ff3d81]/10 text-[#ff3d81]' : 'text-subtext hover:bg-canvas hover:text-ink'}`}>
+              <button type="button" role="option" aria-selected={providerFilter === 'all'} onClick={() => { setProviderFilter('all'); setProviderOpen(false) }} className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors font-bold ${providerFilter === 'all' ? 'bg-[#ff3d81]/10 text-primary-text' : 'text-subtext hover:bg-canvas hover:text-ink'}`}>
                 <span className="flex h-5 w-5 items-center justify-center rounded border-2 border-line bg-muted text-xs text-subtext">☷</span>
-                <span className="flex-1 text-left">All providers</span><span className="text-xs text-subtext">{keys.length}</span>{providerFilter === 'all' && <span className="text-[#ff3d81]">✓</span>}
+                <span className="flex-1 text-left">All providers</span><span className="text-xs text-subtext">{keys.length}</span>{providerFilter === 'all' && <span className="text-primary-text">✓</span>}
               </button>
               {providerIds.map(id => {
                 const provider = providers[id]
                 const name = provider?.display_name || id
-                return <button type="button" role="option" aria-selected={providerFilter === id} key={id} onClick={() => { setProviderFilter(id); setProviderOpen(false) }} className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors font-bold ${providerFilter === id ? 'bg-[#ff3d81]/10 text-[#ff3d81]' : 'text-subtext hover:bg-canvas hover:text-ink'}`}>
+                return <button type="button" role="option" aria-selected={providerFilter === id} key={id} onClick={() => { setProviderFilter(id); setProviderOpen(false) }} className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors font-bold ${providerFilter === id ? 'bg-[#ff3d81]/10 text-primary-text' : 'text-subtext hover:bg-canvas hover:text-ink'}`}>
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded border-2 border-line bg-muted">{provider?.icon_name ? <img src={iconUrl(provider.icon_name)} alt="" className="h-full w-full object-contain p-0.5" /> : <span className="text-[9px] text-subtext font-bold">{name[0]}</span>}</span>
-                  <span className="flex-1 truncate text-left">{name}</span><span className="text-xs text-subtext">{keys.filter(key => key.provider_id === id).length}</span>{providerFilter === id && <span className="text-[#ff3d81]">✓</span>}
+                  <span className="flex-1 truncate text-left">{name}</span><span className="text-xs text-subtext">{keys.filter(key => key.provider_id === id).length}</span>{providerFilter === id && <span className="text-primary-text">✓</span>}
                 </button>
               })}
             </div>
@@ -158,7 +158,7 @@ export default function Quota() {
       </div>
     </header>
 
-    {error && <div className="brutal-card border-[#ff6b5e] px-4 py-2.5 text-sm mono-brutal text-[#ff6b5e] font-bold">{error}</div>}
+    {error && <div className="brutal-card border-[#ff6b5e] px-4 py-2.5 text-sm mono-brutal text-danger-text font-bold">{error}</div>}
     {!keys.length && <div className="brutal-card border-dashed p-10 text-center text-sm mono-brutal text-subtext">No OAuth keys found</div>}
     {!!keys.length && !visibleKeys.length && <div className="brutal-card border-dashed p-10 text-center text-sm mono-brutal text-subtext">No OAuth keys for this provider</div>}
 

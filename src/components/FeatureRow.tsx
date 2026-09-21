@@ -64,7 +64,7 @@ export default function FeatureRow({ name, desc, value, onToggle, levels }: Feat
         onClick={() => onToggle(name, isEnabled ? 'false' : 'true')}
         className={`brutal-btn px-3 py-1.5 text-[10px] font-bold transition-all flex-shrink-0 ml-3 ${
           isEnabled
-            ? 'bg-[#ff6b5e] text-white'
+            ? 'bg-[#ff6b5e] text-on-accent'
             : 'bg-[#3ddc97] text-on-accent'
         }`}
       >

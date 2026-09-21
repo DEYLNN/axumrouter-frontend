@@ -2,14 +2,17 @@
 @import "tailwindcss";
 
 /* ===== THEME TOKENS ===== */
-/* Light (default) — neubrutal cream canvas */
+/* Light (default) — neubrutal cream canvas.
+   `-text` variants are the WCAG-AA-safe versions of each accent when used as
+   text/icon colour on a light background (>=4.5:1). The raw accent stays for
+   fills, borders and dots where it sits under dark ink instead. */
 :root {
   --canvas: #fdf9f0;
   --ink: #111111;
   --surface: #ffffff;
   --muted: #f0f0f0;
   --line: #111111;
-  --subtext: #6b7280;
+  --subtext: #676d7b;
   --shadow: #111111;
 
   --primary: #ff3d81;
@@ -17,11 +20,20 @@
   --warning: #ffd23f;
   --accent: #c8a2ff;
   --danger: #ff6b5e;
+
+  --primary-text: #c72f64;
+  --success-text: #227b55;
+  --warning-text: #816b20;
+  --accent-text: #79629b;
+  --danger-text: #b44b42;
+
   --on-accent: #1a1408;
   color-scheme: light;
 }
 
-/* Dark cream — warm dark, NOT pitch black */
+/* Dark cream — warm dark, NOT pitch black.
+   On these dark surfaces the raw accents already clear 4.5:1, so the `-text`
+   variants can reuse them directly. */
 :root[data-theme="dark"] {
   --canvas: #221c12;
   --ink: #f2ead8;
@@ -36,6 +48,13 @@
   --warning: #ffd23f;
   --accent: #c8a2ff;
   --danger: #ff6b5e;
+
+  --primary-text: #ff6198;
+  --success-text: #3ddc97;
+  --warning-text: #ffd23f;
+  --accent-text: #c8a2ff;
+  --danger-text: #ff6b5e;
+
   --on-accent: #1a1408;
   color-scheme: dark;
 }
@@ -54,6 +73,12 @@
   --color-accent: var(--accent);
   --color-danger: var(--danger);
   --color-on-accent: var(--on-accent);
+
+  --color-primary-text: var(--primary-text);
+  --color-success-text: var(--success-text);
+  --color-warning-text: var(--warning-text);
+  --color-accent-text: var(--accent-text);
+  --color-danger-text: var(--danger-text);
 }
 
 html {

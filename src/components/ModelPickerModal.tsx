@@ -29,7 +29,7 @@ export default function ModelPickerModal({ open, onClose, allModels, selected, o
         <div className="px-5 py-3 border-b-2 border-line shrink-0">
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search models..."
-            className="w-full px-3 py-2 border-2 border-line rounded-lg text-xs mono-brutal text-ink bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81]" />
+            className="w-full px-3 py-2 border-2 border-line rounded-lg text-xs mono-brutal text-ink bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary" />
         </div>
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {Object.entries(allModels).map(([provId, models]) => {
@@ -54,7 +54,7 @@ export default function ModelPickerModal({ open, onClose, allModels, selected, o
                           )}
                         </div>
                         <span className="text-xs mono-brutal text-ink flex-1 truncate">{m.id}</span>
-                        {!m.enabled && <span className="text-[8px] mono-brutal text-[#ff6b5e] shrink-0 font-bold">disabled</span>}
+                        {!m.enabled && <span className="text-[8px] mono-brutal text-danger-text shrink-0 font-bold">disabled</span>}
                       </div>
                     )
                   })}

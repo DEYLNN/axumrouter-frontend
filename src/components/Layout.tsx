@@ -97,16 +97,8 @@ export default function Layout() {
   )
 
   const ProfileCard = () => (
-    <div className="brutal-card p-3 flex items-center gap-3">
-      <div className="w-10 h-10 bg-[#c8a2ff] border-2 border-line flex items-center justify-center heading-brutal text-sm shrink-0">
-        AD
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-bold text-sm truncate text-ink">Admin</p>
-        <div className="inline-block px-2 py-0.5 bg-[#ffd23f] border border-line text-[9px] font-black uppercase rounded">
-          Enterprise
-        </div>
-      </div>
+    <div className="brutal-card px-3 py-2.5 flex items-center">
+      <p className="font-bold text-sm truncate text-ink">Admin</p>
     </div>
   )
 
@@ -162,7 +154,7 @@ export default function Layout() {
           <span className="heading-brutal text-sm truncate text-ink">NUVCODE</span>
         </div>
 
-        <span className="status-pill bg-[#ff3d81] text-white shrink-0 max-w-[46%] truncate text-[10px]">
+        <span className="status-pill bg-[#ff3d81] text-on-accent shrink-0 max-w-[46%] truncate text-[10px]">
           {activeLabel}
         </span>
       </header>

@@ -62,21 +62,21 @@ export default function Login() {
               <input type="text" value={username} onChange={e => { setUsername(e.target.value); if (error) setError('') }}
                 placeholder="Enter username"
                 autoFocus
-                className="w-full px-4 py-2.5 border-2 border-line rounded-lg font-mono text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] focus:border-[#ff3d81] transition-all" />
+                className="w-full px-4 py-2.5 border-2 border-line rounded-lg font-mono text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-[#ff3d81] transition-all" />
             </div>
             <div>
               <label className="block text-xs font-bold text-subtext uppercase tracking-wider mb-1.5">Password</label>
               <input type="password" value={password} onChange={handlePasswordChange}
                 placeholder="Enter admin password"
-                className="w-full px-4 py-2.5 border-2 border-line rounded-lg font-mono text-sm bg-surface placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d81] focus:border-[#ff3d81] transition-all" />
+                className="w-full px-4 py-2.5 border-2 border-line rounded-lg font-mono text-sm bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-[#ff3d81] transition-all" />
             </div>
             {error && (
-              <div className="text-sm font-bold text-[#ff6b5e] bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] rounded-lg px-4 py-2.5">
+              <div className="text-sm font-bold text-danger-text bg-[#ff6b5e]/10 border-2 border-[#ff6b5e] rounded-lg px-4 py-2.5">
                 {error}
               </div>
             )}
             <button type="submit" disabled={loading || !password}
-              className="brutal-btn w-full bg-[#ff3d81] text-white px-4 py-2.5 text-sm font-bold uppercase tracking-wider disabled:opacity-40">
+              className="brutal-btn w-full bg-[#ff3d81] text-on-accent px-4 py-2.5 text-sm font-bold uppercase tracking-wider disabled:opacity-40">
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
