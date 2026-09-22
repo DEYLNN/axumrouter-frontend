@@ -18,6 +18,6 @@ export { getKeys, addKey, deleteKey } from './keys'
 export { getGatewayKeys, createGatewayKey, deleteGatewayKey, updateGatewayKey } from './gateway'
 export { startOAuth, exchangeOAuth } from './oauth'
 export { getDatabaseInfo, exportDatabase, importDatabase } from './database'
-export { getUsageStats, getUsageKeys, getLogs, clearLogs, getOAuthKeys, getUsageQuota, refreshUsageKey } from './usage'
+export { getUsageStats, getUsageKeys, getLogs, clearLogs, getOAuthKeys, getQuotaProviders, getUsageQuota, refreshUsageKey } from './usage'
 // Auth-files
 export { getAuthFiles, getKeysStats, dedupeKeys } from './auth-files'

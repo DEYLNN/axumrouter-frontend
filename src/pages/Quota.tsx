@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getProviders, getUsageQuota, refreshUsageKey, getOAuthKeys, iconUrl } from '../api'
+import { getProviders, getUsageQuota, refreshUsageKey, getOAuthKeys, getQuotaProviders, iconUrl } from '../api'
 import type { OAuthKey, ProviderMeta, QuotaData, RateLimit } from '../api'
 
 const formatDate = (iso: string | null) => iso ? new Date(iso).toLocaleString() : '—'
@@ -72,12 +72,21 @@ export default function Quota() {
   const [busy, setBusy] = useState<Record<string, boolean>>({})
   const [providerFilter, setProviderFilter] = useState('all')
   const [providerOpen, setProviderOpen] = useState(false)
+  const [refreshable, setRefreshable] = useState<string[]>(['cx', 'cbai'])
   const [error, setError] = useState('')
 
   useEffect(() => {
     let alive = true
     const load = async () => {
       try {
+        // Which providers actually support a live quota fetch — asked once, so
+        // adding an apikey provider (e.g. nut) on the backend needs no FE change.
+        try {
+          const supported = await getQuotaProviders()
+          if (alive && supported?.length) setRefreshable(supported)
+        } catch (providerListError) {
+          console.error('[quota] provider list failed:', providerListError)
+        }
         const oauth = await getOAuthKeys()
         if (!alive) return
         setKeys(oauth)
@@ -159,15 +168,15 @@ export default function Quota() {
     </header>
 
     {error && <div className="brutal-card border-[#ff6b5e] px-4 py-2.5 text-sm mono-brutal text-danger-text font-bold">{error}</div>}
-    {!keys.length && <div className="brutal-card border-dashed p-10 text-center text-sm mono-brutal text-subtext">No OAuth keys found</div>}
-    {!!keys.length && !visibleKeys.length && <div className="brutal-card border-dashed p-10 text-center text-sm mono-brutal text-subtext">No OAuth keys for this provider</div>}
+    {!keys.length && <div className="brutal-card border-dashed p-10 text-center text-sm mono-brutal text-subtext">No keys found</div>}
+    {!!keys.length && !visibleKeys.length && <div className="brutal-card border-dashed p-10 text-center text-sm mono-brutal text-subtext">No keys for this provider</div>}
 
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {visibleKeys.map(key => {
         const quota = quotas[key.id]
         const provider = providers[key.provider_id]
         const plan = quota?.key_plan
-        const canRefresh = key.provider_id === 'cx' || key.provider_id === 'cbai'
+        const canRefresh = refreshable.includes(key.provider_id)
         return <article key={key.id} className="brutal-card p-4">
           <div className="flex items-start justify-between gap-3 pb-4">
             <div className="flex min-w-0 items-center gap-3">
