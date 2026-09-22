@@ -21,3 +21,6 @@ export { getDatabaseInfo, exportDatabase, importDatabase } from './database'
 export { getUsageStats, getUsageKeys, getLogs, clearLogs, getOAuthKeys, getQuotaProviders, getUsageQuota, refreshUsageKey } from './usage'
 // Auth-files
 export { getAuthFiles, getKeysStats, dedupeKeys } from './auth-files'
+// Unsloth
+export { listUnslothModels, getUnslothModel, createUnslothModel, updateUnslothModel, deleteUnslothModel } from './unsloth'
+export type { UnslothModel } from './unsloth'

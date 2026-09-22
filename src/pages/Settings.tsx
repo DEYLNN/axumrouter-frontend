@@ -37,7 +37,7 @@ export default function Settings() {
         // never shows the misleading "Loading models..." spinner.
         if (providers) {
           for (const p of providers) {
-            if (p.type === 'custom' && p.id.startsWith('custom_')) {
+            if (p.type === 'custom_openai' && p.id.startsWith('custom_')) {
               const prefix = p.id.replace('custom_', '')
               if (mapped[prefix] && !mapped[p.id]) {
                 mapped[p.id] = mapped[prefix]

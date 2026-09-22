@@ -39,6 +39,10 @@ export default function Providers() {
     if ((a.total_keys > 0) !== (b.total_keys > 0)) return a.total_keys > 0 ? -1 : 1
     return a.display_name.localeCompare(b.display_name)
   })
+  const manual = filtered.filter(p => p.type === 'manual').sort((a, b) => {
+    if ((a.total_keys > 0) !== (b.total_keys > 0)) return a.total_keys > 0 ? -1 : 1
+    return a.display_name.localeCompare(b.display_name)
+  })
   const apikeyShow = showAll ? apikey : apikey.slice(0, LIMIT)
 
   const handleCreate = async () => {
@@ -106,6 +110,34 @@ export default function Providers() {
     )
   }
 
+  const manualCards = []
+  for (const p of manual) {
+    const active = (p.total_keys || 0) > 0 || (p.model_count || 0) > 0
+    manualCards.push(
+      <Link key={p.id} to={`/admin/providers/${p.id}`}
+        className="block brutal-card p-5">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center border-2 border-line bg-muted">
+              {p.icon_name ? <img src={iconUrl(p.icon_name)} alt="" className="w-full h-full p-1 object-contain rounded-lg" /> : <span className="text-sm font-semibold mono-brutal" style={{ color: p.color || '#6366F1' }}>{p.display_name.charAt(0)}</span>}
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-ink leading-tight">{p.display_name}</h2>
+              <span className="text-[10px] mono-brutal text-subtext mt-0.5 block">{p.id}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <div className={`w-2 h-2 rounded-full border border-line ${active ? 'bg-[#3ddc97]' : 'bg-muted'}`} />
+            <svg className="w-3.5 h-3.5 text-subtext/70 group-hover:text-ink transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+          </div>
+        </div>
+        <div className="flex items-center gap-5 text-[11px] mono-brutal">
+          <div className="text-subtext">{p.model_count} models</div>
+        </div>
+      </Link>
+    )
+  }
+
   const oauthCards = []
   for (const p of oauth) {
     const active = (p.total_keys || 0) > 0
@@ -168,7 +200,7 @@ export default function Providers() {
     )
   }
 
-  const noResults = search && oauth.length === 0 && apikey.length === 0 && customFiltered.length === 0
+  const noResults = search && oauth.length === 0 && apikey.length === 0 && customFiltered.length === 0 && manual.length === 0
 
   return (
     <div className="relative">
@@ -197,11 +229,21 @@ export default function Providers() {
             {customCards.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-subtext">CUSTOM</h2>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-subtext">CUSTOM OPENAI</h2>
                   <div className="flex-1 h-0.5 bg-line" />
                   <span className="text-xs font-mono text-subtext">{customCards.length}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">{customCards}</div>
+              </div>
+            )}
+            {manualCards.length > 0 && (
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-subtext">MANUAL</h2>
+                  <div className="flex-1 h-0.5 bg-line" />
+                  <span className="text-xs font-mono text-subtext">{manualCards.length}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">{manualCards}</div>
               </div>
             )}
             {oauthCards.length > 0 && (

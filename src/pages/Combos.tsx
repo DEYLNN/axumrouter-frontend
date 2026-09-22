@@ -274,9 +274,9 @@ export default function Combos() {
 
       {/* Model picker modal */}
       {showPicker && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60"
+        <div className="fixed inset-0 z-[60] flex items-start sm:items-center justify-center bg-black/60 pt-16 sm:pt-0 pb-4 overflow-y-auto"
           onClick={() => setShowPicker(false)}>
-          <div className="w-full max-w-lg mx-4 max-h-[80vh] brutal-card overflow-hidden flex flex-col"
+          <div className="w-full max-w-lg mx-4 max-h-[calc(100vh-5rem)] brutal-card overflow-hidden flex flex-col"
             onClick={e => e.stopPropagation()}>
             <div className="px-5 py-3 border-b-2 border-line flex items-center justify-between shrink-0 bg-muted">
               <h2 className="text-xs mono-brutal font-bold text-ink uppercase">Pick Models</h2>

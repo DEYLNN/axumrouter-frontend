@@ -14,6 +14,7 @@ import ProxyPool from './pages/ProxyPool'
 import Playground from './pages/Playground'
 import Sources from './pages/Sources'
 import Combos from './pages/Combos'
+import UnslothDetail from './pages/unsloth/UnslothDetail'
 import Login from './pages/Login'
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/endpoint" element={<Endpoint />} />
             <Route path="/admin/providers" element={<Providers />} />
+            <Route path="/admin/providers/uns" element={<UnslothDetail />} />
             <Route path="/admin/providers/:id" element={<ProviderDetail />} />
             <Route path="/admin/settings" element={<Settings />} />
             <Route path="/admin/usage" element={<Usage />} />
