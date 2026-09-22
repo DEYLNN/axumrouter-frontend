@@ -77,7 +77,7 @@ export default function ModelsSection({ providers, models, onToggleModel }: Prop
               <div className="h-px flex-1 bg-muted" />
             </div>
             <div className="space-y-3">
-              {provs.filter(p => p.id === 'combo' || p.total_keys > 0).map(p => {
+              {provs.filter(p => p.id === 'combo' || p.total_keys > 0 || p.type === 'manual').map(p => {
                 const pm = models[p.id]
                 const filtered = pm ? filter(pm) : null
                 // Hide provider entirely when a filter is active and nothing matches.
