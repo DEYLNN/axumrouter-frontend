@@ -140,7 +140,7 @@ export default function Combos() {
                 <div>
                   <h2 className="text-sm font-bold text-ink">{c.name}</h2>
                   <p className="text-[10px] mono-brutal text-subtext mt-0.5">
-                    {c.strategy === 'round_robin' ? '🔀 round-robin' : '↳ fallback'} · {c.tiers.length} tiers
+                    {c.strategy === 'round_robin' ? '🔀 round-robin' : c.strategy === 'balanced' ? '⚖️ balanced' : '↳ fallback'} · {c.tiers.length} tiers
                   </p>
                 </div>
               </div>
@@ -210,6 +210,11 @@ export default function Combos() {
               className={`brutal-btn flex-1 py-2 text-xs font-bold ${
                 strategy === 'round_robin' ? 'bg-[#ffd23f] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>
               🔀 Round Robin
+            </button>
+            <button onClick={() => setStrategy('balanced')}
+              className={`brutal-btn flex-1 py-2 text-xs font-bold ${
+                strategy === 'balanced' ? 'bg-[#3ddc97] text-on-accent' : 'bg-surface text-subtext hover:text-ink'}`}>
+              ⚖️ Balanced
             </button>
           </div>
         </div>
