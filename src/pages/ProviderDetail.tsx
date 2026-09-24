@@ -8,7 +8,8 @@ import { iconUrl, deleteCustomProvider, addCustomModelForProvider, removeCustomM
 const typeLabel: Record<string, string> = {
   apikey: 'API Key',
   oauth: 'OAuth',
-  custom: 'Custom',
+  custom_openai: 'Custom OpenAI',
+  manual: 'Manual',
 }
 
 /* ─── Palette ─── */
@@ -246,7 +247,7 @@ export default function ProviderDetail() {
                 <div className="flex items-center gap-2 sm:gap-2.5 mt-2 flex-wrap">
                   <span
                     className="text-[9px] sm:text-[10px] mono-brutal px-2 sm:px-2.5 py-0.5 rounded-full border-2 border-line font-bold"
-                    style={{ backgroundColor: C.warning }}
+                    style={{ backgroundColor: `${C.warning}30`, color: 'var(--warning-text)' }}
                   >
                     {label.toUpperCase()}
                   </span>
