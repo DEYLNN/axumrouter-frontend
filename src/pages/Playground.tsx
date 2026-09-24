@@ -11,7 +11,8 @@ export default function Playground() {
   const [remoteLoading, setRemoteLoading] = useState(false)
   const [remoteError, setRemoteError] = useState('')
   const [selectedKeyId, setSelectedKeyId] = useState<string>('')
-  const [customModel, setCustomModel] = useState('')
+  const [modelSearch, setModelSearch] = useState('')
+  const [selectedModel, setSelectedModel] = useState('')
   const [testing, setTesting] = useState(false)
   const [result, setResult] = useState<TestResult | null>(null)
   const [open, setOpen] = useState(false)
@@ -21,6 +22,26 @@ export default function Playground() {
   const filtered = providers.filter(p =>
     !search || p.display_name.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase())
   )
+
+  // Filter models based on search query
+  // Supports: "free" or ":free" → filter models containing "free"
+  //           "-free" → exclude models containing "free"
+  const filterModels = (allModels: {id: string}[]) => {
+    if (!modelSearch.trim()) return allModels
+    const q = modelSearch.trim().toLowerCase()
+    if (q.startsWith('-')) {
+      const term = q.slice(1).trim()
+      return allModels.filter(m => !m.id.toLowerCase().includes(term))
+    }
+    if (q.startsWith(':')) {
+      const term = q.slice(1).trim()
+      return allModels.filter(m => m.id.toLowerCase().includes(term))
+    }
+    return allModels.filter(m => m.id.toLowerCase().includes(q))
+  }
+
+  const allModels = [...models, ...remoteModels.filter(rm => !models.some(m => m.id === rm.id))]
+  const filteredModels = filterModels(allModels)
 
   const sel = providers.find(p => p.id === selected)
   const selName = sel?.display_name || ''
@@ -70,7 +91,7 @@ export default function Playground() {
 
   const handleTest = async () => {
     if (!selected) return
-    const model = customModel || models[0]?.id
+    const model = selectedModel || models[0]?.id
     if (!model) return
     setTesting(true); setResult(null)
     try {
@@ -133,7 +154,7 @@ export default function Playground() {
                       const hasKeys = p.active_keys > 0
                       return (
                         <div key={p.id}
-                          onClick={() => { if (!hasKeys) return; setSelected(p.id); setOpen(false); setSearch(''); setCustomModel(''); setResult(null) }}
+                          onClick={() => { if (!hasKeys) return; setSelected(p.id); setOpen(false); setSearch(''); setModelSearch(''); setSelectedModel(''); setResult(null) }}
                           className={`flex items-center gap-3 px-4 py-3 transition-all border-b-2 border-line last:border-b-0 ${
                             !hasKeys ? 'opacity-30 cursor-not-allowed' :
                             isSel ? 'cursor-pointer bg-[#ff3d81]/10 border-l-4 border-l-[#ff3d81]' : 'cursor-pointer hover:bg-canvas border-l-4 border-l-transparent'
@@ -221,14 +242,14 @@ export default function Playground() {
               <div className="brutal-card overflow-hidden min-w-0">
                 <div className="px-5 py-3 border-b-2 border-line bg-muted flex items-center justify-between">
                   <h2 className="text-xs mono-brutal font-bold text-primary-text uppercase tracking-wider">Models</h2>
-                  <span className="text-[9px] mono-brutal text-subtext">{models.length} / {remoteModels.length || '?'}</span>
+                  <span className="text-[9px] mono-brutal text-subtext">{filteredModels.length} / {allModels.length}</span>
                 </div>
                 <div className="p-5 space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
-                      <div className="text-[9px] mono-brutal text-subtext uppercase tracking-wider mb-1 font-bold">Custom model</div>
-                      <input type="text" value={customModel} onChange={e => setCustomModel(e.target.value)}
-                        placeholder="claude-sonnet-4, gpt-5.5, ..."
+                      <div className="text-[9px] mono-brutal text-subtext uppercase tracking-wider mb-1 font-bold">Search model</div>
+                      <input type="text" value={modelSearch} onChange={e => { setModelSearch(e.target.value); setSelectedModel('') }}
+                        placeholder="free, :free, -free, deepseek..."
                         className="w-full px-3 py-2 border-2 border-line rounded-lg text-[11px] mono-brutal bg-surface placeholder:text-subtext/70 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
                     </div>
                     <button onClick={() => fetchModels(selectedKeyId)} disabled={remoteLoading}
@@ -245,38 +266,31 @@ export default function Playground() {
                   )}
 
                   <div className="max-h-48 overflow-y-auto space-y-1 scrollbar-thin">
-                    {models.map(m => (
-                      <div key={m.id}
-                        onClick={() => { setCustomModel(m.id); setResult(null) }}
-                        className={`px-3 py-2 rounded-lg cursor-pointer transition-all text-[11px] mono-brutal border-2 ${
-                          customModel === m.id
-                            ? 'bg-[#ff3d81]/10 text-primary-text border-[#ff3d81] font-bold'
-                            : 'text-subtext hover:bg-canvas border-transparent hover:border-line'
-                        }`}>
-                        <div className="truncate">{m.id}</div>
-                      </div>
-                    ))}
-                    {models.length === 0 && remoteModels.length > 0 && (
-                      <div className="text-[9px] mono-brutal text-subtext mb-1 px-1 font-bold">Remote models ({remoteModels.length}):</div>
-                    )}
-                    {remoteModels.filter(rm => !models.some(m => m.id === rm.id)).map(rm => (
-                      <div key={rm.id}
-                        onClick={() => { setCustomModel(rm.id); setResult(null) }}
-                        className={`px-3 py-2 rounded-lg cursor-pointer transition-all text-[11px] mono-brutal border-2 ${
-                          customModel === rm.id
-                            ? 'bg-[#c8a2ff]/10 text-accent-text border-[#c8a2ff] font-bold'
-                            : 'text-subtext hover:bg-canvas border-transparent hover:border-line'
-                        }`}>
-                        <div className="truncate flex items-center gap-2">
-                          <span>{rm.id}</span>
-                          {rm.context_length && <span className="text-[9px] text-subtext/70">{rm.context_length.toLocaleString()}</span>}
-                          <span className="text-[8px] text-subtext/70 ml-auto">remote</span>
+                    {filteredModels.length === 0 ? (
+                      <div className="text-[10px] mono-brutal text-subtext text-center py-4">No models match "{modelSearch}"</div>
+                    ) : (
+                      filteredModels.map(m => {
+                      const isRemote = !models.some(mm => mm.id === m.id)
+                      return (
+                        <div key={m.id}
+                          onClick={() => { setSelectedModel(m.id); setResult(null) }}
+                          className={`px-3 py-2 rounded-lg cursor-pointer transition-all text-[11px] mono-brutal border-2 ${
+                            selectedModel === m.id
+                              ? 'bg-[#ff3d81]/10 text-primary-text border-[#ff3d81] font-bold'
+                              : 'text-subtext hover:bg-canvas border-transparent hover:border-line'
+                          }`}>
+                          <div className="truncate flex items-center gap-2">
+                            <span>{m.id}</span>
+                            {'context_length' in m && (m as any).context_length && <span className="text-[9px] text-subtext/70">{(m as any).context_length.toLocaleString()}</span>}
+                            {isRemote && <span className="text-[8px] text-subtext/70 ml-auto">remote</span>}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })
+                    )}
                   </div>
 
-                  <button onClick={handleTest} disabled={testing || !customModel}
+                  <button onClick={handleTest} disabled={testing || !selectedModel}
                     className="brutal-btn w-full py-2.5 text-xs font-bold bg-[#ff3d81] text-on-accent disabled:opacity-40">
                     {testing ? '↻ Testing...' : '▶ Test Model'}
                   </button>
