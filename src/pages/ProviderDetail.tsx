@@ -3,7 +3,8 @@ import { useEffect, useMemo, useState, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import OAuthConnectModal from '../components/OAuthConnectModal'
 import { useProviderDetail } from '../hooks/useProviderDetail'
-import { iconUrl, deleteCustomProvider, addCustomModelForProvider, removeCustomModelForProvider, listCustomModels } from '../api'
+import { iconUrl, deleteCustomProvider, addCustomModelForProvider, removeCustomModelForProvider, listCustomModels, getProxies } from '../api'
+import { apiFetch } from '../api/client'
 
 const typeLabel: Record<string, string> = {
   apikey: 'API Key',
@@ -163,8 +164,22 @@ export default function ProviderDetail() {
   const [customModels, setCustomModels] = useState<string[]>([])
   const [cmKey, setCmKey] = useState(0)
   const [modelError, setModelError] = useState('')
+  const [proxies, setProxies] = useState<any[]>([])
+  const [modelProxies, setModelProxies] = useState<Record<string, any>>({})
 
   useEffect(() => { ctx.load() }, [ctx.load])
+
+  // Fetch proxy pool + assigned proxy per model (ocf only)
+  useEffect(() => {
+    if (ctx.data?.id !== 'ocf') return
+    getProxies().then(setProxies).catch(() => {})
+    for (const m of ctx.data.models) {
+      apiFetch(`/proxies/model/${encodeURIComponent(m.id)}`)
+        .then(r => (r.ok ? r.json() : null))
+        .then(d => setModelProxies(prev => ({ ...prev, [m.id]: d?.proxy ?? null })))
+        .catch(() => {})
+    }
+  }, [ctx.data])
 
   // Load custom models whenever provider id changes or cmKey bumps
   useEffect(() => {
@@ -363,6 +378,32 @@ export default function ProviderDetail() {
                     <span className="hidden sm:inline-block text-[9px] mono-brutal text-subtext bg-muted px-2 py-0.5 rounded-full border-2 border-line shrink-0 ml-2 font-bold">
                       {m.context_length.toLocaleString()}
                     </span>
+                  )}
+                  {data.id === 'ocf' && (
+                    <select
+                      value={modelProxies[m.id]?.id ?? ''}
+                      onChange={async e => {
+                        const v = e.target.value
+                        const mid = encodeURIComponent(m.id)
+                        if (v) {
+                          await apiFetch('/proxies/model', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ model_id: m.id, proxy_id: v }),
+                          })
+                          setModelProxies(prev => ({ ...prev, [m.id]: proxies.find(p => p.id === v) ?? null }))
+                        } else {
+                          await apiFetch(`/proxies/model/${mid}`, { method: 'DELETE' })
+                          setModelProxies(prev => ({ ...prev, [m.id]: null }))
+                        }
+                      }}
+                      className="text-[10px] mono-brutal border-2 border-line bg-surface px-1 py-0.5 rounded ml-2 shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">No proxy</option>
+                      {proxies.map(p => (
+                        <option key={p.id} value={p.id}>{p.label}</option>
+                      ))}
+                    </select>
                   )}
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 ml-2 sm:ml-3">
