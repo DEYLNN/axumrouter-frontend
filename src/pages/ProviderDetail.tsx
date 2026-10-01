@@ -380,30 +380,62 @@ export default function ProviderDetail() {
                     </span>
                   )}
                   {data.id === 'ocf' && (
-                    <select
-                      value={modelProxies[m.id]?.id ?? ''}
-                      onChange={async e => {
-                        const v = e.target.value
-                        const mid = encodeURIComponent(m.id)
-                        if (v) {
-                          await apiFetch('/proxies/model', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ model_id: m.id, proxy_id: v }),
-                          })
-                          setModelProxies(prev => ({ ...prev, [m.id]: proxies.find(p => p.id === v) ?? null }))
-                        } else {
-                          await apiFetch(`/proxies/model/${mid}`, { method: 'DELETE' })
-                          setModelProxies(prev => ({ ...prev, [m.id]: null }))
-                        }
-                      }}
-                      className="text-[10px] mono-brutal border-2 border-line bg-surface px-1 py-0.5 rounded ml-2 shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="">No proxy</option>
-                      {proxies.map(p => (
-                        <option key={p.id} value={p.id}>{p.label}</option>
-                      ))}
-                    </select>
+                    <div className="relative ml-2 shrink-0 group/proxy">
+                      <button
+                        onClick={() => {
+                          const el = document.getElementById(`proxy-menu-${m.id}`)
+                          if (el) el.classList.toggle('hidden')
+                        }}
+                        className={`text-[10px] mono-brutal px-2 py-1 rounded-lg border-2 font-bold transition-all flex items-center gap-1.5 ${
+                          modelProxies[m.id]
+                            ? 'border-[#3ddc97] bg-[#3ddc97]/10 text-[#3ddc97]'
+                            : 'border-line bg-surface text-subtext hover:border-ink hover:text-ink'
+                        }`}
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        {modelProxies[m.id] ? modelProxies[m.id].label : 'Proxy'}
+                        <svg className="w-2.5 h-2.5 opacity-60" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      <div id={`proxy-menu-${m.id}`} className="hidden absolute top-full left-0 mt-1 z-20 min-w-[160px] brutal-card p-1 shadow-lg">
+                        <button
+                          onClick={async () => {
+                            const mid = encodeURIComponent(m.id)
+                            await apiFetch(`/proxies/model/${mid}`, { method: 'DELETE' })
+                            setModelProxies(prev => ({ ...prev, [m.id]: null }))
+                            document.getElementById(`proxy-menu-${m.id}`)?.classList.add('hidden')
+                          }}
+                          className={`w-full text-left text-[10px] mono-brutal px-2.5 py-1.5 rounded-lg transition-colors ${
+                            !modelProxies[m.id] ? 'bg-[#3ddc97]/10 text-[#3ddc97] font-bold' : 'text-subtext hover:bg-muted hover:text-ink'
+                          }`}
+                        >
+                          No proxy
+                        </button>
+                        {proxies.map(p => (
+                          <button
+                            key={p.id}
+                            onClick={async () => {
+                              await apiFetch('/proxies/model', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ model_id: m.id, proxy_id: p.id }),
+                              })
+                              setModelProxies(prev => ({ ...prev, [m.id]: p }))
+                              document.getElementById(`proxy-menu-${m.id}`)?.classList.add('hidden')
+                            }}
+                            className={`w-full text-left text-[10px] mono-brutal px-2.5 py-1.5 rounded-lg transition-colors ${
+                              modelProxies[m.id]?.id === p.id ? 'bg-[#3ddc97]/10 text-[#3ddc97] font-bold' : 'text-subtext hover:bg-muted hover:text-ink'
+                            }`}
+                          >
+                            {p.label}
+                            <span className="text-subtext/60 ml-1">{p.host}:{p.port}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 ml-2 sm:ml-3">
