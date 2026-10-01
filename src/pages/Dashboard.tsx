@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [settings, setSettings] = useState<SettingsData | null>(null)
   const [providerCount, setProviderCount] = useState(0)
   const [provMeta, setProvMeta] = useState<Record<string, { name: string; icon: string; color: string }>>({})
+  const [inFlight, setInFlight] = useState(0)
 
   const {
     events, totals, ready, connected,
@@ -66,6 +67,14 @@ export default function Dashboard() {
       }
       setProvMeta(map)
     }).catch(() => {})
+  }, [])
+
+  // Poll in-flight count every 2s
+  useEffect(() => {
+    const poll = () => getSettings().then(s => setInFlight(s.in_flight ?? 0)).catch(() => {})
+    poll()
+    const iv = setInterval(poll, 2000)
+    return () => clearInterval(iv)
   }, [])
 
   /* Today (UTC) comes from the backend rollup — the event window only covers 15 min */
@@ -196,16 +205,34 @@ export default function Dashboard() {
 
         {/* STAT CARDS — 3 columns, live */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Card 1 — Requests */}
-          <div className="brutal-card p-6">
+          {/* Card 1 — Requests + In-Flight */}
+          <div className="brutal-card p-6 relative overflow-hidden">
+            {inFlight > 0 && (
+              <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-full opacity-10" style={{ backgroundColor: 'var(--primary)' }} />
+            )}
             <div className="flex items-center gap-3 mb-4">
               <StatIcon name="requests" />
               <p className="mono-brutal text-xs text-subtext uppercase">Requests</p>
+              {inFlight > 0 && (
+                <span className="ml-auto flex items-center gap-1.5 text-[10px] mono-brutal font-bold px-2 py-1 rounded-full border-2 border-[#ff3d81] bg-[#ff3d81]/10 text-[#ff3d81] animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ff3d81] animate-ping" />
+                  {inFlight} LIVE
+                </span>
+              )}
+              {inFlight === 0 && (
+                <span className="ml-auto flex items-center gap-1.5 text-[10px] mono-brutal font-bold px-2 py-1 rounded-full border-2 border-line bg-muted text-subtext">
+                  <span className="w-1.5 h-1.5 rounded-full bg-subtext/40" />
+                  IDLE
+                </span>
+              )}
             </div>
             <p className="text-3xl font-black heading-brutal text-ink">{fmt(totals.requests)}</p>
-            <div className="border-t-2 border-line mt-4 pt-3">
+            <div className="border-t-2 border-line mt-4 pt-3 flex items-center justify-between">
               <p className="text-xs mono-brutal text-subtext uppercase">
-                Today: {fmt(todayRequests)} requests
+                Today: {fmt(todayRequests)}
+              </p>
+              <p className="text-xs mono-brutal font-bold" style={{ color: inFlight > 0 ? 'var(--primary)' : 'var(--muted-text, var(--subtext))' }}>
+                {inFlight} in-flight
               </p>
             </div>
           </div>

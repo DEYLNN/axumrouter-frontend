@@ -12,6 +12,7 @@ export interface SettingsData {
   database_url: string
   proxy_count: number
   keys_count: number
+  in_flight: number
 }
 
 export interface ProviderMeta {
