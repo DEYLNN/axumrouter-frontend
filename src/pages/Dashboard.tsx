@@ -159,6 +159,12 @@ export default function Dashboard() {
   const promptSeries = useMemo(() => bucket(events, e => e.prompt_tokens || 0, now, BUCKETS, 1), [events, now])
   const completionSeries = useMemo(() => bucket(events, e => e.completion_tokens || 0, now, BUCKETS, 1), [events, now])
 
+  /* In-flight history — 15 samples, push current value every 2s */
+  const [inFlightHistory, setInFlightHistory] = useState<number[]>(Array(BUCKETS).fill(0))
+  useEffect(() => {
+    setInFlightHistory(prev => [...prev.slice(1), inFlight])
+  }, [inFlight])
+
   /* Average latency per 1-minute bucket (0 when no samples in that minute) */
   const latencySeries = useMemo(() => {
     const sums = new Array<number>(BUCKETS).fill(0)
@@ -284,7 +290,10 @@ export default function Dashboard() {
             </div>
 
             <LineChart
-              series={[{ values: requestSeries, color: 'var(--primary)', label: 'Requests' }]}
+              series={[
+                { values: requestSeries, color: 'var(--primary)', label: 'Requests' },
+                { values: inFlightHistory, color: '#3ddc97', label: 'In-flight' },
+              ]}
               height={240}
               legendFmt={n => n.toLocaleString('en-US')}
               xLabels={reqLabels}
