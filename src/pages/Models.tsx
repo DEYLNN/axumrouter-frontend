@@ -11,7 +11,6 @@ interface ToggleModel { id: string; owned_by: string; enabled: boolean; toggling
 export default function Models() {
   const { data: providers, loading, error } = useAsync(getProviders, [])
   const [models, setModels] = useState<Record<string, ToggleModel[]>>({})
-  const [stats, setStats] = useState({ totalModels: 0, disabledModels: 0, blockedModels: 0 })
 
   useEffect(() => {
     if (!providers) return
@@ -41,20 +40,6 @@ export default function Models() {
     }
     fetchModels()
   }, [providers])
-
-  useEffect(() => {
-    if (Object.keys(models).length === 0) return
-    let cancelled = false
-    apiFetch('/models/blocked').then(r => r.json()).catch(() => []).then(blocked => {
-      if (cancelled) return
-      let total = 0, dCount = 0
-      for (const list of Object.values(models)) {
-        for (const m of list) { total++; if (!m.enabled) dCount++ }
-      }
-      setStats({ totalModels: total, disabledModels: dCount, blockedModels: Array.isArray(blocked) ? blocked.length : 0 })
-    })
-    return () => { cancelled = true }
-  }, [models])
 
   const toggleModel = async (modelId: string, enabled: boolean) => {
     const prevState: Record<string, ToggleModel[]> = {}
