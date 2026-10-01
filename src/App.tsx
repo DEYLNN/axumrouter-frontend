@@ -6,6 +6,7 @@ import Endpoint from './pages/Endpoint'
 import Providers from './pages/Providers'
 import ProviderDetail from './pages/ProviderDetail'
 import Settings from './pages/Settings'
+import Models from './pages/Models'
 import Usage from './pages/Usage'
 import Quota from './pages/Quota'
 import AuthFiles from './pages/AuthFiles'
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="/admin/providers/uns" element={<UnslothDetail />} />
             <Route path="/admin/providers/:id" element={<ProviderDetail />} />
             <Route path="/admin/settings" element={<Settings />} />
+            <Route path="/admin/models" element={<Models />} />
             <Route path="/admin/usage" element={<Usage />} />
             <Route path="/admin/quota" element={<Quota />} />
             <Route path="/admin/auth-files" element={<AuthFiles />} />

@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react'
-import { getSettings, getDatabaseInfo, getProviders } from '../api'
+import { getSettings, getDatabaseInfo } from '../api'
 import { apiFetch } from '../api'
 import { useAsync } from '../hooks/useAsync'
 import { Loading } from '../components/Loading'
 import { ErrorBox } from '../components/ErrorBox'
 import DatabaseSection from '../components/DatabaseSection'
-import ModelsSection from '../components/ModelsSection'
 import GatewayKeysSection from '../components/GatewayKeysSection'
 
-interface ToggleModel { id: string; owned_by: string; enabled: boolean; toggling?: boolean }
 interface GatewayKeyJson {
   id: string; key_value: string; label: string | null; is_active: number
   access_type: string; allowed_models: string[]; max_tokens: number; created_at: string
@@ -17,92 +15,10 @@ interface GatewayKeyJson {
 export default function Settings() {
   const { data: settings, loading, error } = useAsync(getSettings, [])
   const { data: dbInfo, refetch: reloadDb } = useAsync(getDatabaseInfo, [])
-  const { data: providers } = useAsync(getProviders, [])
-  const [models, setModels] = useState<Record<string, ToggleModel[]>>({})
-  const [stats, setStats] = useState({ totalModels: 0, disabledModels: 0, blockedModels: 0 })
   const [gwKeys, setGwKeys] = useState<GatewayKeyJson[]>([])
 
-  useEffect(() => {
-    if (!providers) return
-    const fetchModels = async () => {
-      try {
-        const r = await apiFetch('/models/all')
-        const data: Record<string, { id: string; enabled: boolean; owned_by: string; context_length?: number | null }[]> = await r.json()
-        const mapped: Record<string, ToggleModel[]> = {}
-        for (const [prov, list] of Object.entries(data)) {
-          mapped[prov] = list.map(m => ({ id: m.id, owned_by: m.owned_by || prov, enabled: m.enabled, context_length: (m as any).context_length }))
-        }
-        // Alias custom provider models: model prefix → custom_provider_id
-        // Also ensure every provider has an entry (empty array if no models) so UI
-        // never shows the misleading "Loading models..." spinner.
-        if (providers) {
-          for (const p of providers) {
-            if (p.type === 'custom_openai' && p.id.startsWith('custom_')) {
-              const prefix = p.id.replace('custom_', '')
-              if (mapped[prefix] && !mapped[p.id]) {
-                mapped[p.id] = mapped[prefix]
-              }
-            }
-            // Fallback: provider with zero models — avoid undefined lookup in UI
-            if (!mapped[p.id]) {
-              mapped[p.id] = []
-            }
-          }
-        }
-        setModels(mapped)
-      } catch { /* noop */ }
-    }
-    fetchModels()
-  }, [providers])
   const fetchGw = () => { apiFetch('/gateway_keys').then(r => r.ok ? r.json() : Promise.reject(r.status)).then(setGwKeys).catch((e) => console.error('[fetchGw] failed:', e)) }
   useEffect(() => { fetchGw() }, [])
-
-  useEffect(() => {
-    if (Object.keys(models).length === 0) return
-    let cancelled = false
-    apiFetch('/models/blocked').then(r => r.json()).catch(() => []).then(blocked => {
-      if (cancelled) return
-      let total = 0, dCount = 0
-      for (const list of Object.values(models)) {
-        for (const m of list) { total++; if (!m.enabled) dCount++ }
-      }
-      setStats({ totalModels: total, disabledModels: dCount, blockedModels: Array.isArray(blocked) ? blocked.length : 0 })
-    })
-    return () => { cancelled = true }
-  }, [models])
-
-  const toggleModel = async (modelId: string, enabled: boolean) => {
-    // Snapshot previous state per-provider so rollback restores exactly what was there,
-    // not the optimistic `enabled` value (matters under rapid double-click).
-    const prevState: Record<string, ToggleModel[]> = {}
-    setModels(prev => {
-      for (const [prov, list] of Object.entries(prev)) prevState[prov] = list
-      const next: Record<string, ToggleModel[]> = {}
-      for (const [prov, list] of Object.entries(prev)) {
-        const idx = list.findIndex(m => m.id === modelId)
-        if (idx > -1) { const nl = [...list]; nl[idx] = { ...nl[idx], enabled, toggling: true }; next[prov] = nl }
-        else { next[prov] = list }
-      }
-      return next
-    })
-    try {
-      const res = await apiFetch('/models/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model_id: modelId, enabled }) })
-      const data = await res.json()
-      if (!data.ok) throw new Error('fail')
-      setModels(prev => {
-        const next: Record<string, ToggleModel[]> = {}
-        for (const [prov, list] of Object.entries(prev)) {
-          const idx = list.findIndex(m => m.id === modelId)
-          if (idx > -1) { const nl = [...list]; nl[idx] = { ...nl[idx], toggling: false }; next[prov] = nl }
-          else { next[prov] = list }
-        }
-        return next
-      })
-    } catch (err) {
-      console.error('[toggleModel] failed:', modelId, enabled, err)
-      setModels(prevState)
-    }
-  }
 
   if (loading) return <Loading />
   if (error) return <ErrorBox message={error} />
@@ -112,8 +28,7 @@ export default function Settings() {
     <div className="space-y-6">
       <h1 className="heading-brutal text-3xl uppercase tracking-tight">CONFIG</h1>
       <p className="text-lg font-medium text-subtext">Gateway configuration</p>
-      <DatabaseSection dbInfo={dbInfo} stats={stats} onDbReload={reloadDb} />
-      <ModelsSection providers={providers} models={models} onToggleModel={toggleModel} />
+      <DatabaseSection dbInfo={dbInfo} stats={{ totalModels: 0, disabledModels: 0, blockedModels: 0 }} onDbReload={reloadDb} />
       <GatewayKeysSection keys={gwKeys} onRefresh={fetchGw} />
     </div>
   )
