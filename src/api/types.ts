@@ -75,6 +75,7 @@ export interface LogEntry {
   completion_tokens: number
   total_tokens: number
   latency_ms: number | null
+  ttft_ms: number | null
   error_message: string | null
   request_body: string | null
   response_body: string | null

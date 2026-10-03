@@ -169,6 +169,14 @@ export default function Logs() {
                       </svg>
                       <span className="font-bold">{l.latency_ms != null ? `${l.latency_ms}ms` : '-'}</span>
                     </div>
+                    {l.ttft_ms != null && (
+                      <div className="flex items-center gap-1.5" title="Time to First Token">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path d="M5 3l14 9-14 9V3z" />
+                        </svg>
+                        <span className="font-bold">{(l.ttft_ms / 1000).toFixed(1)}s</span>
+                      </div>
+                    )}
                     <div className="ml-auto text-subtext/70">{timeAgo(l.created_at)}</div>
                   </div>
 
