@@ -1,6 +1,6 @@
-# JevCode Frontend
+# NuvCode Frontend
 
-Admin dashboard for JevCode AI Gateway. React 19 + TypeScript 6 + Vite 8 + TailwindCSS 4.
+Admin dashboard for NuvCode AI Gateway. React 19 + TypeScript 6 + Vite 8 + TailwindCSS 4.
 
 ## Quick Start
 
@@ -13,36 +13,11 @@ npx vite build     # Production → dist/
 ## Prerequisites
 
 - Node.js >= 18
-- Backend JevCode running di `localhost:7444`
+- Backend running on `localhost:7444`
 
 ## Env
 
-Copy `.env.example` ke `.env` — atau biarkan kosong (pake Vite proxy ke backend).
-
-## Documentation
-
-| Doc | Location |
-|-----|----------|
-| **Full Guide** | `docs/GUIDE.md` — setup, config, struktur, deploy |
-| **Project Rules** | `AGENTS.md` — konvensi, API layer, file tree |
-| **Backend Docs** | `../backend/docs/` — PROVIDER_ARCHITECTURE.md, USAGE_TRACKING.md, API_KEY_PROVIDER_GUIDE.md |
-
-## Project
-
-```
-frontend/
-├── src/
-│   ├── main.tsx         ← Entry point
-│   ├── App.tsx          ← Router (14 routes)
-│   ├── api/             ← Backend API layer (client.ts, types.ts, + 9 domain files)
-│   ���── components/      ← Reusable: Layout, Modal, OAuthConnect, GatewayKeys, dll
-│   ├── hooks/           ← useAsync, useProviderDetail
-│   ├── pages/           ← 14 route pages
-│   └── utils/           ← clipboard helper
-├── public/
-│   └── providers/       ← 63 provider icons
-└── vite.config.ts       ← Proxy + Tailwind + plugins
-```
+Copy `.env.example` to `.env` — or leave empty (uses Vite proxy to backend).
 
 ## Tech Stack
 
@@ -55,7 +30,6 @@ frontend/
 | react-router-dom | 7 |
 | oxlint | 1 |
 
-## Related
+## License
 
-- Backend: `../backend/`
-- Backend AGENTS.md: `../backend/AGENTS.md`
+MIT

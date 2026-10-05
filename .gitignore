@@ -30,3 +30,6 @@ dist-ssr
 # Hermes agent rules
 AGENTS.md
 .superdesign
+
+# Internal
+.claude/
